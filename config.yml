@@ -1,0 +1,10 @@
+title: Blind Hams Network
+description: Nets, nodes, and resources for blind and low-vision amateur radio operators.The homepage for the Blind Hams Digital Network
+baseurl: "" # the subpath of your site, leave blank for project root
+url: "https://nromey.github.io" # replace USERNAME with your GitHub username
+
+markdown: kramdown
+theme: minima
+
+plugins:
+  - jekyll-feed
