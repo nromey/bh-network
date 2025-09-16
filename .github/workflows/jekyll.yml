@@ -18,20 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
         with:
-          ruby-version: "3.1"
-          bundler-cache: true
-
-      - name: Build site
-        run: |
-          bundle install
-          bundle exec jekyll build --trace
-
-      # ⬇️ Use the new v3 Pages artifact uploader
-      - name: Upload site artifact
+          source: ./
+          destination: ./_site
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
@@ -42,7 +36,6 @@ jobs:
     environment:
       name: github-pages
     steps:
-      # ⬇️ Use the new v4 deploy action
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
