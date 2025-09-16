@@ -30,8 +30,9 @@ jobs:
           bundle install
           bundle exec jekyll build --trace
 
+      # ⬇️ Use the new v3 Pages artifact uploader
       - name: Upload site artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
@@ -41,6 +42,7 @@ jobs:
     environment:
       name: github-pages
     steps:
+      # ⬇️ Use the new v4 deploy action
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
