@@ -19,19 +19,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      # Configure GitHub Pages (sets up the Pages environment)
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Build Jekyll using the official Pages action (handles Ruby/bundler internally)
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
         with:
-          ruby-version: "3.1"
-          bundler-cache: true
+          source: ./
+          destination: ./_site
 
-      - name: Build site
-        run: |
-          bundle install
-          bundle exec jekyll build --trace
-
-      # ⬇️ Use the new v3 Pages artifact uploader
-      - name: Upload site artifact
+      # Upload the static site artifact (v3 is current and OK)
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
@@ -42,7 +42,6 @@ jobs:
     environment:
       name: github-pages
     steps:
-      # ⬇️ Use the new v4 deploy action
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
