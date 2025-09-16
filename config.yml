@@ -1,10 +1,48 @@
-title: Blind Hams Network
-description: Nets, nodes, and resources for blind and low-vision amateur radio operators.The homepage for the Blind Hams Digital Network
-baseurl: "" # the subpath of your site, leave blank for project root
-url: "https://nromey.github.io" # replace USERNAME with your GitHub username
+name: Build and Deploy Jekyll site to Pages
 
-markdown: kramdown
-theme: minima
+on:
+  push:
+    branches: [ "main" ]
 
-plugins:
-  - jekyll-feed
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.1"
+          bundler-cache: true
+
+      - name: Build site
+        run: |
+          bundle install
+          bundle exec jekyll build --trace
+
+      # ⬇️ Use the new v3 Pages artifact uploader
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      # ⬇️ Use the new v4 deploy action
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
