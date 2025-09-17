@@ -11,3 +11,39 @@
   top: 0;
 }
 
+/* Button styling (kept simple; inherits theme fonts) */
+.hc-toggle{
+  margin-left:.75rem;
+  padding:.4rem .6rem;
+  border:2px solid currentColor;
+  background:transparent;
+  cursor:pointer;
+}
+.hc-toggle:focus{outline:2px solid currentColor; outline-offset:2px}
+
+/* High-contrast mode — scope to `html.high-contrast` */
+html.high-contrast body{
+  background:#000 !important;
+  color:#fff !important;
+}
+
+html.high-contrast a{
+  color:#0ff !important;          /* bright cyan for contrast */
+  text-decoration: underline;
+}
+
+html.high-contrast .site-header,
+html.high-contrast .site-footer{
+  background:#000 !important;
+  border-color:#fff !important;
+}
+
+html.high-contrast table{
+  border-collapse: collapse;
+  width:100%;
+}
+html.high-contrast th,
+html.high-contrast td{
+  border:2px solid #fff;
+  padding:.5rem;
+
