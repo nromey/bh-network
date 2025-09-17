@@ -1,0 +1,12 @@
+title: Blind Hams Network
+description: Nets, nodes, and resources for blind and low-vision amateur radio operators.
+baseurl: "" # the subpath of your site, leave blank for project root
+url: "https://USERNAME.github.io" # replace USERNAME with your GitHub username
+
+markdown: kramdown
+theme: minima
+  skin: classic
+  custom_css:
+    - /assets/css/extra.css
+plugins:
+  - jekyll-feed
