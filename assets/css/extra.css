@@ -1,49 +1,23 @@
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  background: #000;
-  color: #fff;
-  padding: 8px;
-  z-index: 100;
-}
-.skip-link:focus {
-  top: 0;
-}
+/* Skip link + utility */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:absolute;top:-40px;left:0;background:#000;color:#fff;padding:.5rem;z-index:100}
+.skip-link:focus{top:0}
 
-/* Button styling (kept simple; inherits theme fonts) */
-.hc-toggle{
-  margin-left:.75rem;
-  padding:.4rem .6rem;
-  border:2px solid currentColor;
-  background:transparent;
-  cursor:pointer;
-}
-.hc-toggle:focus{outline:2px solid currentColor; outline-offset:2px}
+/* High-contrast default palette */
+html, body { background:#000; color:#fff; }
+a { color:#0ff; text-decoration:underline; }
+a:focus, button:focus, input:focus { outline:2px solid currentColor; outline-offset:2px; }
 
-/* High-contrast mode — scope to `html.high-contrast` */
-html.high-contrast body{
-  background:#000 !important;
-  color:#fff !important;
-}
+/* Tables */
+table { width:100%; border-collapse:collapse; }
+th, td { border:2px solid #fff; padding:.5rem; text-align:left; }
+caption { text-align:left; font-weight:600; margin-bottom:.5rem; }
 
-html.high-contrast a{
-  color:#0ff !important;          /* bright cyan for contrast */
-  text-decoration: underline;
-}
+/* Header/footer neutral backgrounds */
+.site-header, .site-footer { background:#000; border-color:#fff; }
 
-html.high-contrast .site-header,
-html.high-contrast .site-footer{
-  background:#000 !important;
-  border-color:#fff !important;
-}
+/* Remove any leftover theme toggle styles if they existed */
+.theme-toggle, .theme-toggle-checkbox { display:none !important; }
 
-html.high-contrast table{
-  border-collapse: collapse;
-  width:100%;
-}
-html.high-contrast th,
-html.high-contrast td{
-  border:2px solid #fff;
-  padding:.5rem;
-
+/* Make inline nav breathe a bit */
+.site-nav .page-link { margin-left:1rem; }
