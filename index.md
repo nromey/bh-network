@@ -5,7 +5,7 @@
 layout: default
 title: Blind Hams Digital Network Homepage
 ---
-#blind Hams Network
+# Blind Hams Network
 Welcome to the Blind Hams Network, the sanest place 
 on the net, and were wecan most definitely guarantee that
 * Thursdays suck
