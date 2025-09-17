@@ -5,8 +5,8 @@ url: "https://USERNAME.github.io" # replace USERNAME with your GitHub username
 
 markdown: kramdown
 theme: minima
-  skin: classic
-  custom_css:
-    - /assets/css/extra.css
 plugins:
   - jekyll-feed
+minima:
+  custom_css:
+    - /assets/css/extra.css
