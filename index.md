@@ -3,7 +3,7 @@
 # To modify the layout, see https://jekyllrb.com/docs/themes/#overriding-theme-defaults
 
 layout: default
-title: Blind Hams Digital Network Homepage
+title: Home
 ---
 # Blind Hams Network
 Welcome to the Blind Hams Network, the sanest place 
