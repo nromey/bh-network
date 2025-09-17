@@ -10,3 +10,8 @@ plugins:
 minima:
   custom_css:
     - /assets/css/extra.css
+header_pages:
+  - index.md
+  - nets.md
+  - schedule.md
+
