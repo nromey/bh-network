@@ -1,0 +1,34 @@
+{%- assign next = site.data.next_net.next_net -%}
+<div role="region" aria-live="polite" aria-atomic="true" class="next-net">
+  {%- if next -%}
+    {%- assign local_dt = next.start_local_iso | date: "%A, %B %-d, %Y at %-I:%M %p" -%}
+    <p>
+      <strong>Next Net:</strong> {{ next.name }} —
+      {{ local_dt }} {{ next.time_zone | replace: "America/New_York","ET" }}
+      ({{ next.duration_min }} min)
+    </p>
+    <p>
+      <em>Where:</em>
+      {%- comment -%}
+        We might be rendering a computed next object (from Python), not the raw YAML.
+        Prefer the precomputed `location` if present, else reconstruct from YAML entry by id.
+      {%- endcomment -%}
+      {%- if next.location -%}
+        {{ next.location }}
+      {%- else -%}
+        {%- assign net = nil -%}
+        {%- for n in site.data.nets.nets -%}
+          {%- if n.id == next.id -%}{%- assign net = n -%}{%- break -%}{%- endif -%}
+        {%- endfor -%}
+        {%- if net -%}
+          {%- include net_location.html net=net -%}
+        {%- else -%}
+          Blind Hams Bridge
+        {%- endif -%}
+      {%- endif -%}
+    </p>
+    <p>{{ next.description }}</p>
+  {%- else -%}
+    <p>No upcoming nets found.</p>
+  {%- endif -%}
+</div>

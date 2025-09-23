@@ -1,0 +1,96 @@
+# _data/nets.yml
+# Source of truth for ALL nets gased on category.
+# We set the category in this file and then this is used to generate the pages we want.
+# Times are local to America/New_York unless a net overrides time_zone.
+
+time_zone: America/New_York
+
+nets:
+  - id: bh-digital
+    category: "bhn"
+    name: "Blind Hams Digital Net"
+    description: "Weekly net for blind and sighted amateur radio operators to gather, collaborate, and share timely info for the ham community."
+    start_local: "10:00"     # 10:00 AM ET
+    duration_min: 60
+    rrule: "FREQ=WEEKLY;BYDAY=SA"
+
+  - id: absolute-tech
+    category: "bhn"
+    name: "Absolute Tech Net"
+    description: "A net to discuss technical amateur radio topics and troubleshoot issues faced by hams around the world."
+    start_local: "19:00"     # 7:00 PM ET
+    duration_min: 60
+    rrule: "FREQ=WEEKLY;BYDAY=TU"
+    # No explicit location fields → will default to "Blind Hams Bridge"
+
+  - id: blind-hams-tech
+    category: "bhn"
+    name: "Blind Hams Tech Net"
+    description: "Monthly technical deep-dive net."
+    start_local: "20:00"     # 8:00 PM ET
+    duration_min: 60
+    rrule: "FREQ=MONTHLY;BYDAY=TH;BYSETPOS=1"  # first Thursday of the month
+
+  - id: look-at-this
+    category: "bhn"
+    name: "Look At This Net"
+    description: "Smart glasses and assistive wearables from a blind/VI perspective, for amateur radio and daily life."
+    start_local: "20:00"     # 8:00 PM ET
+    duration_min: 60
+    rrule: "FREQ=WEEKLY;BYDAY=WE"
+
+  - id: visually-inconvenienced
+    category: "bhn"
+    name: "Visually Inconvenienced Hams Net"
+    description: "Topical net for all hams from a visually ‘inconvenienced’ angle. Final net of the month highlights weather talk and Q&A."
+    start_local: "20:00"     # 8:00 PM ET
+    duration_min: 60
+    rrule: "FREQ=WEEKLY;BYDAY=SA"   # Saturday evening
+
+  - id: sounds-good
+    category: "bhn"
+    name: "The Sounds Good Net"
+    description: "For music fans and musicians, audio nerds and pros — anything to do with music and sound."
+    start_local: "20:00"     # 8:00 PM ET
+    duration_min: 90
+    rrule: "FREQ=WEEKLY;BYDAY=MO"
+
+  - id: bh-hf-20m
+    category: "bhn"
+    name: "Blind Hams HF Net (20m)"
+    description: "HF net on 20 meters for the Blind Hams community."
+    start_local: "15:00"     # Sunday afternoon
+    duration_min: 60
+    rrule: "FREQ=WEEKLY;BYDAY=SU"
+    frequency: "14.303 MHz"
+    mode: "USB"              # not on the Bridge → location renders from frequency+mode
+
+  - id: handi-hams-midday
+    category: "disability"
+    name: "Handi Hams Net"
+    description: "Weekday net hosted by Handi Hams."
+    start_local: "12:00"     # 12:00 PM ET
+    duration_min: 90
+    rrule: "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"
+    allstar: "473760 (backup 473761)"
+    echolink: "N0BVE-L"
+
+  - id: handi-hams-trivia
+    category: "disability"
+    name: "Handi Hams Trivia Net"
+    description: "Weekly trivia net hosted by Handi Hams."
+    start_local: "20:00"     # 8:00 PM ET (Wed)
+    duration_min: 90
+    rrule: "FREQ=WEEKLY;BYDAY=WE"
+    allstar: "473760 (backup 473761)"
+    echolink: "N0BVE-L"
+
+  - id: sfarc-coffee-break
+    category: "general"
+    name: "Sierra Foothills ARC Coffee Break Net"
+    description: "Daily ragchew hosted by the Sierra Foothills Amateur Radio Club."
+    start_local: "10:30"     # 10:30 AM ET
+    duration_min: 150
+    rrule: "FREQ=DAILY"
+    # Provide a link so we don't default to the Bridge:
+    location: "[SFARC repeater and linking info](https://www.w6ek.org)"

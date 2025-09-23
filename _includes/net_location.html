@@ -1,0 +1,46 @@
+{%- comment -%}
+Renders a human-friendly "where to connect" line showing ALL available options.
+Order/logic:
+1) If `location` (markdown) exists → render it and stop.
+2) Else, collect frequency[/mode], Talkgroup, AllStar, EchoLink (all that exist).
+3) If none of the above but `website` exists → render a "More info" link.
+4) Else → default to "Blind Hams Bridge".
+{%- endcomment -%}
+
+{%- if net.location -%}
+  {%- assign loc = net.location | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip -%}
+  <span class="net-location">{{ loc }}</span>
+{%- else -%}
+  {%- assign pieces = "" | split: "" -%}
+
+  {%- if net.frequency -%}
+    {%- assign freq = net.frequency -%}
+    {%- if net.mode -%}{%- assign freq = freq | append: " " | append: net.mode -%}{%- endif -%}
+    {%- assign pieces = pieces | push: freq -%}
+  {%- endif -%}
+
+  {%- if net.talkgroup -%}
+    {%- assign pieces = pieces | push: "Talkgroup " | push: net.talkgroup -%}
+  {%- endif -%}
+
+  {%- if net.allstar -%}
+    {%- assign pieces = pieces | push: "AllStar " | push: net.allstar -%}
+  {%- endif -%}
+
+  {%- if net.echolink -%}
+    {%- assign pieces = pieces | push: "EchoLink " | push: net.echolink -%}
+  {%- endif -%}
+
+  {%- assign joined = pieces | join: " · " | strip -%}
+
+  {%- if joined == "" and net.website -%}
+    {%- assign joined = "[More info](" | append: net.website | append: ")" 
+       | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip -%}
+  {%- endif -%}
+
+  {%- if joined == "" -%}
+    {%- assign joined = "Blind Hams Bridge" -%}
+  {%- endif -%}
+
+  <span class="net-location">{{ joined }}</span>
+{%- endif -%}

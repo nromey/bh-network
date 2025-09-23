@@ -1,0 +1,27 @@
+
+name: Build BHN NCO Schedule
+on:
+  schedule:
+    - cron: "17 7 * * *"   # 07:17 ET daily (adjust as you like)
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pyyaml
+      - name: Generate schedule
+        run: python scripts/build_bhn_ncos_schedule.py
+      - name: Commit changes (if any)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add _data/bhn_ncos_schedule.yml
+          git diff --staged --quiet || git commit -m "chore: update BHN NCO schedule"
+          git diff --staged --quiet || git push

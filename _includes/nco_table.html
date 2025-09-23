@@ -1,0 +1,54 @@
+{%- comment -%}
+Usage:
+{% include nco_table.html schedule=site.data.bhn_ncos_schedule items_key="items" title="BHN Digital Net — NCO Schedule" show_location=true %}
+Requires:
+- site.data.ncos (roster with first_name, optional nco_location)
+- schedule[items_key] = array of { date: "YYYY-MM-DD", callsign: "K5NER" }
+{%- endcomment -%}
+
+{%- assign title = include.title | default: "NCO Schedule" -%}
+{%- assign items_key = include.items_key | default: "items" -%}
+{%- assign show_loc = include.show_location | default: false -%}
+
+{%- assign rows = include.schedule[items_key] | sort: "date" -%}
+{%- assign today = "now" | date: "%Y-%m-%d" -%}
+
+<h2>{{ title }}</h2>
+<p>All times Eastern. Subject to change.</p>
+
+{%- assign current_month = "" -%}
+{%- for it in rows -%}
+  {%- if it.date >= today -%}
+    {%- assign m = it.date | date: "%B %Y" -%}
+    {%- if m != current_month -%}
+      {%- if current_month != "" -%}</tbody></table>{%- endif -%}
+      <h3>{{ m }}</h3>
+      <table>
+        <thead>
+          <tr><th scope="col">Date</th><th scope="col">NCO</th></tr>
+        </thead>
+        <tbody>
+      {%- assign current_month = m -%}
+    {%- endif -%}
+
+    <tr>
+      <td>{{ it.date | date: "%a, %b %-d" }}</td>
+      <td>
+        {%- assign callsign = it.callsign -%}
+        {%- assign name = callsign -%}
+        {%- assign loc = "" -%}
+        {%- for p in site.data.ncos.roster -%}
+          {%- if p.callsign == callsign -%}
+            {%- assign name = p.first_name | default: callsign -%}
+            {%- assign loc = p.nco_location | default: "" -%}
+            {%- break -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {{ name }} ({{ callsign }})
+        {%- if show_loc and loc != "" -%}, {{ loc }}{%- endif -%}
+      </td>
+    </tr>
+  {%- endif -%}
+{%- endfor -%}
+
+{%- if current_month != "" -%}</tbody></table>{%- endif -%}

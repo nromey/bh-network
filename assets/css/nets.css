@@ -1,0 +1,39 @@
+/* assets/css/nets.css */
+
+.nets-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.view-toggle label {
+  margin-right: 0.75rem;
+  cursor: pointer;
+}
+
+.net-block {
+  margin: 1rem 0;
+}
+
+.net-when,
+.net-where {
+  margin: 0.25rem 0;
+}
+
+/* Make sure radios/labels are keyboard friendly */
+.view-toggle input[type="radio"]:focus + label,
+.view-toggle label:focus-within {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}
+
+/* Visually hidden utility (for legends, screen readers) */
+.sr-only {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

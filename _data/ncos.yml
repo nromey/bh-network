@@ -1,0 +1,41 @@
+# _data/ncos.yml
+time_zone: America/New_York
+net_id: bh-digital
+
+# Who’s who (one place to spell names right)
+roster:
+  - callsign: N2DYI
+    first_name: Patrick
+    nco_location: "Belle Harbor, New York"
+  - callsign: K5NER
+    first_name: Noel
+    nco_location: "Memphis, TN"
+  - callsign: W5MRR
+    first_name: Marvin
+    nco_location: "Southwest, LA"
+  - callsign: VE3RWJ
+    first_name: Chris
+    nco_location: "Doncaster, Ontario, Canada"
+  - callsign: NE5L
+    first_name: Johnny
+    nco_location: "Southern MS"
+
+# Week-of-month rotation for SATURDAYS
+rotation:
+  1: N2DYI   # 1st Saturday
+  2: K5NER   # 2nd Saturday
+  3: W5MRR   # 3rd Saturday
+  4: VE3RWJ  # 4th Saturday
+  # 5th Saturday: assign via overrides as needed
+
+# Date-specific overrides (when someone swaps/covers)
+# Keep history; your pages can filter to upcoming dates only.
+overrides: []
+# Example:
+# overrides:
+#   - date: "2025-11-29"   # (a 5th Saturday)
+#     callsign: NE5L
+#     note: "Assigned for 5th Sat"
+#   - date: "2025-10-04"
+#     callsign: W5MRR
+#     note: "Covering for Noel"
