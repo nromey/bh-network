@@ -156,3 +156,86 @@ Notes:
       {%- assign _tz_full = n.tz_full | default: "Eastern" -%}
       {%- assign _display_time = "" -%}
       {%- if n.start_local and n.start_local != "" -%}
+        {%- assign _tparse = '2000-01-01 ' | append: n.start_local -%}
+        {%- assign _display_time = _tparse | date: "%-I:%M %p" -%}
+      {%- elsif n.rrule and n.rrule contains " at " -%}
+        {%- assign _at_bits = n.rrule | split: " at " -%}
+        {%- assign _legacy = '2000-01-01 ' | append: _at_bits.last -%}
+        {%- assign _display_time = _legacy | date: "%-I:%M %p" -%}
+      {%- endif -%}
+
+      {%- assign _schedule_phrase = "" -%}
+      {%- if n.schedule_text and n.schedule_text != "" -%}
+        {%- assign _schedule_phrase = n.schedule_text -%}
+      {%- else -%}
+        {%- assign _freq = n.freq | default: "" | upcase -%}
+        {%- assign _byday = n.byday | default: "" -%}
+        {%- assign _byday_pretty = "" -%}
+        {%- if _byday != "" -%}
+          {%- assign _days = _byday | split: "," -%}
+          {%- assign _pretty_days = "" -%}
+          {%- for d in _days -%}
+            {%- assign d2 = d | strip -%}
+            {%- assign name = d2
+              | replace: "MO","Mon"
+              | replace: "TU","Tue"
+              | replace: "WE","Wed"
+              | replace: "TH","Thu"
+              | replace: "FR","Fri"
+              | replace: "SA","Sat"
+              | replace: "SU","Sun" -%}
+            {%- if forloop.first -%}
+              {%- assign _pretty_days = name -%}
+            {%- elsif forloop.last -%}
+              {%- assign _pretty_days = _pretty_days | append: " & " | append: name -%}
+            {%- else -%}
+              {%- assign _pretty_days = _pretty_days | append: ", " | append: name -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if _days.size == 1 -%}
+            {%- assign _byday_pretty = _pretty_days | append: "s" -%}
+          {%- else -%}
+            {%- assign _byday_pretty = _pretty_days -%}
+          {%- endif -%}
+        {%- endif -%}
+
+        {%- if _freq == "DAILY" -%}
+          {%- assign _schedule_phrase = "Daily" -%}
+        {%- elsif _byday_pretty != "" -%}
+          {%- assign _schedule_phrase = _byday_pretty -%}
+        {%- endif -%}
+
+        {%- if _schedule_phrase == "" and _display_time != "" -%}
+          {%- assign _schedule_phrase = _display_time | append: " " | append: _tz_full -%}
+        {%- elsif _schedule_phrase != "" and _display_time != "" -%}
+          {%- assign _schedule_phrase = _schedule_phrase | append: " at " | append: _display_time | append: " " | append: _tz_full -%}
+        {%- endif -%}
+      {%- endif -%}
+
+      <article class="net-block">
+        <h3>{{ n.name }}</h3>
+
+        <p class="net-when">
+          <strong>When:</strong>
+          {%- if _schedule_phrase != "" -%}
+            {{ _schedule_phrase }}
+          {%- else -%}
+            —
+          {%- endif -%}
+          {%- if n.duration_min %} ({{ n.duration_min }} min){% endif -%}
+        </p>
+
+        {%- if n.id == "bh-digital" -%}
+          <p><a href="#{{ nco_anchor }}">See NCO schedule ↓</a></p>
+        {%- endif -%}
+
+        <p class="net-where"><strong>Where:</strong> {% include net_location.html net=n %}</p>
+        <p class="net-desc">{{ n.description }}</p>
+      </article>
+      {% unless forloop.last %}<hr>{% endunless %}
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Tiny script (loaded once per page) -->
+<script defer src="/assets/js/net-view.js"></script>
