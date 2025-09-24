@@ -5,6 +5,7 @@
 # Times are local to America/New_York unless a net overrides time_zone.
 # File should help togenerate nets no matter what category
 # Must include category when calling in Liquid
+# created by Noel Romey K5NER
 
 time_zone: America/New_York
 
