@@ -1,10 +1,15 @@
 items:
-  - date: "2025-10-04"
-    callsign: N2DYI
-  - date: "2025-10-11"
-    callsign: N2DYI
-  - date: "2025-10-18"
-    callsign: W5MRR
-  - date: "2025-10-25"
-    callsign: W5MRR
-
+- date: '2025-09-27'
+  callsign: VE3RWJ
+- date: '2025-10-04'
+  callsign: N2DYI
+- date: '2025-10-11'
+  callsign: K5NER
+- date: '2025-10-18'
+  callsign: W5MRR
+- date: '2025-10-25'
+  callsign: VE3RWJ
+- date: '2025-11-01'
+  callsign: N2DYI
+- date: '2025-11-08'
+  callsign: K5NER
