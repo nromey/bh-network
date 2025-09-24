@@ -1,0 +1,90 @@
+name: "Generate NCO + Build and Deploy"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**.md"
+      - "**.html"
+      - "_data/ncos.yml"      # input the script reads
+      - "_includes/**"
+      - "_layouts/**"
+      - "assets/**"
+      - "_config.yml"
+      - "Gemfile"
+      - "Gemfile.lock"
+      - "scripts/**"
+  schedule:
+    - cron: "17 11 * * *"     # ~07:17 ET (DST)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Generate the NCO schedule ---
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: pip install pyyaml
+
+      - name: Run generator
+        run: |
+          set -euo pipefail
+          python scripts/build_bhn_data.py
+
+      - name: Show generated YAML (head & tail)
+        run: |
+          echo "----- TAIL -----"; tail -n 30 _data/bhn_ncos_schedule.yml || true
+
+      - name: Commit updated schedule data (no loop)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add _data/bhn_ncos_schedule.yml
+          if git diff --cached --quiet; then
+            echo "No changes in _data/bhn_ncos_schedule.yml"
+          else
+            git commit -m "chore: update BHN NCO schedule [skip ci]"
+            git push
+          fi
+
+      # --- Build & upload site artifact ---
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.1"
+          bundler-cache: true
+
+      - name: Build site
+        env:
+          JEKYLL_ENV: production
+        run: bundle exec jekyll build --trace
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4
