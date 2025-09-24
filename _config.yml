@@ -12,6 +12,7 @@ minima:
     - /assets/css/extra.css
 header_pages:
   - index.md
-  - nets.md
-  - schedule.md
+  - nets/blind-hams/index.md
+  - nets/disabilities/index.md
+  - nets/general/index.md
 
