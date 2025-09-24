@@ -30,8 +30,17 @@ jobs:
           pwd
           ls -R
 
-      - name: Generate schedule
-        run: python bhn/scripts/build_bhn_data.py
+      - name: Assert generator script exists
+  run: |
+    echo "Workspace: $GITHUB_WORKSPACE"
+    git ls-files | sort | sed -n '1,200p'
+    echo "----"
+    ls -al
+    echo "----"
+    test -f bhn/scripts/build_bhn_data.py || (echo "NOT FOUND: bhn/scripts/build_bhn_data.py" && exit 1)
+
+- name: Generate schedule
+        run: python /scripts/build_bhn_data.py
 
       - name: Commit changes (if any)
         run: |
