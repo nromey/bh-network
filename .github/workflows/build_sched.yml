@@ -7,7 +7,7 @@ on:
     paths:
       - "**.md"
       - "**.html"
-      - "_data/ncos.yml"      # input config the script reads
+      - "_data/ncos.yml"
       - "_includes/**"
       - "_layouts/**"
       - "assets/**"
@@ -16,7 +16,7 @@ on:
       - "Gemfile.lock"
       - "scripts/**"
   schedule:
-    - cron: "17 11 * * *"     # ~07:17 ET (DST)
+    - cron: "17 11 * * *"
   workflow_dispatch:
 
 permissions:
@@ -37,7 +37,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # --- Generate the NCO schedule ---
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -45,10 +44,41 @@ jobs:
       - name: Install Python deps
         run: pip install pyyaml
 
-      - name: Run generator
+      - name: Locate & run generator
         run: |
           set -euo pipefail
-          python scripts/bhn_build_data.py
+          echo "PWD=$(pwd)"
+          echo "Workspace=$GITHUB_WORKSPACE"
+          echo "---- repo files (first 200) ----"
+          git ls-files | sed -n '1,200p'
+
+          # Known candidates (add anything else you use here)
+          candidates=(
+            "scripts/bhn_build_data.py"
+            "scripts/build_bhn_data.py"
+            "scripts/build_bhn_schedule.py"
+            "bhn/scripts/bhn_build_data.py"
+            "bhn/scripts/build_bhn_data.py"
+          )
+
+          SCRIPT=""
+          for p in "${candidates[@]}"; do
+            if [ -f "$p" ]; then SCRIPT="$p"; break; fi
+          done
+          if [ -z "$SCRIPT" ]; then
+            # Fallback: search common patterns within top-level folders
+            SCRIPT="$(find . -maxdepth 3 -type f \( -name "*bhn*data*.py" -o -name "*build_bhn*.py" \) | head -n1 || true)"
+          fi
+
+          if [ -z "$SCRIPT" ]; then
+            echo "::error ::Generator script not found. Searched: ${candidates[*]}"
+            echo "Directory tree for context:"
+            ls -R | sed -n '1,200p'
+            exit 1
+          fi
+
+          echo "Using generator: $SCRIPT"
+          python3 "$SCRIPT"
 
       - name: Show generated YAML (head & tail)
         run: |
@@ -74,7 +104,6 @@ jobs:
           git fetch origin "${BRANCH_NAME}"
           git show origin/${BRANCH_NAME}:_data/bhn_ncos_schedule.yml | sed -n '1,30p'
 
-      # --- Build & upload site artifact ---
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.1"
