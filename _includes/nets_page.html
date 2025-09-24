@@ -1,1 +1,174 @@
+{%- comment -%}
+Usage examples:
+
+{% include nets_page.html
+   nets=site.data.nets.nets
+   title="Blind Hams Nets"
+   category="bhn"
+   section_id="nets-bhn"
+   nco_anchor="nco-schedule" %}
+
+Notes:
+- Expects /assets/js/net-view.js to handle the radio toggle.
+  Tip: in your JS, consider KEY = "netView:" + (location.pathname || "/") for per-page preferences.
+{%- endcomment -%}
+
+{%- assign title = include.title | default: "Nets" -%}
+{%- assign cat = include.category | default: "bhn" -%}
+{%- assign section_id = include.section_id | default: "nets-section" -%}
+{%- assign nco_anchor = include.nco_anchor | default: "nco-schedule" -%}
+{%- assign filtered = include.nets | where: "category", cat -%}
+
+<section class="nets-section" data-view="table" id="{{ section_id }}">
+  <header class="nets-header">
+    <h2>{{ title }}</h2>
+
+    <!-- Display toggle -->
+    <fieldset class="view-toggle" aria-label="Display format">
+      <legend class="sr-only">Display format</legend>
+      <label>
+        <input type="radio" name="net-view-{{ section_id }}" value="table" checked>
+        Table
+      </label>
+      <label>
+        <input type="radio" name="net-view-{{ section_id }}" value="headings">
+        Headings
+      </label>
+    </fieldset>
+  </header>
+
+  {%- comment -%}
+    Helper: compute a displayable 12-hour time from either:
+      - n.start_local ("HH:MM" 24h), or
+      - time parsed after " at " inside n.rrule (legacy)
+  {%- endcomment -%}
+  {%- capture _time_helper -%}{%- endcapture -%}
+
+  <!-- TABLE VIEW (default; no-JS friendly) -->
+  <div class="view view-table" aria-live="polite">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Net</th>
+          <th scope="col">When (ET)</th>
+          <th scope="col">Duration</th>
+          <th scope="col">Location</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for n in filtered %}
+        {%- assign _display_time = "" -%}
+        {%- if n.start_local and n.start_local != "" -%}
+          {%- assign _tparse = '2000-01-01 ' | append: n.start_local -%}
+          {%- assign _display_time = _tparse | date: "%-I:%M %p" -%}
+        {%- elsif n.rrule and n.rrule contains " at " -%}
+          {%- assign _at_bits = n.rrule | split: " at " -%}
+          {%- assign _legacy = '2000-01-01 ' | append: _at_bits.last -%}
+          {%- assign _display_time = _legacy | date: "%-I:%M %p" -%}
+        {%- endif -%}
+
+        <tr>
+          <td>
+            <strong>{{ n.name }}</strong><br>
+            <small>{{ n.description }}</small>
+            {%- if n.id == "bh-digital" -%}
+              <br><a href="#{{ nco_anchor }}">See NCO schedule ↓</a>
+            {%- endif -%}
+          </td>
+          <td>
+            {%- if _display_time != "" -%}
               {{ _display_time }} ET
+            {%- else -%}
+              —
+            {%- endif -%}
+          </td>
+          <td>
+            {%- if n.duration_min -%}{{ n.duration_min }} min{%- else -%}—{%- endif -%}
+          </td>
+          <td>{% include net_location.html net=n %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- HEADINGS VIEW (hidden until chosen) -->
+  <div class="view view-headings" hidden aria-live="polite">
+    {% for n in filtered %}
+      {%- comment -%} Compute display time (same logic as table) {%- endcomment -%}
+      {%- assign _display_time = "" -%}
+      {%- if n.start_local and n.start_local != "" -%}
+        {%- assign _tparse = '2000-01-01 ' | append: n.start_local -%}
+        {%- assign _display_time = _tparse | date: "%-I:%M %p" -%}
+      {%- elsif n.rrule and n.rrule contains " at " -%}
+        {%- assign _at_bits = n.rrule | split: " at " -%}
+        {%- assign _legacy = '2000-01-01 ' | append: _at_bits.last -%}
+        {%- assign _display_time = _legacy | date: "%-I:%M %p" -%}
+      {%- endif -%}
+
+      {%- comment -%}
+        Optional: build a human-readable schedule line from freq/byday.
+        Examples:
+          Weekly on Wed
+          Monthly on Mon,Wed,Fri
+        Delete the "Schedule:" paragraph below if you don't want this line.
+      {%- endcomment -%}
+      {%- assign _schedule_line = "" -%}
+      {%- if n.freq or n.byday -%}
+        {%- assign _freq = n.freq | default: "" -%}
+        {%- if _freq != "" -%}
+          {%- assign _freq_pretty = _freq | downcase | capitalize -%}
+        {%- endif -%}
+        {%- assign _byday = n.byday | default: "" -%}
+        {%- if _byday != "" -%}
+          {%- assign _byday_pretty = _byday
+            | replace: "MO", "Mon"
+            | replace: "TU", "Tue"
+            | replace: "WE", "Wed"
+            | replace: "TH", "Thu"
+            | replace: "FR", "Fri"
+            | replace: "SA", "Sat"
+            | replace: "SU", "Sun"
+          -%}
+        {%- endif -%}
+        {%- if _freq_pretty and _byday_pretty -%}
+          {%- assign _schedule_line = _freq_pretty | append: " on " | append: _byday_pretty -%}
+        {%- elsif _freq_pretty -%}
+          {%- assign _schedule_line = _freq_pretty -%}
+        {%- elsif _byday_pretty -%}
+          {%- assign _schedule_line = "On " | append: _byday_pretty -%}
+        {%- endif -%}
+      {%- endif -%}
+
+      <article class="net-block">
+        <h3>{{ n.name }}</h3>
+
+        <p class="net-when">
+          <strong>When:</strong>
+          {%- if _display_time != "" -%}
+            {{ _display_time }} ET
+          {%- else -%}
+            —
+          {%- endif -%}
+          {%- if n.duration_min %} ({{ n.duration_min }} min){% endif -%}
+        </p>
+
+        {%- if _schedule_line != "" -%}
+          <p class="muted net-schedule">Schedule: {{ _schedule_line }}</p>
+        {%- endif -%}
+
+        {%- if n.id == "bh-digital" -%}
+          <p><a href="#{{ nco_anchor }}">See NCO schedule ↓</a></p>
+        {%- endif -%}
+
+        <p class="net-where"><strong>Where:</strong> {% include net_location.html net=n %}</p>
+        <p class="net-desc">{{ n.description }}</p>
+      </article>
+      {% unless forloop.last %}<hr>{% endunless %}
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Tiny script (loaded once per page) -->
+<script defer src="/assets/js/net-view.js"></script>
+
