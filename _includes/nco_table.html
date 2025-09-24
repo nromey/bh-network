@@ -1,48 +1,3 @@
-{%- comment -%}
-Renders an NCO schedule table.
-
-Usage (data-driven list):
-{% include nco_table.html
-   schedule=site.data.bhn_ncos_schedule
-   items_key="items"
-   title="BHN Digital Net — NCO Schedule"
-   show_location=true %}
-
-Or (auto-generate 12 weeks rotating over roster):
-{% include nco_table.html
-   title="BHN Digital Net — NCO Schedule"
-   weeks=12
-   dow="SA"                         # SU,MO,TU,WE,TH,FR,SA
-   time_local="10:00"               # 24h HH:MM
-   tz_full="Eastern"
-   roster=site.data.bhn_ncos_schedule.roster
-   show_location=true
-   location_md="[Blind Hams Bridge](https://blindhams.network)" %}
-
-Data file examples:
-1) Items list (render as-is):
-_data/bhn_ncos_schedule.yml
-items:
-  - date: 2025-09-27
-    nco: "K4ABC — Sam"
-    notes: "Primary"
-  - date: 2025-10-04
-    nco: "W1XYZ — Pat"
-    notes: "Backup: N0BVE"
-
-2) Generator (no items, just roster):
-_data/bhn_ncos_schedule.yml
-roster:
-  - "K4ABC — Sam"
-  - "W1XYZ — Pat"
-  - "N0BVE — Bryan"
-weeks: 12
-dow: "SA"
-time_local: "10:00"
-tz_full: "Eastern"
-location_md: "[Blind Hams Bridge](https://blindhams.network)"
-{%- endcomment -%}
-
 {%- assign _title        = include.title | default: "NCO Schedule" -%}
 {%- assign _sched        = include.schedule -%}
 {%- assign _items_key    = include.items_key | default: "items" -%}
@@ -58,18 +13,14 @@ location_md: "[Blind Hams Bridge](https://blindhams.network)"
 {%- assign _show_loc    = include.show_location | default: false -%}
 {%- assign _location_md = include.location_md | default: (_sched.location_md | default: "") -%}
 
-{%- comment -%}
-Helper: convert "HH:MM" -> "h:mm AM/PM"
-{%- endcomment -%}
+{%- comment -%} Helper: convert "HH:MM" -> "h:mm AM/PM" {%- endcomment -%}
 {%- assign _time_disp = "" -%}
 {%- if _time_local and _time_local != "" -%}
   {%- assign _tp = "2000-01-01 " | append: _time_local -%}
   {%- assign _time_disp = _tp | date: "%-I:%M %p" -%}
 {%- endif -%}
 
-{%- comment -%}
-Helper: map DOW code -> Ruby %w number (0=Sun..6=Sat)
-{%- endcomment -%}
+{%- comment -%} Helper: map DOW code -> number (0=Sun..6=Sat) {%- endcomment -%}
 {%- assign _dow_code = _dow | upcase | strip -%}
 {%- assign _downum = -1 -%}
 {%- assign _map = "SU:0|MO:1|TU:2|WE:3|TH:4|FR:5|SA:6" | split:"|" -%}
@@ -77,14 +28,13 @@ Helper: map DOW code -> Ruby %w number (0=Sun..6=Sat)
   {%- assign kv = pair | split: ":" -%}
   {%- if kv[0] == _dow_code -%}{%- assign _downum = kv[1] | plus: 0 -%}{%- endif -%}
 {%- endfor -%}
-{%- if _downum < 0 -%}{%- assign _downum = 6 -%}{%- endif -%} {# default Saturday #}
+{%- if _downum < 0 -%}{%- assign _downum = 6 -%}{%- endif -%}
 
 {%- assign _rows = _items -%}
 
 {%- if _rows and _rows.size > 0 -%}
-  {%- comment -%} Data-driven mode: use items as-is {%- endcomment -%}
+  {# data-driven mode; rows already set #}
 {%- else -%}
-  {%- comment -%} Generator mode: build rows for next N weeks rotating roster {%- endcomment -%}
   {%- assign _rows = "" | split: "" -%}
   {%- assign now_epoch = site.time | date: "%s" | plus: 0 -%}
   {%- assign wday_now  = site.time | date: "%w" | plus: 0 -%}
@@ -95,85 +45,4 @@ Helper: map DOW code -> Ruby %w number (0=Sun..6=Sat)
   {%- assign roster_size = 0 -%}
   {%- if _roster and _roster.size -%}{%- assign roster_size = _roster.size -%}{%- endif -%}
 
-  {%- for i in (0.._weeks-1) -%}
-    {%- assign off = i | times: 604800 -%}
-    {%- assign d_epoch = first_epoch | plus: off -%}
-    {%- assign d_iso   = d_epoch | date: "%Y-%m-%d" -%}
-    {%- assign d_disp  = d_epoch | date: "%A, %B %-d, %Y" -%}
-
-    {%- assign nco = "" -%}
-    {%- if roster_size > 0 -%}
-      {%- assign idx = i | modulo: roster_size -%}
-      {%- assign nco = _roster[idx] -%}
-    {%- endif -%}
-
-    {%- assign row = "" | split: "" -%}
-    {%- assign row = row | push: d_iso -%}   {# 0: date ISO #}
-    {%- assign row = row | push: d_disp -%}  {# 1: date display #}
-    {%- assign row = row | push: nco -%}     {# 2: nco #}
-    {%- assign row = row | push: "" -%}      {# 3: notes #}
-    {%- assign _rows = _rows | push: row -%}
-  {%- endfor -%}
-{%- endif -%}
-
-<h2>{{ _title }}</h2>
-
-{%- if _rows and _rows.size > 0 -%}
-  <table class="nco-table">
-    <thead>
-      <tr>
-        <th scope="col">Date</th>
-        <th scope="col">NCO</th>
-        {%- if _show_loc -%}<th scope="col">Location</th>{%- endif -%}
-        <th scope="col">Time ({{ _tz_full }})</th>
-        <th scope="col">Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      {%- comment -%}
-      Rows may be either hashes (data-driven) or 4-element arrays (generated).
-      Normalize per row.
-      {%- endcomment -%}
-      {%- for r in _rows -%}
-        {%- assign date_iso   = "" -%}
-        {%- assign date_disp  = "" -%}
-        {%- assign nco_name   = "" -%}
-        {%- assign notes_text = "" -%}
-
-        {%- if r.date -%}
-          {%- assign date_iso  = r.date -%}
-          {%- assign date_disp = r.date | date: "%A, %B %-d, %Y" -%}
-          {%- assign nco_name  = r.nco | default: r.operator | default: "" -%}
-          {%- assign notes_text = r.notes | default: "" -%}
-        {%- else -%}
-          {%- assign date_iso   = r[0] -%}
-          {%- assign date_disp  = r[1] -%}
-          {%- assign nco_name   = r[2] -%}
-          {%- assign notes_text = r[3] -%}
-        {%- endif -%}
-
-        <tr>
-          <td data-title="Date">
-            <time datetime="{{ date_iso }}">{{ date_disp }}</time>
-          </td>
-          <td data-title="NCO">{{ nco_name | default: "TBD" }}</td>
-          {%- if _show_loc -%}
-            <td data-title="Location">
-              {%- if _location_md and _location_md != "" -%}
-                {{ _location_md | markdownify | replace: "<p>", "" | replace: "</p>", "" }}
-              {%- else -%}
-                Blind Hams Bridge
-              {%- endif -%}
-            </td>
-          {%- endif -%}
-          <td data-title="Time">
-            {%- if _time_disp != "" -%}{{ _time_disp }} {{ _tz_full }}{%- else -%}—{%- endif -%}
-          </td>
-          <td data-title="Notes">{{ notes_text }}</td>
-        </tr>
-      {%- endfor -%}
-    </tbody>
-  </table>
-{%- else -%}
-  <p><em>No NCOs scheduled yet.</em></p>
-{%- endif -%}
+  {%- for i in (0.._weeks-1)_
