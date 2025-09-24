@@ -40,7 +40,7 @@ jobs:
     test -f bhn/scripts/build_bhn_data.py || (echo "NOT FOUND: bhn/scripts/build_bhn_data.py" && exit 1)
 
 - name: Generate schedule
-        run: python /scripts/build_bhn_data.py
+        run: python scripts/build_bhn_data.py
 
       - name: Commit changes (if any)
         run: |
