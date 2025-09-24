@@ -40,7 +40,7 @@ jobs:
       - run: pip install pyyaml
 
       - name: Generate schedule
-        run: bhn/python /bhn/scripts/build_bhn_ncos_schedule.py
+        run: python /bhn/scripts/build_bhn_ncos_schedule.py
 
       - name: Commit data changes (if any)
         run: |
