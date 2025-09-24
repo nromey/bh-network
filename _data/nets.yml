@@ -62,7 +62,7 @@ nets:
   - id: bh-hf-20m
     category: "bhn"
     name: "Blind Hams HF Net (20m)"
-    description: "HF net on 20 meters for the Blind Hams community."
+    description: "HF net on 20 meters for the Blind Hams community. Check your propagation and talk to other blind hams and friends of the network on HF."
     start_local: "15:00"     # Sunday afternoon
     duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=SU"

@@ -15,8 +15,6 @@ on:
       - "Gemfile"
       - "Gemfile.lock"
       - "scripts/**"
-    paths-ignore:
-      - "_data/bhn_ncos_schedule.yml"  # avoid loops when we auto-commit the output
   schedule:
     - cron: "17 11 * * *"     # ~07:17 ET (DST)
   workflow_dispatch:
