@@ -44,7 +44,7 @@ jobs:
       - name: Run generator
         run: |
           set -euo pipefail
-          python scripts/build_bhn_schedule.py
+          python scripts/build_bhn_data.py
 
       - name: Locate NEWEST schedule file & install into _data
         run: |
