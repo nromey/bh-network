@@ -33,8 +33,9 @@
 {%- assign _rows = _items -%}
 
 {%- if _rows and _rows.size > 0 -%}
-  {# data-driven mode; rows already set #}
+  {%- comment -%} Data-driven mode: use items as-is {%- endcomment -%}
 {%- else -%}
+  {%- comment -%} Generator mode: build rows for next N weeks rotating roster {%- endcomment -%}
   {%- assign _rows = "" | split: "" -%}
   {%- assign now_epoch = site.time | date: "%s" | plus: 0 -%}
   {%- assign wday_now  = site.time | date: "%w" | plus: 0 -%}
@@ -45,4 +46,79 @@
   {%- assign roster_size = 0 -%}
   {%- if _roster and _roster.size -%}{%- assign roster_size = _roster.size -%}{%- endif -%}
 
-  {%- for i in (0.._weeks-1)_
+  {%- for i in (0.._weeks-1) -%}
+    {%- assign off = i | times: 604800 -%}
+    {%- assign d_epoch = first_epoch | plus: off -%}
+    {%- assign d_iso   = d_epoch | date: "%Y-%m-%d" -%}
+    {%- assign d_disp  = d_epoch | date: "%A, %B %-d, %Y" -%}
+
+    {%- assign nco = "" -%}
+    {%- if roster_size > 0 -%}
+      {%- assign idx = i | modulo: roster_size -%}
+      {%- assign nco = _roster[idx] -%}
+    {%- endif -%}
+
+    {%- assign row = "" | split: "" -%}
+    {%- assign row = row | push: d_iso -%}   {%- comment -%} 0: ISO date {%- endcomment -%}
+    {%- assign row = row | push: d_disp -%}  {%- comment -%} 1: display date {%- endcomment -%}
+    {%- assign row = row | push: nco -%}     {%- comment -%} 2: NCO {%- endcomment -%}
+    {%- assign row = row | push: "" -%}      {%- comment -%} 3: notes {%- endcomment -%}
+    {%- assign _rows = _rows | push: row -%}
+  {%- endfor -%}
+{%- endif -%}
+
+<h2>{{ _title }}</h2>
+
+{%- if _rows and _rows.size > 0 -%}
+  <table class="nco-table">
+    <thead>
+      <tr>
+        <th scope="col">Date</th>
+        <th scope="col">NCO</th>
+        {%- if _show_loc -%}<th scope="col">Location</th>{%- endif -%}
+        <th scope="col">Time ({{ _tz_full }})</th>
+        <th scope="col">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for r in _rows -%}
+        {%- assign date_iso   = "" -%}
+        {%- assign date_disp  = "" -%}
+        {%- assign nco_name   = "" -%}
+        {%- assign notes_text = "" -%}
+
+        {%- if r.date -%}
+          {%- assign date_iso   = r.date -%}
+          {%- assign date_disp  = r.date | date: "%A, %B %-d, %Y" -%}
+          {%- assign nco_name   = r.nco | default: r.operator | default: "" -%}
+          {%- assign notes_text = r.notes | default: "" -%}
+        {%- else -%}
+          {%- assign date_iso   = r[0] -%}
+          {%- assign date_disp  = r[1] -%}
+          {%- assign nco_name   = r[2] -%}
+          {%- assign notes_text = r[3] -%}
+        {%- endif -%}
+
+        <tr>
+          <td data-title="Date"><time datetime="{{ date_iso }}">{{ date_disp }}</time></td>
+          <td data-title="NCO">{{ nco_name | default: "TBD" }}</td>
+          {%- if _show_loc -%}
+            <td data-title="Location">
+              {%- if _location_md and _location_md != "" -%}
+                {{ _location_md | markdownify | replace: "<p>", "" | replace: "</p>", "" }}
+              {%- else -%}
+                Blind Hams Bridge
+              {%- endif -%}
+            </td>
+          {%- endif -%}
+          <td data-title="Time">
+            {%- if _time_disp != "" -%}{{ _time_disp }} {{ _tz_full }}{%- else -%}—{%- endif -%}
+          </td>
+          <td data-title="Notes">{{ notes_text }}</td>
+        </tr>
+      {%- endfor -%}
+    </tbody>
+  </table>
+{%- else -%}
+  <p><em>No NCOs scheduled yet.</em></p>
+{%- endif -%}
