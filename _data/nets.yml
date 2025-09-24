@@ -1,5 +1,6 @@
 # _data/nets.yml
 # Source of truth for ALL nets gased on category.
+# ***
 # We set the category in this file and then this is used to generate the pages we want.
 # Times are local to America/New_York unless a net overrides time_zone.
 # File should help togenerate nets no matter what category

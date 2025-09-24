@@ -26,17 +26,6 @@ jobs:
       - name: Install deps
         run: pip install pyyaml
 
-      # Optional: see the repo tree on the runner
-      - name: List repo tree
-        run: |
-          pwd
-          ls -R
-
-      - name: Assert generator script exists
-        run: |
-          echo "Workspace: $GITHUB_WORKSPACE"
-          test -f bhn/scripts/build_bhn_data.py || (echo "NOT FOUND: bhn/scripts/build_bhn_data.py" && exit 1)
-
       - name: Generate schedule
         run: python scripts/build_bhn_data.py
 
