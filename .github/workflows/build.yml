@@ -46,22 +46,6 @@ jobs:
           set -euo pipefail
           python scripts/build_bhn_data.py
 
-      - name: Locate NEWEST schedule file & install into _data
-        run: |
-          set -euo pipefail
-          echo "Scanning for generated schedule files…"
-          RESULTS="$(find . -type f -name 'bhn_ncos_schedule.yml' -printf '%T@ %p\n' | sort -nr || true)"
-          if [ -z "$RESULTS" ]; then
-            echo "::error ::No bhn_ncos_schedule.yml found anywhere in the repo after generator ran."
-            ls -R | sed -n '1,200p'
-            exit 1
-          fi
-          NEWEST_PATH="$(echo "$RESULTS" | head -n1 | awk '{print $2}')"
-          echo "Using newest: $NEWEST_PATH"
-          mkdir -p _data
-          cp -f "$NEWEST_PATH" _data/bhn_ncos_schedule.yml
-          echo "----- HEAD -----"; sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
-          echo "----- TAIL -----"; tail -n 30 _data/bhn_ncos_schedule.yml || true
 
       # --- Build & upload site artifact ---
       - uses: ruby/setup-ruby@v1
