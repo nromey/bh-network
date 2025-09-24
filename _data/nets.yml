@@ -13,7 +13,7 @@ nets:
   - id: bh-digital
     category: "bhn"
     name: "Blind Hams Digital Net"
-    description: "Weekly net for blind and sighted amateur radio operators to gather, collaborate, and share timely info for the ham community."
+    description: "Weekly net for blind and sighted amateur radio operators to gather and share timely info for the ham community."
     start_local: "10:00"     # 10:00 AM ET
     duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=SA"
