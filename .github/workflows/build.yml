@@ -1,33 +1,60 @@
-name: Build BHN NCO Schedule
+# .github/workflows/build.yml
+name: Generate NCO + Build & Deploy
 
 on:
   push:
     branches: [ main ]
     paths:
-      - '_data/ncos.yml'     # input the script reads
-      - 'bhn/scripts/**'     # generator path
+      - '**.md'
+      - '**.html'
+      - '_data/**'
+      - '_includes/**'
+      - '_layouts/**'
+      - 'assets/**'
+      - '_config.yml'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - 'scripts/**'         # <— FIXED
   schedule:
-    - cron: '17 11 * * *'    # 11:17 UTC ≈ 07:17 ET during DST
+    - cron: '17 11 * * *'    # 11:17 UTC ≈ 07:17 ET in DST
   workflow_dispatch:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
 
 jobs:
-  build:
+  generate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install deps
         run: pip install pyyaml
 
-      - name: Generate schedule
-        run: python scripts/build_bhn_data.py
+      - name: Run generator
+        run: |
+          set -euo pipefail
+          if [ -f scripts/build_bhn_schedule.py ]; then
+            python scripts/build_bhn_schedule.py
+          elif [ -f scripts/build_bhn_data.py ]; then
+            python scripts/build_bhn_data.py
+          else
+            echo "ERROR: no generator script"; exit 1
+          fi
+
+      - name: Verify output (debug)
+        run: |
+          ls -l _data || true
+          sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
+          git status --porcelain
 
       - name: Commit changes (if any)
         run: |
@@ -36,3 +63,31 @@ jobs:
           git add _data/bhn_ncos_schedule.yml
           git diff --staged --quiet || git commit -m "chore: update BHN NCO schedule"
           git diff --staged --quiet || git push
+
+  build:
+    needs: generate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      - name: Install gems
+        run: bundle install --jobs 4 --retry 3
+      - name: Build site
+        env:
+          JEKYLL_ENV: production
+        run: bundle exec jekyll build --trace
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4
