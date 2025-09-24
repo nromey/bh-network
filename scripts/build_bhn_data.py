@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import calendar
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -6,17 +7,17 @@ from pathlib import Path
 import sys
 import yaml
 
-# How many upcoming Saturdays to list
-N_DATES = 12
+# Default how many upcoming Saturdays to list (can override via env NCO_WEEKS)
+N_DATES = int(os.getenv("NCO_WEEKS", "12"))
 
 def find_repo_root(start: Path) -> Path:
-    """Walk up until a folder containing _config.yml is found."""
+    """Walk up from 'start' until a folder containing _config.yml is found."""
     p = start.resolve()
     for anc in [p] + list(p.parents):
         if (anc / "_config.yml").exists():
             return anc
-    print("[warn] _config.yml not found; using script directory")
-    return p
+    # Fail fast in CI if we somehow run outside the repo
+    raise FileNotFoundError("Couldn't find _config.yml by walking up from script dir; run inside a repo checkout")
 
 HERE = Path(__file__).parent
 ROOT = find_repo_root(HERE)
@@ -24,8 +25,12 @@ ROOT = find_repo_root(HERE)
 NCOS_FILE = ROOT / "_data" / "ncos.yml"
 OUT_FILE  = ROOT / "_data" / "bhn_ncos_schedule.yml"
 
-print(f"[info] NCOS_FILE = {NCOS_FILE}")
-print(f"[info] OUT_FILE  = {OUT_FILE}")
+print(f"[info] cwd        = {Path.cwd()}")
+print(f"[info] script dir = {HERE}")
+print(f"[info] repo root  = {ROOT}")
+print(f"[info] NCOS_FILE  = {NCOS_FILE}")
+print(f"[info] OUT_FILE   = {OUT_FILE}")
+print(f"[info] N_DATES    = {N_DATES}")
 
 def load_yaml(p: Path):
     if not p.exists():
@@ -39,14 +44,14 @@ def dump_yaml(p: Path, obj):
         yaml.safe_dump(obj, f, sort_keys=False, allow_unicode=True)
 
 def week_index_of_saturday(dt: datetime) -> int | None:
-    """Return 1..5 for the nth Saturday of the month for dt (which should be a Saturday)."""
+    """Return 1..5 for the nth Saturday of the month for dt (dt should be a Saturday)."""
     c = calendar.Calendar(firstweekday=calendar.SUNDAY)
     sats = [d for d in c.itermonthdates(dt.year, dt.month)
             if d.month == dt.month and d.weekday() == calendar.SATURDAY]
     for i, d in enumerate(sats, start=1):
         if d == dt.date():
             return i
-    return None
+    return None  # 5th Saturday may not exist every month
 
 def next_saturdays(start_dt: datetime, count: int):
     """Yield upcoming Saturdays starting from start_dt (inclusive if Saturday)."""
@@ -64,11 +69,16 @@ def main():
     tz = ZoneInfo(tzname)
     today = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
 
+    # rotation: { "1": "K4ABC — Sam", "2": "W1XYZ — Pat", ... }
     rotation = {int(k): v for k, v in (data.get("rotation") or {}).items()}
+
+    # overrides: [{date: "YYYY-MM-DD", callsign: "K4ABC — Sam"}, ...]
     overrides_list = data.get("overrides") or []
-    overrides = {item["date"]: item["callsign"]
-                 for item in overrides_list
-                 if "date" in item and "callsign" in item}
+    overrides = {
+        item["date"]: item["callsign"]
+        for item in overrides_list
+        if isinstance(item, dict) and "date" in item and "callsign" in item
+    }
 
     items = []
     for dt in next_saturdays(today, N_DATES):
@@ -80,14 +90,17 @@ def main():
         # 2) Otherwise use rotation by nth Saturday
         if not nco:
             nth = week_index_of_saturday(dt)
-            nco = rotation.get(nth)
+            if nth is not None:
+                nco = rotation.get(nth)
 
-        # If no rotation for 5th Saturday and no override, skip it.
+        # If no rotation for this nth Saturday and no override, skip that date.
         if nco:
             items.append({"date": date_key, "nco": nco})
 
     dump_yaml(OUT_FILE, {"items": items})
     print(f"[ok] wrote {len(items)} items to {OUT_FILE}")
+    if not items:
+        print("[warn] items list is empty (no overrides and no matching rotation?)")
 
 if __name__ == "__main__":
     try:

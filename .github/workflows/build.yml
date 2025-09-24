@@ -50,7 +50,28 @@ jobs:
             echo "ERROR: no generator script found under scripts/"; exit 1
           fi
 
-      - name: Show commit + schedule page content
+            - name: Locate generated file & place it under _data
+        run: |
+          set -euo pipefail
+          echo "Workspace: $GITHUB_WORKSPACE"
+          echo "Searching for bhn_ncos_schedule.yml..."
+          FOUND="$(find . -maxdepth 5 -type f -name 'bhn_ncos_schedule.yml' -print -quit || true)"
+          if [ -n "$FOUND" ]; then
+            echo "Found at: $FOUND"
+            mkdir -p _data
+            if [ "$FOUND" != "./_data/bhn_ncos_schedule.yml" ]; then
+              cp -f "$FOUND" _data/bhn_ncos_schedule.yml
+              echo "Copied to _data/bhn_ncos_schedule.yml"
+            fi
+          else
+            echo "::error ::No bhn_ncos_schedule.yml found anywhere in the workspace."
+            echo "ls -R for context:"; ls -R | sed -n '1,200p'
+            exit 1
+          fi
+          echo "----- first 30 lines of _data/bhn_ncos_schedule.yml -----"
+          sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
+
+- name: Show commit + schedule page content
         run: |
           echo "Commit: $GITHUB_SHA on $GITHUB_REF_NAME"
           git log -1 --pretty=oneline
@@ -61,3 +82,50 @@ jobs:
 
       - name: Add file snapshot to Summary
         run: |
+          {
+            echo "### nets/blind-hams/bhn-schedule.md (first 80 lines)";
+            echo;
+            echo '```markdown';
+            sed -n '1,80p' nets/blind-hams/bhn-schedule.md || true;
+            echo '```';
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Assert no self-includes in nco_table.html
+        run: |
+          if grep -RIn "{% *include *nco_table\.html" _includes/nco_table.html; then
+            echo "::error ::_includes/nco_table.html must not include itself (even in examples)."
+            exit 1
+          fi
+
+      # (Optional) Commit the refreshed data back to the repo.
+      - name: Commit data changes (if any)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add _data/bhn_ncos_schedule.yml
+          git diff --staged --quiet || git commit -m "chore: update BHN NCO schedule"
+          git diff --staged --quiet || git push
+
+      # --- Build Jekyll site using the workspace that now contains generated data ---
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      - name: Install gems
+        run: bundle install --jobs 4 --retry 3
+      - name: Build site
+        env:
+          JEKYLL_ENV: production
+        run: bundle exec jekyll build --trace
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4
