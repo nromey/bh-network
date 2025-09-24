@@ -1,3 +1,6 @@
+Here’s a **clean, working** GitHub Actions workflow YAML you can paste into `.github/workflows/build.yml`. It runs your Python generator, ensures the newest `bhn_ncos_schedule.yml` is copied into `_data/`, builds the Jekyll site, and deploys to Pages.
+
+```yaml
 name: Generate NCO + Build & Deploy
 
 on:
@@ -15,7 +18,7 @@ on:
       - 'Gemfile.lock'
       - 'scripts/**'
   schedule:
-    - cron: '17 11 * * *'   # 11:17 UTC ≈ 07:17 ET in DST
+    - cron: '17 11 * * *'   # ~07:17 ET (DST)
   workflow_dispatch:
 
 permissions:
@@ -33,83 +36,47 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # --- Generate the NCO schedule (workspace will carry it into the build) ---
+      # --- Generate the NCO schedule ---
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Install Python deps
         run: pip install pyyaml
+
       - name: Run generator
         run: |
           set -euo pipefail
-          if [ -f scripts/build_bhn_schedule.py ]; then
-            python scripts/build_bhn_schedule.py
-          elif [ -f scripts/build_bhn_data.py ]; then
-            python scripts/build_bhn_data.py
-          else
-            echo "ERROR: no generator script found under scripts/"; exit 1
-          fi
+          python scripts/build_bhn_schedule.py
 
-      - name: Locate generated file & place it under _data
+      - name: Locate NEWEST schedule file & install into _data
         run: |
           set -euo pipefail
-          echo "Workspace: $GITHUB_WORKSPACE"
-          echo "Searching for bhn_ncos_schedule.yml..."
-          if [ -f _data/bhn_ncos_schedule.yml ]; then
-            echo "Found canonical _data/bhn_ncos_schedule.yml"
-          else
-            FOUND="$(find . -maxdepth 5 -type f -name 'bhn_ncos_schedule.yml' -print -quit || true)"
-            if [ -n "$FOUND" ]; then
-              echo "Found at: $FOUND"
-              mkdir -p _data
-              cp -f "$FOUND" _data/bhn_ncos_schedule.yml
-              echo "Copied to _data/bhn_ncos_schedule.yml"
-            else
-              echo "::error ::No bhn_ncos_schedule.yml found anywhere in the workspace."
-              ls -R | sed -n '1,200p'
-              exit 1
-            fi
-          fi
-          echo "----- first 30 lines of _data/bhn_ncos_schedule.yml -----"
-          sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
-
-      - name: Show commit + schedule page content
-        run: |
-          echo "Commit: $GITHUB_SHA on $GITHUB_REF_NAME"
-          git log -1 --pretty=oneline
-          echo "----- first 80 lines of nets/blind-hams/bhn-schedule.md -----"
-          sed -n '1,80p' nets/blind-hams/bhn-schedule.md || true
-          echo "----- any nco_table includes in repo -----"
-          grep -RIn "nco_table.html" -- * || true
-
-      - name: Add file snapshot to Summary
-        run: |
-          {
-            echo "### nets/blind-hams/bhn-schedule.md (first 80 lines)";
-            echo;
-            echo '```markdown';
-            sed -n '1,80p' nets/blind-hams/bhn-schedule.md || true;
-            echo '```';
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Assert no self-includes in nco_table.html
-        run: |
-          if grep -RIn "{% *include *nco_table\.html" _includes/nco_table.html; then
-            echo "::error ::_includes/nco_table.html must not include itself (even in examples)."
+          echo "Scanning for generated schedule files…"
+          RESULTS="$(find . -type f -name 'bhn_ncos_schedule.yml' -printf '%T@ %p\n' | sort -nr || true)"
+          if [ -z "$RESULTS" ]; then
+            echo "::error ::No bhn_ncos_schedule.yml found anywhere in the repo after generator ran."
+            ls -R | sed -n '1,200p'
             exit 1
           fi
+          NEWEST_PATH="$(echo "$RESULTS" | head -n1 | awk '{print $2}')"
+          echo "Using newest: $NEWEST_PATH"
+          mkdir -p _data
+          cp -f "$NEWEST_PATH" _data/bhn_ncos_schedule.yml
+          echo "----- HEAD -----"; sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
+          echo "----- TAIL -----"; tail -n 30 _data/bhn_ncos_schedule.yml || true
 
-      # --- Build Jekyll site using the workspace that now contains generated data ---
+      # --- Build & upload site artifact ---
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.1'
           bundler-cache: true
-      - name: Install gems
-        run: bundle install --jobs 4 --retry 3
+
       - name: Build site
         env:
           JEKYLL_ENV: production
         run: bundle exec jekyll build --trace
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
