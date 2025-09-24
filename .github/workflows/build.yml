@@ -45,11 +45,10 @@ jobs:
       - name: Run generator
         run: |
           set -euo pipefail
-          python scripts/build_bhn_schedule.py
+          python scripts/build_bhn_data.py
 
       - name: Show generated YAML (head & tail)
         run: |
-          echo "----- HEAD -----"; sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
           echo "----- TAIL -----"; tail -n 30 _data/bhn_ncos_schedule.yml || true
 
       - name: Commit updated schedule data (no loop)

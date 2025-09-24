@@ -25,7 +25,7 @@ nets:
     start_local: "19:00"     # 7:00 PM ET
     duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=TU"
-    # No explicit location fields → will default to "Blind Hams Bridge"
+    # No explicit location fields → will default to "Blind Hams Bridge" and that might be sad
 
   - id: blind-hams-tech
     category: "bhn"
