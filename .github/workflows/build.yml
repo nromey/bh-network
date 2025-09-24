@@ -65,6 +65,15 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: update BHN NCO schedule"
           git diff --staged --quiet || git push
 
+      - name: Show commit + schedule page content
+        run: |
+          echo "Commit: $GITHUB_SHA"
+          git log -1 --pretty=oneline
+          echo "----- nets/blind-hams/bhn-schedule.md (first 80 lines) -----"
+          sed -n '1,80p' nets/blind-hams/bhn-schedule.md || true
+          echo "----- search for any nco_table includes -----"
+          grep -RIn "nco_table.html" -- * || true
+
       # --- Build Jekyll site using the workspace that now contains generated data ---
       - uses: ruby/setup-ruby@v1
         with:
