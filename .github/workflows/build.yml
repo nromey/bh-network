@@ -1,4 +1,3 @@
-# .github/workflows/build.yml
 name: Generate NCO + Build & Deploy
 
 on:
@@ -14,9 +13,9 @@ on:
       - '_config.yml'
       - 'Gemfile'
       - 'Gemfile.lock'
-      - 'scripts/**'         # <— FIXED
+      - 'scripts/**'
   schedule:
-    - cron: '17 11 * * *'    # 11:17 UTC ≈ 07:17 ET in DST
+    - cron: '17 11 * * *'   # 11:17 UTC ≈ 07:17 ET in DST
   workflow_dispatch:
 
 permissions:
@@ -29,16 +28,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  generate:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # --- Generate the NCO schedule (workspace will carry it into the build) ---
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install deps
+      - name: Install Python deps
         run: pip install pyyaml
-
       - name: Run generator
         run: |
           set -euo pipefail
@@ -47,16 +47,17 @@ jobs:
           elif [ -f scripts/build_bhn_data.py ]; then
             python scripts/build_bhn_data.py
           else
-            echo "ERROR: no generator script"; exit 1
+            echo "ERROR: no generator script found under scripts/"; exit 1
           fi
-
-      - name: Verify output (debug)
+      - name: Verify generated data (debug)
         run: |
           ls -l _data || true
+          echo "----- first 30 lines of bhn_ncos_schedule.yml -----"
           sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
-          git status --porcelain
 
-      - name: Commit changes (if any)
+      # (Optional) Commit the refreshed data back to the repo.
+      # Not required for deploy to work, but handy to keep history in git.
+      - name: Commit data changes (if any)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -64,11 +65,7 @@ jobs:
           git diff --staged --quiet || git commit -m "chore: update BHN NCO schedule"
           git diff --staged --quiet || git push
 
-  build:
-    needs: generate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+      # --- Build Jekyll site using the workspace that now contains generated data ---
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.1'

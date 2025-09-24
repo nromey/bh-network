@@ -96,4 +96,4 @@ nets:
     duration_min: 150
     rrule: "FREQ=DAILY"
     # Provide a link so we don't default to the Bridge:
-    location: "[SFARC repeater and linking info](https://www.w6ek.org)"
+    location: "[SFARC repeater and linking info](https://www.w6ek.org) or allstar 51018"
