@@ -1,12 +1,13 @@
 name: Build BHN NCO Schedule
+
 on:
   push:
-    branches: [ main ]        # <- use your default branch
+    branches: [ main ]
     paths:
-      - '_data/ncos.yml'      # input config the script reads
-      - 'bhn/scripts/**'      # the script itself
+      - '_data/ncos.yml'     # input the script reads
+      - 'bhn/scripts/**'     # generator path
   schedule:
-    - cron: '17 11 * * *'     # 11:17 UTC ≈ 07:17 ET (DST)
+    - cron: '17 11 * * *'    # 11:17 UTC ≈ 07:17 ET during DST
   workflow_dispatch:
 
 permissions:
@@ -22,24 +23,21 @@ jobs:
         with:
           python-version: '3.11'
 
-      - run: pip install pyyaml
+      - name: Install deps
+        run: pip install pyyaml
 
-      # (Optional) See what the runner actually has
+      # Optional: see the repo tree on the runner
       - name: List repo tree
         run: |
           pwd
           ls -R
 
       - name: Assert generator script exists
-  run: |
-    echo "Workspace: $GITHUB_WORKSPACE"
-    git ls-files | sort | sed -n '1,200p'
-    echo "----"
-    ls -al
-    echo "----"
-    test -f bhn/scripts/build_bhn_data.py || (echo "NOT FOUND: bhn/scripts/build_bhn_data.py" && exit 1)
+        run: |
+          echo "Workspace: $GITHUB_WORKSPACE"
+          test -f bhn/scripts/build_bhn_data.py || (echo "NOT FOUND: bhn/scripts/build_bhn_data.py" && exit 1)
 
-- name: Generate schedule
+      - name: Generate schedule
         run: python scripts/build_bhn_data.py
 
       - name: Commit changes (if any)

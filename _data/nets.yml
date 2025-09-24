@@ -3,7 +3,7 @@
 # We set the category in this file and then this is used to generate the pages we want.
 # Times are local to America/New_York unless a net overrides time_zone.
 # File should help togenerate nets no matter what category
-# Must inlude category when calling in Liquid
+# Must include category when calling in Liquid
 
 time_zone: America/New_York
 
