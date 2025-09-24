@@ -1,12 +1,6 @@
 ---
 layout: default
 title: BHN Digital Net — NCO Schedule
-permalink: /nets/blind-hams/nco-schedule
----
-
----
-layout: default
-title: BHN Digital Net — NCO Schedule
 permalink: /nets/blind-hams/nco-schedule/
 ---
 
