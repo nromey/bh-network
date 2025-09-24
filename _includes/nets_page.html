@@ -1,13 +1,7 @@
 {%- comment -%}
 Usage examples:
 
-{% include nets_page.html
-   nets=site.data.nets.nets
-   title="Blind Hams Nets"
-   category="bhn"
-   section_id="nets-bhn"           # optional; default: "nets-section"
-   nco_anchor="nco-schedule"       # optional; default: "nco-schedule"
-%}
+{% include nets_page.html nets=site.data.nets.nets title="Blind Hams Nets" category="bhn" section_id="nets-bhn" nco_anchor="nco-schedule" %}
 
 Notes:
 - Expects /assets/js/net-view.js to handle the radio toggle.
