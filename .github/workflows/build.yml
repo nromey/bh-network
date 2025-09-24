@@ -1,6 +1,3 @@
-Here’s a **clean, working** GitHub Actions workflow YAML you can paste into `.github/workflows/build.yml`. It runs your Python generator, ensures the newest `bhn_ncos_schedule.yml` is copied into `_data/`, builds the Jekyll site, and deploys to Pages.
-
-```yaml
 name: Generate NCO + Build & Deploy
 
 on:
