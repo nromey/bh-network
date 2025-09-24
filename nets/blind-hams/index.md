@@ -3,12 +3,7 @@ layout: default
 title: Blind Hams Nets
 permalink: /nets/blind-hams/
 ---
-{% include nets_page.html
-   nets=site.data.nets.nets
-   title="Blind Hams Nets"
-   category="bhn"
-   section_id="nets-bhn"
-   nco_anchor="nco-schedule"
+{% include nets_page.html nets=site.data.nets.nets title="Blind Hams Nets" category="bhn" section_id="nets-bhn" nco_anchor="nco-schedule"
 %}
 <hr>
 <h2 id="nco-schedule">NCO Schedule</h2>
