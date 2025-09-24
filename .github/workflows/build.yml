@@ -49,11 +49,25 @@ jobs:
           else
             echo "ERROR: no generator script found under scripts/"; exit 1
           fi
-      - name: Verify generated data (debug)
+
+      - name: Show commit + schedule page content
         run: |
-          ls -l _data || true
-          echo "----- first 30 lines of bhn_ncos_schedule.yml -----"
-          sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
+          echo "Commit: $GITHUB_SHA on $GITHUB_REF_NAME"
+          git log -1 --pretty=oneline
+          echo "----- first 80 lines of nets/blind-hams/bhn-schedule.md -----"
+          sed -n '1,80p' nets/blind-hams/bhn-schedule.md || true
+          echo "----- any nco_table includes in repo -----"
+          grep -RIn "nco_table.html" -- * || true
+
+      - name: Add file snapshot to Summary
+        run: |
+          {
+            echo "### nets/blind-hams/bhn-schedule.md (first 80 lines)";
+            echo;
+            echo '```markdown';
+            sed -n '1,80p' nets/blind-hams/bhn-schedule.md || true;
+            echo '```';
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # (Optional) Commit the refreshed data back to the repo.
       # Not required for deploy to work, but handy to keep history in git.
