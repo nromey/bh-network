@@ -24,7 +24,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: 'pages'
+  group: pages
   cancel-in-progress: true
 
 jobs:
@@ -50,28 +50,30 @@ jobs:
             echo "ERROR: no generator script found under scripts/"; exit 1
           fi
 
-            - name: Locate generated file & place it under _data
+      - name: Locate generated file & place it under _data
         run: |
           set -euo pipefail
           echo "Workspace: $GITHUB_WORKSPACE"
           echo "Searching for bhn_ncos_schedule.yml..."
-          FOUND="$(find . -maxdepth 5 -type f -name 'bhn_ncos_schedule.yml' -print -quit || true)"
-          if [ -n "$FOUND" ]; then
-            echo "Found at: $FOUND"
-            mkdir -p _data
-            if [ "$FOUND" != "./_data/bhn_ncos_schedule.yml" ]; then
+          if [ -f _data/bhn_ncos_schedule.yml ]; then
+            echo "Found canonical _data/bhn_ncos_schedule.yml"
+          else
+            FOUND="$(find . -maxdepth 5 -type f -name 'bhn_ncos_schedule.yml' -print -quit || true)"
+            if [ -n "$FOUND" ]; then
+              echo "Found at: $FOUND"
+              mkdir -p _data
               cp -f "$FOUND" _data/bhn_ncos_schedule.yml
               echo "Copied to _data/bhn_ncos_schedule.yml"
+            else
+              echo "::error ::No bhn_ncos_schedule.yml found anywhere in the workspace."
+              ls -R | sed -n '1,200p'
+              exit 1
             fi
-          else
-            echo "::error ::No bhn_ncos_schedule.yml found anywhere in the workspace."
-            echo "ls -R for context:"; ls -R | sed -n '1,200p'
-            exit 1
           fi
           echo "----- first 30 lines of _data/bhn_ncos_schedule.yml -----"
           sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
 
-- name: Show commit + schedule page content
+      - name: Show commit + schedule page content
         run: |
           echo "Commit: $GITHUB_SHA on $GITHUB_REF_NAME"
           git log -1 --pretty=oneline
@@ -96,15 +98,6 @@ jobs:
             echo "::error ::_includes/nco_table.html must not include itself (even in examples)."
             exit 1
           fi
-
-      # (Optional) Commit the refreshed data back to the repo.
-      - name: Commit data changes (if any)
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add _data/bhn_ncos_schedule.yml
-          git diff --staged --quiet || git commit -m "chore: update BHN NCO schedule"
-          git diff --staged --quiet || git push
 
       # --- Build Jekyll site using the workspace that now contains generated data ---
       - uses: ruby/setup-ruby@v1

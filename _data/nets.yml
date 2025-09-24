@@ -94,7 +94,7 @@ nets:
     name: "Sierra Foothills ARC Coffee Break Net"
     description: "Daily ragchew hosted by the Sierra Foothills Amateur Radio Club."
     start_local: "10:30"     # 10:30 AM ET
-    duration_min: 150
+    duration_min: 180
     rrule: "FREQ=DAILY"
     # Provide a link so we don't default to the Bridge:
     location: "[SFARC repeater and linking info](https://www.w6ek.org) or allstar 51018"
