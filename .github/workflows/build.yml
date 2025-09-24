@@ -1,0 +1,101 @@
+name: "Generate NCO + Build and Deploy"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**.md"
+      - "**.html"
+      - "_data/ncos.yml"      # input config the script reads
+      - "_includes/**"
+      - "_layouts/**"
+      - "assets/**"
+      - "_config.yml"
+      - "Gemfile"
+      - "Gemfile.lock"
+      - "scripts/**"
+    paths-ignore:
+      - "_data/bhn_ncos_schedule.yml"  # avoid loops when we auto-commit the output
+  schedule:
+    - cron: "17 11 * * *"     # ~07:17 ET (DST)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history so we can push)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # --- Generate the NCO schedule ---
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: pip install pyyaml
+
+      - name: Run generator
+        run: |
+          set -euo pipefail
+          python scripts/bhn_build_data.py
+
+      - name: Show generated YAML (head & tail)
+        run: |
+          echo "----- HEAD -----"; sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
+          echo "----- TAIL -----"; tail -n 30 _data/bhn_ncos_schedule.yml || true
+
+      - name: Commit & push updated schedule (explicit refspec)
+        if: github.ref == 'refs/heads/main'
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add _data/bhn_ncos_schedule.yml
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: update BHN NCO schedule [skip ci]"
+            git push origin HEAD:"refs/heads/${BRANCH_NAME}"
+          fi
+          echo "----- REMOTE file preview (origin/${BRANCH_NAME}) -----"
+          git fetch origin "${BRANCH_NAME}"
+          git show origin/${BRANCH_NAME}:_data/bhn_ncos_schedule.yml | sed -n '1,30p'
+
+      # --- Build & upload site artifact ---
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.1"
+          bundler-cache: true
+
+      - name: Build site
+        env:
+          JEKYLL_ENV: production
+        run: bundle exec jekyll build --trace
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4

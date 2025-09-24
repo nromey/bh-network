@@ -7,7 +7,7 @@ title: Home
 ---
 # Blind Hams Network
 Welcome to the Blind Hams Network, the sanest place 
-on the net, and were wecan most definitely guarantee that
+on the net, and where we can most definitely guarantee that
 * Thursdays suck
 * Junk will stilll keep happening, and
 * It's all broken
