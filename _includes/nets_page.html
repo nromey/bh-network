@@ -1,19 +1,16 @@
 {%- comment -%}
-Usage:
+Renders a list of nets (table + headings views) with humanized schedule text.
 
-{% include nets_page.html
-   nets=site.data.nets.nets
-   title="Blind Hams Nets"
-   category="bhn"
-   section_id="nets-bhn"
-   nco_anchor="nco-schedule" %}
-
-Notes:
-- JS toggle is /assets/js/net-view.js (global preference is fine).
-- Data per net:
-  id, name, description, start_local ("HH:MM"), duration_min,
+Expected fields per net (you can provide only rrule + start_local):
+  id, name, description,
+  start_local ("HH:MM" 24h),
+  duration_min,
   rrule (e.g., "FREQ=WEEKLY;BYDAY=SA" or "FREQ=MONTHLY;BYDAY=TH;BYSETPOS=1"),
-  tz_full (optional, e.g., "Eastern"), schedule_text (optional override)
+  tz_full (optional, e.g., "Eastern"),
+  schedule_text (optional override string shown verbatim),
+  location fields used by net_location.html
+
+We parse RRULE into FREQ/BYDAY/BYSETPOS when present.
 {%- endcomment -%}
 
 {%- assign title = include.title | default: "Nets" -%}
@@ -23,12 +20,10 @@ Notes:
 {%- assign filtered = include.nets | where: "category", cat -%}
 
 {%- comment -%}
-Helper: render a row/card for a single net.
-We duplicate the internal logic in both views to keep Liquid simple.
+Helper snippet: given n, compute:
+  _tz_full, _display_time, _rfreq, _byday_codes, _bysetpos, _byday_names_singular, _byday_names_plural, _ord_word, _schedule_phrase
+This block is duplicated in both views (scoped to each n).
 {%- endcomment -%}
-
-{%- capture _dow_loop -%}MO|TU|WE|TH|FR|SA|SU{%- endcapture -%}
-{%- assign _dow_list = _dow_loop | split: "|" -%}
 
 <section class="nets-section" data-view="table" id="{{ section_id }}">
   <header class="nets-header">
@@ -47,7 +42,7 @@ We duplicate the internal logic in both views to keep Liquid simple.
     </fieldset>
   </header>
 
-  <!-- TABLE VIEW (Mon→Sun ordering) -->
+  <!-- TABLE VIEW -->
   <div class="view view-table" aria-live="polite">
     <table>
       <thead>
@@ -59,154 +54,10 @@ We duplicate the internal logic in both views to keep Liquid simple.
         </tr>
       </thead>
       <tbody>
-
-      {%- for _dow in _dow_list -%}
-        {%- for n in filtered -%}
-          {%- assign _tz_full = n.tz_full | default: "Eastern" -%}
-
-          {%- comment -%} 1) Display time (12-hour) {%- endcomment -%}
-          {%- assign _display_time = "" -%}
-          {%- if n.start_local and n.start_local != "" -%}
-            {%- assign _tparse = '2000-01-01 ' | append: n.start_local -%}
-            {%- assign _display_time = _tparse | date: "%-I:%M %p" -%}
-          {%- elsif n.rrule and n.rrule contains " at " -%}
-            {%- assign _at_bits = n.rrule | split: " at " -%}
-            {%- assign _legacy = '2000-01-01 ' | append: _at_bits.last -%}
-            {%- assign _display_time = _legacy | date: "%-I:%M %p" -%}
-          {%- endif -%}
-
-          {%- comment -%} 2) Parse RRULE → FREQ/BYDAY/BYSETPOS {%- endcomment -%}
-          {%- assign _freq = "" -%}
-          {%- assign _byday = "" -%}
-          {%- assign _bysetpos = "" -%}
-          {%- if n.rrule and n.rrule contains "=" -%}
-            {%- assign _parts = n.rrule | split: ";" -%}
-            {%- for p in _parts -%}
-              {%- if p contains "=" -%}
-                {%- assign kv = p | split: "=" -%}
-                {%- assign k = kv[0] | upcase | strip -%}
-                {%- assign v = kv[1] | strip -%}
-                {%- if k == "FREQ" and _freq == "" -%}{%- assign _freq = v | upcase -%}{%- endif -%}
-                {%- if k == "BYDAY" and _byday == "" -%}{%- assign _byday = v -%}{%- endif -%}
-                {%- if k == "BYSETPOS" and _bysetpos == "" -%}{%- assign _bysetpos = v -%}{%- endif -%}
-              {%- endif -%}
-            {%- endfor -%}
-          {%- endif -%}
-
-          {%- comment -%} 3) Primary DOW for ordering (Mon-first).
-               - DAILY → MO
-               - multi-day (e.g., Weekdays) → earliest in Mon→Sun that appears
-               - single BYDAY → that day
-               - no info → MO
-          {%- endcomment -%}
-          {%- assign _primary = "" -%}
-          {%- assign _byupper = _byday | upcase -%}
-          {%- if _freq == "DAILY" -%}
-            {%- assign _primary = "MO" -%}
-          {%- else -%}
-            {%- if _byupper contains "MO" -%}{%- assign _primary = "MO" -%}
-            {%- elsif _byupper contains "TU" -%}{%- assign _primary = "TU" -%}
-            {%- elsif _byupper contains "WE" -%}{%- assign _primary = "WE" -%}
-            {%- elsif _byupper contains "TH" -%}{%- assign _primary = "TH" -%}
-            {%- elsif _byupper contains "FR" -%}{%- assign _primary = "FR" -%}
-            {%- elsif _byupper contains "SA" -%}{%- assign _primary = "SA" -%}
-            {%- elsif _byupper contains "SU" -%}{%- assign _primary = "SU" -%}
-            {%- endif -%}
-          {%- endif -%}
-          {%- if _primary == "" -%}{%- assign _primary = "MO" -%}{%- endif -%}
-
-          {%- if _primary != _dow -%}{% continue %}{%- endif -%}
-
-          {%- comment -%} 4) Humanize day text {%- endcomment -%}
-          {%- assign _byday_pretty = "" -%}
-          {%- if _byday != "" -%}
-            {%- assign _days = _byday | split: "," -%}
-            {%- assign _pretty_days = "" -%}
-            {%- for d in _days -%}
-              {%- assign d2 = d | strip -%}
-              {%- assign name = d2
-                | replace: "MO","Mon"
-                | replace: "TU","Tue"
-                | replace: "WE","Wed"
-                | replace: "TH","Thu"
-                | replace: "FR","Fri"
-                | replace: "SA","Sat"
-                | replace: "SU","Sun" -%}
-              {%- if forloop.first -%}
-                {%- assign _pretty_days = name -%}
-              {%- elsif forloop.last -%}
-                {%- assign _pretty_days = _pretty_days | append: " & " | append: name -%}
-              {%- else -%}
-                {%- assign _pretty_days = _pretty_days | append: ", " | append: name -%}
-              {%- endif -%}
-            {%- endfor -%}
-            {%- if _days.size == 1 -%}
-              {%- assign _byday_pretty = _pretty_days | append: "s" -%}
-            {%- else -%}
-              {%- assign _byday_pretty = _pretty_days -%}
-            {%- endif -%}
-          {%- endif -%}
-
-          {%- assign _byday_upper = _byday | upcase -%}
-          {%- if _byday_upper == "MO,TU,WE,TH,FR" -%}{%- assign _byday_pretty = "Weekdays" -%}{%- endif -%}
-          {%- if _byday_upper == "SA,SU" -%}{%- assign _byday_pretty = "Weekends" -%}{%- endif -%}
-
-          {%- comment -%} 5) Monthly ordinal name {%- endcomment -%}
-          {%- assign _pos_pretty = "" -%}
-          {%- if _bysetpos != "" -%}
-            {%- assign _pos_map = "1:First|2:Second|3:Third|4:Fourth|-1:Last" -%}
-            {%- assign _pairs = _pos_map | split: "|" -%}
-            {%- for pair in _pairs -%}
-              {%- assign kv = pair | split: ":" -%}
-              {%- if kv[0] == _bysetpos -%}{%- assign _pos_pretty = kv[1] -%}{%- endif -%}
-            {%- endfor -%}
-          {%- endif -%}
-
-          {%- comment -%} 6) Compose schedule phrase {%- endcomment -%}
-          {%- assign _schedule_phrase = "" -%}
-          {%- if n.schedule_text and n.schedule_text != "" -%}
-            {%- assign _schedule_phrase = n.schedule_text -%}
-          {%- else -%}
-            {%- if _freq == "DAILY" -%}
-              {%- assign _schedule_phrase = "Daily" -%}
-            {%- elsif _freq == "MONTHLY" and _pos_pretty != "" and _byday_pretty != "" -%}
-              {%- assign _schedule_phrase = _pos_pretty | append: " " | append: _byday_pretty | replace: "s", "" -%}
-            {%- elsif _byday_pretty != "" -%}
-              {%- assign _schedule_phrase = _byday_pretty -%}
-            {%- endif -%}
-
-            {%- if _schedule_phrase == "" and _display_time != "" -%}
-              {%- assign _schedule_phrase = _display_time | append: " " | append: _tz_full -%}
-            {%- elsif _schedule_phrase != "" and _display_time != "" -%}
-              {%- assign _schedule_phrase = _schedule_phrase | append: " at " | append: _display_time | append: " " | append: _tz_full -%}
-            {%- endif -%}
-          {%- endif -%}
-
-          <tr>
-            <td>
-              <strong>{{ n.name }}</strong><br>
-              <small>{{ n.description }}</small>
-              {%- if n.id == "bh-digital" -%}
-                <br><a href="#{{ nco_anchor }}">See NCO schedule ↓</a>
-              {%- endif -%}
-            </td>
-            <td>{% if _schedule_phrase != "" %}{{ _schedule_phrase }}{% else %}—{% endif %}</td>
-            <td>{% if n.duration_min %}{{ n.duration_min }} min{% else %}—{% endif %}</td>
-            <td>{% include net_location.html net=n %}</td>
-          </tr>
-        {%- endfor -%}
-      {%- endfor -%}
-
-      </tbody>
-    </table>
-  </div>
-
-  <!-- HEADINGS VIEW (Mon→Sun ordering) -->
-  <div class="view view-headings" hidden aria-live="polite">
-    {%- for _dow in _dow_list -%}
-      {%- for n in filtered -%}
+      {% for n in filtered %}
         {%- assign _tz_full = n.tz_full | default: "Eastern" -%}
 
+        {%- comment -%} Time display from start_local or legacy " at " in rrule {%- endcomment -%}
         {%- assign _display_time = "" -%}
         {%- if n.start_local and n.start_local != "" -%}
           {%- assign _tparse = '2000-01-01 ' | append: n.start_local -%}
@@ -217,117 +68,244 @@ We duplicate the internal logic in both views to keep Liquid simple.
           {%- assign _display_time = _legacy | date: "%-I:%M %p" -%}
         {%- endif -%}
 
-        {%- assign _freq = "" -%}
-        {%- assign _byday = "" -%}
-        {%- assign _bysetpos = "" -%}
-        {%- if n.rrule and n.rrule contains "=" -%}
+        {%- comment -%} Parse RRULE into freq/day/setpos {%- endcomment -%}
+        {%- assign _rfreq = "" -%}
+        {%- assign _rbyday = "" -%}
+        {%- assign _rbysetpos = "" -%}
+        {%- if n.rrule and n.rrule != "" -%}
           {%- assign _parts = n.rrule | split: ";" -%}
           {%- for p in _parts -%}
-            {%- if p contains "=" -%}
-              {%- assign kv = p | split: "=" -%}
-              {%- assign k = kv[0] | upcase | strip -%}
-              {%- assign v = kv[1] | strip -%}
-              {%- if k == "FREQ" and _freq == "" -%}{%- assign _freq = v | upcase -%}{%- endif -%}
-              {%- if k == "BYDAY" and _byday == "" -%}{%- assign _byday = v -%}{%- endif -%}
-              {%- if k == "BYSETPOS" and _bysetpos == "" -%}{%- assign _bysetpos = v -%}{%- endif -%}
-            {%- endif -%}
+            {%- assign kv = p | split: "=" -%}
+            {%- assign k = kv[0] | upcase -%}
+            {%- assign v = kv[1] -%}
+            {%- if k == "FREQ" -%}{%- assign _rfreq = v | upcase -%}{%- endif -%}
+            {%- if k == "BYDAY" -%}{%- assign _rbyday = v -%}{%- endif -%}
+            {%- if k == "BYSETPOS" -%}{%- assign _rbysetpos = v -%}{%- endif -%}
           {%- endfor -%}
         {%- endif -%}
 
-        {%- assign _primary = "" -%}
-        {%- assign _byupper = _byday | upcase -%}
-        {%- if _freq == "DAILY" -%}
-          {%- assign _primary = "MO" -%}
-        {%- else -%}
-          {%- if _byupper contains "MO" -%}{%- assign _primary = "MO" -%}
-          {%- elsif _byupper contains "TU" -%}{%- assign _primary = "TU" -%}
-          {%- elsif _byupper contains "WE" -%}{%- assign _primary = "WE" -%}
-          {%- elsif _byupper contains "TH" -%}{%- assign _primary = "TH" -%}
-          {%- elsif _byupper contains "FR" -%}{%- assign _primary = "FR" -%}
-          {%- elsif _byupper contains "SA" -%}{%- assign _primary = "SA" -%}
-          {%- elsif _byupper contains "SU" -%}{%- assign _primary = "SU" -%}
-          {%- endif -%}
-        {%- endif -%}
-        {%- if _primary == "" -%}{%- assign _primary = "MO" -%}{%- endif -%}
+        {%- comment -%} Derive BYDAY codes (prefer explicit fields if provided) {%- endcomment -%}
+        {%- assign _byday_codes = n.byday | default: _rbyday | default: "" -%}
 
-        {%- if _primary != _dow -%}{% continue %}{%- endif -%}
-
-        {%- assign _byday_pretty = "" -%}
-        {%- if _byday != "" -%}
-          {%- assign _days = _byday | split: "," -%}
-          {%- assign _pretty_days = "" -%}
+        {%- comment -%} Humanize day names (full names) {%- endcomment -%}
+        {%- assign _names = "" -%}
+        {%- assign _day_list = "" | split: "" -%}
+        {%- if _byday_codes != "" -%}
+          {%- assign _days = _byday_codes | split: "," -%}
           {%- for d in _days -%}
-            {%- assign d2 = d | strip -%}
-            {%- assign name = d2
-              | replace: "MO","Mon"
-              | replace: "TU","Tue"
-              | replace: "WE","Wed"
-              | replace: "TH","Thu"
-              | replace: "FR","Fri"
-              | replace: "SA","Sat"
-              | replace: "SU","Sun" -%}
+            {%- assign d2 = d | strip | upcase -%}
+            {%- assign day_full = d2
+              | replace: "MO","Monday"
+              | replace: "TU","Tuesday"
+              | replace: "WE","Wednesday"
+              | replace: "TH","Thursday"
+              | replace: "FR","Friday"
+              | replace: "SA","Saturday"
+              | replace: "SU","Sunday" -%}
+            {%- assign _day_list = _day_list | push: day_full -%}
+          {%- endfor -%}
+          {%- assign _names = "" -%}
+          {%- for dn in _day_list -%}
             {%- if forloop.first -%}
-              {%- assign _pretty_days = name -%}
+              {%- assign _names = dn -%}
             {%- elsif forloop.last -%}
-              {%- assign _pretty_days = _pretty_days | append: " & " | append: name -%}
+              {%- assign _names = _names | append: " & " | append: dn -%}
             {%- else -%}
-              {%- assign _pretty_days = _pretty_days | append: ", " | append: name -%}
+              {%- assign _names = _names | append: ", " | append: dn -%}
             {%- endif -%}
           {%- endfor -%}
-          {%- if _days.size == 1 -%}
-            {%- assign _byday_pretty = _pretty_days | append: "s" -%}
-          {%- else -%}
-            {%- assign _byday_pretty = _pretty_days -%}
-          {%- endif -%}
         {%- endif -%}
 
-        {%- assign _byday_upper = _byday | upcase -%}
-        {%- if _byday_upper == "MO,TU,WE,TH,FR" -%}{%- assign _byday_pretty = "Weekdays" -%}{%- endif -%}
-        {%- if _byday_upper == "SA,SU" -%}{%- assign _byday_pretty = "Weekends" -%}{%- endif -%}
+        {%- comment -%} Build pluralized version for weekly phrasing (e.g., "Saturdays") {%- endcomment -%}
+        {%- assign _names_plural = _names -%}
+        {%- if _day_list and _day_list.size == 1 -%}
+          {%- assign _names_plural = _day_list[0] | append: "s" -%}
+        {%- endif -%}
 
-        {%- assign _pos_pretty = "" -%}
-        {%- if _bysetpos != "" -%}
-          {%- assign _pos_map = "1:First|2:Second|3:Third|4:Fourth|-1:Last" -%}
-          {%- assign _pairs = _pos_map | split: "|" -%}
-          {%- for pair in _pairs -%}
+        {%- comment -%} Ordinal word for BYSETPOS (MONTHLY) {%- endcomment -%}
+        {%- assign _ord_word = "" -%}
+        {%- if _rbysetpos and _rbysetpos != "" -%}
+          {%- assign _ord_map = "1:First|2:Second|3:Third|4:Fourth|5:Fifth|-1:Last" | split: "|" -%}
+          {%- for pair in _ord_map -%}
             {%- assign kv = pair | split: ":" -%}
-            {%- if kv[0] == _bysetpos -%}{%- assign _pos_pretty = kv[1] -%}{%- endif -%}
+            {%- if kv[0] == _rbysetpos -%}{%- assign _ord_word = kv[1] -%}{%- endif -%}
           {%- endfor -%}
         {%- endif -%}
 
+        {%- comment -%} Compose the schedule phrase {%- endcomment -%}
         {%- assign _schedule_phrase = "" -%}
         {%- if n.schedule_text and n.schedule_text != "" -%}
           {%- assign _schedule_phrase = n.schedule_text -%}
         {%- else -%}
-          {%- if _freq == "DAILY" -%}
-            {%- assign _schedule_phrase = "Daily" -%}
-          {%- elsif _freq == "MONTHLY" and _pos_pretty != "" and _byday_pretty != "" -%}
-            {%- assign _schedule_phrase = _pos_pretty | append: " " | append: _byday_pretty | replace: "s", "" -%}
-          {%- elsif _byday_pretty != "" -%}
-            {%- assign _schedule_phrase = _byday_pretty -%}
-          {%- endif -%}
+          {%- case _rfreq -%}
+            {%- when "DAILY" -%}
+              {%- assign _schedule_phrase = "Daily" -%}
+            {%- when "WEEKLY" -%}
+              {%- if _names_plural != "" -%}
+                {%- assign _schedule_phrase = _names_plural -%}
+              {%- else -%}
+                {%- assign _schedule_phrase = "Weekly" -%}
+              {%- endif -%}
+            {%- when "MONTHLY" -%}
+              {%- if _ord_word != "" and _names != "" -%}
+                {%- assign _schedule_phrase = _ord_word | append: " " | append: _names -%}
+              {%- else -%}
+                {%- assign _schedule_phrase = "Monthly" -%}
+              {%- endif -%}
+            {%- else -%}
+              {%- if _names_plural != "" -%}
+                {%- assign _schedule_phrase = _names_plural -%}
+              {%- endif -%}
+          {%- endcase -%}
 
-          {%- if _schedule_phrase == "" and _display_time != "" -%}
-            {%- assign _schedule_phrase = _display_time | append: " " | append: _tz_full -%}
-          {%- elsif _schedule_phrase != "" and _display_time != "" -%}
-            {%- assign _schedule_phrase = _schedule_phrase | append: " at " | append: _display_time | append: " " | append: _tz_full -%}
+          {%- if _display_time != "" -%}
+            {%- if _schedule_phrase == "" -%}
+              {%- assign _schedule_phrase = _display_time | append: " " | append: _tz_full -%}
+            {%- else -%}
+              {%- assign _schedule_phrase = _schedule_phrase | append: " at " | append: _display_time | append: " " | append: _tz_full -%}
+            {%- endif -%}
           {%- endif -%}
         {%- endif -%}
 
-        <article class="net-block">
-          <h3>{{ n.name }}</h3>
-          <p class="net-when">
-            <strong>When:</strong>
+        <tr>
+          <td>
+            <strong>{{ n.name }}</strong><br>
+            <small>{{ n.description }}</small>
+            {%- if n.id == "bh-digital" -%}
+              <br><a href="#{{ nco_anchor }}">See NCO schedule ↓</a>
+            {%- endif -%}
+          </td>
+          <td>
             {%- if _schedule_phrase != "" -%}{{ _schedule_phrase }}{%- else -%}—{%- endif -%}
-            {%- if n.duration_min %} ({{ n.duration_min }} min){% endif -%}
-          </p>
-          {%- if n.id == "bh-digital" -%}<p><a href="#{{ nco_anchor }}">See NCO schedule ↓</a></p>{%- endif -%}
-          <p class="net-where"><strong>Where:</strong> {% include net_location.html net=n %}</p>
-          <p class="net-desc">{{ n.description }}</p>
-        </article>
-        {% unless forloop.last %}<hr>{% endunless %}
-      {%- endfor -%}
-    {%- endfor -%}
+          </td>
+          <td>{%- if n.duration_min -%}{{ n.duration_min }} min{%- else -%}—{%- endif -%}</td>
+          <td>{% include net_location.html net=n %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- HEADINGS VIEW -->
+  <div class="view view-headings" hidden aria-live="polite">
+    {% for n in filtered %}
+      {%- assign _tz_full = n.tz_full | default: "Eastern" -%}
+
+      {%- assign _display_time = "" -%}
+      {%- if n.start_local and n.start_local != "" -%}
+        {%- assign _tparse = '2000-01-01 ' | append: n.start_local -%}
+        {%- assign _display_time = _tparse | date: "%-I:%M %p" -%}
+      {%- elsif n.rrule and n.rrule contains " at " -%}
+        {%- assign _at_bits = n.rrule | split: " at " -%}
+        {%- assign _legacy = '2000-01-01 ' | append: _at_bits.last -%}
+        {%- assign _display_time = _legacy | date: "%-I:%M %p" -%}
+      {%- endif -%}
+
+      {%- assign _rfreq = "" -%}
+      {%- assign _rbyday = "" -%}
+      {%- assign _rbysetpos = "" -%}
+      {%- if n.rrule and n.rrule != "" -%}
+        {%- assign _parts = n.rrule | split: ";" -%}
+        {%- for p in _parts -%}
+          {%- assign kv = p | split: "=" -%}
+          {%- assign k = kv[0] | upcase -%}
+          {%- assign v = kv[1] -%}
+          {%- if k == "FREQ" -%}{%- assign _rfreq = v | upcase -%}{%- endif -%}
+          {%- if k == "BYDAY" -%}{%- assign _rbyday = v -%}{%- endif -%}
+          {%- if k == "BYSETPOS" -%}{%- assign _rbysetpos = v -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- assign _byday_codes = n.byday | default: _rbyday | default: "" -%}
+      {%- assign _names = "" -%}
+      {%- assign _day_list = "" | split: "" -%}
+      {%- if _byday_codes != "" -%}
+        {%- assign _days = _byday_codes | split: "," -%}
+        {%- for d in _days -%}
+          {%- assign d2 = d | strip | upcase -%}
+          {%- assign day_full = d2
+            | replace: "MO","Monday"
+            | replace: "TU","Tuesday"
+            | replace: "WE","Wednesday"
+            | replace: "TH","Thursday"
+            | replace: "FR","Friday"
+            | replace: "SA","Saturday"
+            | replace: "SU","Sunday" -%}
+          {%- assign _day_list = _day_list | push: day_full -%}
+        {%- endfor -%}
+        {%- for dn in _day_list -%}
+          {%- if forloop.first -%}
+            {%- assign _names = dn -%}
+          {%- elsif forloop.last -%}
+            {%- assign _names = _names | append: " & " | append: dn -%}
+          {%- else -%}
+            {%- assign _names = _names | append: ", " | append: dn -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- assign _names_plural = _names -%}
+      {%- if _day_list and _day_list.size == 1 -%}
+        {%- assign _names_plural = _day_list[0] | append: "s" -%}
+      {%- endif -%}
+
+      {%- assign _ord_word = "" -%}
+      {%- if _rbysetpos and _rbysetpos != "" -%}
+        {%- assign _ord_map = "1:First|2:Second|3:Third|4:Fourth|5:Fifth|-1:Last" | split: "|" -%}
+        {%- for pair in _ord_map -%}
+          {%- assign kv = pair | split: ":" -%}
+          {%- if kv[0] == _rbysetpos -%}{%- assign _ord_word = kv[1] -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+
+      {%- assign _schedule_phrase = "" -%}
+      {%- if n.schedule_text and n.schedule_text != "" -%}
+        {%- assign _schedule_phrase = n.schedule_text -%}
+      {%- else -%}
+        {%- case _rfreq -%}
+          {%- when "DAILY" -%}
+            {%- assign _schedule_phrase = "Daily" -%}
+          {%- when "WEEKLY" -%}
+            {%- if _names_plural != "" -%}
+              {%- assign _schedule_phrase = _names_plural -%}
+            {%- else -%}
+              {%- assign _schedule_phrase = "Weekly" -%}
+            {%- endif -%}
+          {%- when "MONTHLY" -%}
+            {%- if _ord_word != "" and _names != "" -%}
+              {%- assign _schedule_phrase = _ord_word | append: " " | append: _names -%}
+            {%- else -%}
+              {%- assign _schedule_phrase = "Monthly" -%}
+            {%- endif -%}
+          {%- else -%}
+            {%- if _names_plural != "" -%}
+              {%- assign _schedule_phrase = _names_plural -%}
+            {%- endif -%}
+        {%- endcase -%}
+
+        {%- if _display_time != "" -%}
+          {%- if _schedule_phrase == "" -%}
+            {%- assign _schedule_phrase = _display_time | append: " " | append: _tz_full -%}
+          {%- else -%}
+            {%- assign _schedule_phrase = _schedule_phrase | append: " at " | append: _display_time | append: " " | append: _tz_full -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endif -%}
+
+      <article class="net-block">
+        <h3>{{ n.name }}</h3>
+        <p class="net-when">
+          <strong>When:</strong>
+          {%- if _schedule_phrase != "" -%}{{ _schedule_phrase }}{%- else -%}—{%- endif -%}
+          {%- if n.duration_min %} ({{ n.duration_min }} min){% endif -%}
+        </p>
+        {%- if n.id == "bh-digital" -%}
+          <p><a href="#{{ nco_anchor }}">See NCO schedule ↓</a></p>
+        {%- endif -%}
+        <p class="net-where"><strong>Where:</strong> {% include net_location.html net=n %}</p>
+        <p class="net-desc">{{ n.description }}</p>
+      </article>
+      {% unless forloop.last %}<hr>{% endunless %}
+    {% endfor %}
   </div>
 </section>
 
