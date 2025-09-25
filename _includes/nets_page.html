@@ -148,7 +148,7 @@ This block is duplicated in both views (scoped to each n).
               {%- endif -%}
             {%- when "MONTHLY" -%}
               {%- if _ord_word != "" and _names != "" -%}
-                {%- assign _schedule_phrase = _ord_word | append: " " | append: _names append: " of the month" -%}
+                {%- assign _schedule_phrase = _ord_word | append: " " | append: _names | append: " of the month" -%}
               {%- else -%}
                 {%- assign _schedule_phrase = "Monthly" -%}
               {%- endif -%}
@@ -272,7 +272,7 @@ This block is duplicated in both views (scoped to each n).
             {%- endif -%}
           {%- when "MONTHLY" -%}
             {%- if _ord_word != "" and _names != "" -%}
-              {%- assign _schedule_phrase = _ord_word | append: " " | append: _names append: " of the month" -%}
+              {%- assign _schedule_phrase = _ord_word | append: " " | append: _names | append: " of the month" -%}
             {%- else -%}
               {%- assign _schedule_phrase = "Monthly" -%}
             {%- endif -%}
