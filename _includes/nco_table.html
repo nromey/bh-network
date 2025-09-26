@@ -1,10 +1,36 @@
+{%- comment -%}
+NCO schedule table include
+
+PARAMS (common):
+  title:         string heading (default: "NCO Schedule")
+  caption:       optional table caption (screen-reader visible; defaults to a helpful message)
+  desc:          optional longer screen-reader-only description linked via aria-describedby
+  schedule:      a data object that contains items (preferred path)
+  items_key:     key inside schedule that contains the list (default: "items")
+  show_location: true/false (default: false)
+  location_md:   markdown for location label/link (optional)
+  time_local:    "HH:MM" 24h start time (default: "10:00")
+  tz_full:       "Eastern", etc. (default: "Eastern")
+
+ROW SHAPE (data-driven preferred):
+  items:
+    - date: "YYYY-MM-DD"
+      nco: "CALLSIGN" | "TBD"
+      notes: "optional"
+      unassigned: true|false
+
+FALLBACK (generator mode if items missing):
+  weeks: number (default 12)
+  dow:   "SU|MO|TU|WE|TH|FR|SA" (default "SA")
+  roster: ["N2DYI", "K5NER", ...]  (strings)
+{%- endcomment -%}
+
 {%- assign _title        = include.title | default: "NCO Schedule" -%}
 {%- assign _sched        = include.schedule -%}
 {%- assign _items_key    = include.items_key | default: "items" -%}
 {%- assign _items        = nil -%}
 {%- if _sched -%}{%- assign _items = _sched[_items_key] -%}{%- endif -%}
 
-{%- comment -%} Config / defaults for generator mode {%- endcomment -%}
 {%- assign _weeks       = include.weeks | default: (_sched.weeks | default: 12) -%}
 {%- assign _dow         = include.dow | default: (_sched.dow | default: "SA") -%}
 {%- assign _time_local  = include.time_local | default: (_sched.time_local | default: "10:00") -%}
@@ -12,6 +38,12 @@
 {%- assign _roster      = include.roster | default: _sched.roster -%}
 {%- assign _show_loc    = include.show_location | default: false -%}
 {%- assign _location_md = include.location_md | default: (_sched.location_md | default: "") -%}
+
+{%- comment -%} Helper: caption + optional long description for SRs {%- endcomment -%}
+{%- assign _caption_default = _title | append: ". Rows marked “Unassigned” indicate no operator has been assigned yet." -%}
+{%- assign _caption = include.caption | default: _caption_default -%}
+{%- assign _desc     = include.desc | default: "" -%}
+{%- assign _desc_id  = "nco-desc-" | append: _title | slugify -%}
 
 {%- comment -%} Helper: convert "HH:MM" -> "h:mm AM/PM" {%- endcomment -%}
 {%- assign _time_disp = "" -%}
@@ -33,7 +65,7 @@
 {%- assign _rows = _items -%}
 
 {%- if _rows and _rows.size > 0 -%}
-  {%- comment -%} Data-driven mode: use items as-is {%- endcomment -%}
+  {%- comment -%} Data-driven mode {%- endcomment -%}
 {%- else -%}
   {%- comment -%} Generator mode: build rows for next N weeks rotating roster {%- endcomment -%}
   {%- assign _rows = "" | split: "" -%}
@@ -70,7 +102,12 @@
 <h2>{{ _title }}</h2>
 
 {%- if _rows and _rows.size > 0 -%}
-  <table class="nco-table">
+  {%- if _desc != "" -%}
+    <p id="{{ _desc_id }}" class="sr-only">{{ _desc }}</p>
+  {%- endif -%}
+
+  <table class="nco-table" {% if _desc != "" %}aria-describedby="{{ _desc_id }}"{% endif %}>
+    <caption class="sr-only">{{ _caption }}</caption>
     <thead>
       <tr>
         <th scope="col">Date</th>
@@ -87,21 +124,39 @@
         {%- assign nco_name   = "" -%}
         {%- assign notes_text = "" -%}
 
+        {%- comment -%} Normalize row shape (hash vs array) {%- endcomment -%}
         {%- if r.date -%}
           {%- assign date_iso   = r.date -%}
           {%- assign date_disp  = r.date | date: "%A, %B %-d, %Y" -%}
           {%- assign nco_name   = r.nco | default: r.operator | default: "" -%}
           {%- assign notes_text = r.notes | default: "" -%}
+          {%- assign row_un     = r.unassigned -%}
         {%- else -%}
           {%- assign date_iso   = r[0] -%}
           {%- assign date_disp  = r[1] -%}
           {%- assign nco_name   = r[2] -%}
           {%- assign notes_text = r[3] -%}
+          {%- assign row_un     = r[4] -%}  {%- comment -%} optional array slot for unassigned {%- endcomment -%}
         {%- endif -%}
 
-        <tr>
-          <td data-title="Date"><time datetime="{{ date_iso }}">{{ date_disp }}</time></td>
-          <td data-title="NCO">{{ nco_name | default: "TBD" }}</td>
+        {%- assign is_unassigned = false -%}
+        {%- if row_un -%}{%- assign is_unassigned = true -%}{%- endif -%}
+        {%- if is_unassigned == false and nco_name == "TBD" -%}{%- assign is_unassigned = true -%}{%- endif -%}
+        {%- if is_unassigned == false and (nco_name == nil or nco_name == "") -%}{%- assign is_unassigned = true -%}{%- endif -%}
+        {%- assign un_id = "unassigned-" | append: forloop.index0 -%}
+
+        <tr class="{% if is_unassigned %}nco-unassigned{% endif %}">
+          <th scope="row" data-title="Date">
+            <time datetime="{{ date_iso }}">{{ date_disp }}</time>
+          </th>
+
+          <td data-title="NCO" {% if is_unassigned %}aria-describedby="{{ un_id }}"{% endif %}>
+            {{ nco_name | default: "TBD" }}
+            {%- if is_unassigned -%}
+              <span id="{{ un_id }}" class="sr-only"> — Unassigned</span>
+            {%- endif -%}
+          </td>
+
           {%- if _show_loc -%}
             <td data-title="Location">
               {%- if _location_md and _location_md != "" -%}
@@ -111,9 +166,11 @@
               {%- endif -%}
             </td>
           {%- endif -%}
+
           <td data-title="Time">
             {%- if _time_disp != "" -%}{{ _time_disp }} {{ _tz_full }}{%- else -%}—{%- endif -%}
           </td>
+
           <td data-title="Notes">{{ notes_text }}</td>
         </tr>
       {%- endfor -%}

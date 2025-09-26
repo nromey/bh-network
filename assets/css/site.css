@@ -4,3 +4,21 @@
   text-align: center;
   margin-top: 1rem;
 }
+/* --- NCO table highlights & helpers --- */
+.nco-table tr.nco-unassigned {
+  background: #fff3bf;            /* soft yellow */
+}
+.nco-table tr.nco-unassigned td {
+  border-top: 1px solid #f1d98a;
+}
+
+/* optional: a left accent stripe */
+.nco-table tr.nco-unassigned {
+  box-shadow: inset 4px 0 0 #e0b400;
+}
+
+/* visually-hidden helper (if your theme doesn't already have one) */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}

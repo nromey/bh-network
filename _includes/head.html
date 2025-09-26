@@ -1,0 +1,30 @@
+{%- comment -%} _includes/head.html {%- endcomment -%}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+{%- if site.title and page.title -%}
+  <title>{{ page.title }} | {{ site.title }}</title>
+{%- elsif site.title -%}
+  <title>{{ site.title }}</title>
+{%- else -%}
+  <title>{{ page.title }}</title>
+{%- endif -%}
+
+{%- if site.plugins contains "jekyll-seo-tag" -%}
+  {%- seo -%}
+{%- endif -%}
+
+{%- assign bust = site.github.build_revision | default: site.time | date: '%s' -%}
+
+<!-- Your styles (order matters: base first, page-specific later) -->
+<link rel="stylesheet" href="{{ '/assets/css/site.css'  | relative_url }}?v={{ bust }}">
+<link rel="stylesheet" href="{{ '/assets/css/extra.css' | relative_url }}?v={{ bust }}">
+<link rel="stylesheet" href="{{ '/assets/css/nets.css'  | relative_url }}?v={{ bust }}">
+
+{%- if page.extra_css -%}
+<link rel="stylesheet" href="{{ page.extra_css | relative_url }}?v={{ bust }}">
+{%- endif -%}
+
+{%- if site.favicon -%}
+<link rel="icon" href="{{ site.favicon | relative_url }}">
+{%- endif -%}
