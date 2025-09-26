@@ -1,23 +1,49 @@
 items:
 - date: '2025-09-27'
   nco: VE3RWJ
+  notes: ''
+  unassigned: false
 - date: '2025-10-04'
   nco: N2DYI
+  notes: ''
+  unassigned: false
 - date: '2025-10-11'
-  nco: K5NER
+  nco: VE3RWJ
+  notes: Covering for Noel who is traveling this week.
+  unassigned: false
 - date: '2025-10-18'
   nco: W5MRR
+  notes: ''
+  unassigned: false
 - date: '2025-10-25'
-  nco: VE3RWJ
+  nco: K5NER
+  notes: Swapping with Chris after traveling.
+  unassigned: false
 - date: '2025-11-01'
   nco: N2DYI
+  notes: ''
+  unassigned: false
 - date: '2025-11-08'
   nco: K5NER
+  notes: ''
+  unassigned: false
 - date: '2025-11-15'
   nco: W5MRR
+  notes: ''
+  unassigned: false
 - date: '2025-11-22'
   nco: VE3RWJ
+  notes: ''
+  unassigned: false
+- date: '2025-11-29'
+  nco: TBD
+  notes: No NCO assigned (5th Saturday). Please add an override in _data/ncos.yml.
+  unassigned: true
 - date: '2025-12-06'
   nco: N2DYI
+  notes: ''
+  unassigned: false
 - date: '2025-12-13'
   nco: K5NER
+  notes: ''
+  unassigned: false
