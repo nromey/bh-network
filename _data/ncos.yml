@@ -39,3 +39,10 @@ overrides: []
 #   - date: "2025-10-04"
 #     callsign: W5MRR
 #     note: "Covering for Noel"
+  - date: "2025-10-11"
+    callssign:"VE3RWJ"
+    note:"Covering for Noel who is traveling this week."
+  - date:"2025-10-25"
+    callsign:"K5NER"
+    note:"Swapping with Chris after travelling"
+    
