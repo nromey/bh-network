@@ -2,13 +2,13 @@
 time_zone: America/New_York
 net_id: bh-digital
 
-# Whose Who
+# Who's Who
 roster:
   - callsign: N2DYI
     first_name: Patrick
     nco_location: "Belle Harbor, New York"
-  - callsign: K5NERD
-    first_name: Dude
+  - callsign: K5NER
+    first_name: Noel
     nco_location: "Memphis, TN"
   - callsign: W5MRR
     first_name: Marvin
@@ -29,20 +29,11 @@ rotation:
   # 5th Saturday: assign via overrides as needed
 
 # Date-specific overrides (when someone swaps/covers)
-# Keep history; your pages can filter to upcoming dates only.
-overrides: []
-# Example:
-# overrides:
-#   - date: "2025-11-29"   # (a 5th Saturday)
-#     callsign: NE5L
-#     note: "Assigned for 5th Sat"
-#   - date: "2025-10-04"
-#     callsign: W5MRR
-#     note: "Covering for Noel"
+# Keep history; pages can show upcoming only.
+overrides:
   - date: "2025-10-11"
-    callssign:"VE3RWJ"
-    note:"Covering for Noel who is traveling this week."
-  - date:"2025-10-25"
-    callsign:"K5NER"
-    note:"Swapping with Chris after travelling"
-    
+    callsign: VE3RWJ
+    note: "Covering for Noel who is traveling this week."
+  - date: "2025-10-25"
+    callsign: K5NER
+    note: "Swapping with Chris after traveling."
