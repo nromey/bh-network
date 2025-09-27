@@ -1,8 +1,4 @@
 items:
-- date: '2025-09-27'
-  nco: K5NER
-  notes: Covering for Marvin who is having internet issues. He will be back next month.
-  unassigned: false
 - date: '2025-10-04'
   nco: N2DYI
   notes: ''
@@ -45,5 +41,9 @@ items:
   unassigned: false
 - date: '2025-12-13'
   nco: K5NER
+  notes: ''
+  unassigned: false
+- date: '2025-12-20'
+  nco: W5MRR
   notes: ''
   unassigned: false
