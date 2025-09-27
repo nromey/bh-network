@@ -1,19 +1,24 @@
 title: Blind Hams Digital Network
 description: Nets, nodes, and resources for blind and low-vision amateur radio operators.
-baseurl: # the subpath of your site, leave blank for project root
-url: "https://www.blindhams.network" # replace USERNAME with your GitHub username
+url: "https://www.blindhams.network"
+baseurl: ""  # leave empty unless your site is served from a subpath
 
 markdown: kramdown
 theme: minima
+
 plugins:
   - jekyll-feed
   - jemoji
-  minima:
+  # - jekyll-seo-tag      # optional, useful
+  # - jekyll-sitemap      # optional, useful
+
+# Minima theme settings (note: this key must be top-level, not under `plugins`)
+minima:
   custom_css:
     - /assets/css/extra.css
+
 header_pages:
   - index.md
   - nets/blind-hams/index.md
   - nets/disabilities/index.md
   - nets/general/index.md
-
