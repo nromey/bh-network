@@ -2,41 +2,36 @@
 """
 Generate _data/bhn_ncos_schedule.yml from _data/ncos.yml
 
-- Next N Saturdays (TZ from _data/ncos.yml; defaults to America/New_York).
-- Per date:
-    1) If overrides has {date, callsign, note}, use that callsign + note.
-    2) Else use rotation by nth Saturday (1..5).
-    3) If neither applies, WRITE a row with nco="TBD", notes explaining why,
-       and unassigned=true; also emit a GitHub Actions warning.
+Rules per Saturday:
+  1) If there's an override (date+callsign), use that (and note).
+  2) Else use rotation by nth Saturday (1..5).
+  3) Else write TBD with a helpful note, mark unassigned=true,
+     and print a GitHub Actions warning.
 
-Output:
-items:
-  - date: YYYY-MM-DD
-    nco: <CALLSIGN or "TBD">
-    notes: <string, may be empty>
-    unassigned: <true|false>
+Behavior:
+  - Warn-only by default (build does NOT fail if there are unassigned dates).
+  - Set STRICT_NCO=1 to fail CI when any unassigned dates are emitted.
 """
 
 from __future__ import annotations
 
+import os
 import sys
-import calendar
-from datetime import datetime, timedelta
-from pathlib import Path
-from zoneinfo import ZoneInfo
 import yaml
+import calendar
+from pathlib import Path
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
 
 # How many upcoming Saturdays to emit
 N_DATES = 12
 
-
-def find_repo_root(start: Path) -> Path:
-    p = start.resolve()
-    for anc in [p] + list(p.parents):
-        if (anc / "_config.yml").exists():
-            return anc
-    print("[warn] _config.yml not found; using script directory")
-    return p
+# We know this script lives at:   repo_root/bhn/scripts/build_bhn_data.py
+# So repo_root = Path(__file__).parents[2]
+ROOT = Path(__file__).resolve().parents[2]
+NCOS_FILE = ROOT / "_data" / "ncos.yml"
+OUT_FILE  = ROOT / "_data" / "bhn_ncos_schedule.yml"
 
 
 def load_yaml(p: Path) -> dict:
@@ -74,24 +69,17 @@ def next_saturdays(start_dt: datetime, count: int):
 
 
 def main() -> int:
-    here = Path(__file__).parent
-    root = find_repo_root(here)
+    print(f"[info] ROOT={ROOT}")
+    print(f"[info] NCOS_FILE={NCOS_FILE}")
+    print(f"[info] OUT_FILE={OUT_FILE}")
+    print(f"[info] N_DATES={N_DATES}")
 
-    ncos_file = root / "_data" / "ncos.yml"
-    out_file = root / "_data" / "bhn_ncos_schedule.yml"
-
-    print(f"[info] cwd        = {Path.cwd()}")
-    print(f"[info] script dir = {here}")
-    print(f"[info] repo root  = {root}")
-    print(f"[info] NCOS_FILE  = {ncos_file}")
-    print(f"[info] OUT_FILE   = {out_file}")
-    print(f"[info] N_DATES    = {N_DATES}")
-
-    data = load_yaml(ncos_file)
+    data = load_yaml(NCOS_FILE)
 
     tz = ZoneInfo(data.get("time_zone", "America/New_York"))
     today = datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0)
 
+    # rotation: {1: "CALL", 2: "CALL", ...}
     rotation_src = data.get("rotation") or {}
     rotation: dict[int, str] = {}
     for k, v in rotation_src.items():
@@ -100,6 +88,7 @@ def main() -> int:
         except Exception:
             print(f"::warning ::rotation key not an int: {k!r} (ignored)")
 
+    # overrides_map: {"YYYY-MM-DD": {"callsign": "CALL", "note": "..."}}
     overrides_map: dict[str, dict[str, str]] = {}
     for item in (data.get("overrides") or []):
         dt = item.get("date")
@@ -113,7 +102,7 @@ def main() -> int:
         }
 
     items = []
-    unassigned = []
+    unassigned: list[tuple[str, int | None]] = []
 
     for dt in next_saturdays(today, N_DATES):
         date_key = dt.strftime("%Y-%m-%d")
@@ -139,15 +128,25 @@ def main() -> int:
             else:
                 is_unassigned = False
 
-        items.append({"date": date_key, "nco": callsign, "notes": note, "unassigned": bool(is_unassigned)})
+        items.append({
+            "date": date_key,
+            "nco": callsign,
+            "notes": note,
+            "unassigned": bool(is_unassigned),
+        })
 
-    dump_yaml(out_file, {"items": items})
-    print(f"[ok] wrote {len(items)} items to {out_file}")
+    dump_yaml(OUT_FILE, {"items": items})
+    print(f"[ok] wrote {len(items)} items to {OUT_FILE}")
 
     if unassigned:
         dates_list = ", ".join(f"{d} (#{n})" for d, n in unassigned)
         print(f"::notice ::Unassigned dates included as TBD: {dates_list}")
 
+    # Default: warn-only (build succeeds even with unassigned)
+    # Set STRICT_NCO=1 in the env to fail the job if there are unassigned rows
+    strict = os.getenv("STRICT_NCO", "0") == "1"
+    if strict and unassigned:
+        return 1
     return 0
 
 

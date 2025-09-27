@@ -2,8 +2,7 @@ name: "Generate NCO + Build and Deploy"
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
     paths:
       - "**.md"
       - "**.html"
@@ -14,7 +13,7 @@ on:
       - "_config.yml"
       - "Gemfile"
       - "Gemfile.lock"
-      - "scripts/**"
+      - "bhn/scripts/**"   # only watch the script in its known place
   schedule:
     - cron: "17 11 * * *"
   workflow_dispatch:
@@ -44,65 +43,28 @@ jobs:
       - name: Install Python deps
         run: pip install pyyaml
 
-      - name: Locate & run generator
+      - name: Generate schedule (warn-only)
+        env:
+          STRICT_NCO: "0"   # build succeeds even if TBD rows exist
         run: |
           set -euo pipefail
-          echo "PWD=$(pwd)"
-          echo "Workspace=$GITHUB_WORKSPACE"
-          echo "---- repo files (first 200) ----"
-          git ls-files | sed -n '1,200p'
-
-          # Known candidates (add anything else you use here)
-          candidates=(
-            "scripts/bhn_build_data.py"
-            "scripts/build_bhn_data.py"
-            "scripts/build_bhn_schedule.py"
-            "bhn/scripts/bhn_build_data.py"
-            "bhn/scripts/build_bhn_data.py"
-          )
-
-          SCRIPT=""
-          for p in "${candidates[@]}"; do
-            if [ -f "$p" ]; then SCRIPT="$p"; break; fi
-          done
-          if [ -z "$SCRIPT" ]; then
-            # Fallback: search common patterns within top-level folders
-            SCRIPT="$(find . -maxdepth 3 -type f \( -name "*bhn*data*.py" -o -name "*build_bhn*.py" \) | head -n1 || true)"
-          fi
-
-          if [ -z "$SCRIPT" ]; then
-            echo "::error ::Generator script not found. Searched: ${candidates[*]}"
-            echo "Directory tree for context:"
-            ls -R | sed -n '1,200p'
-            exit 1
-          fi
-
-          echo "Using generator: $SCRIPT"
-          python3 "$SCRIPT"
-
-      - name: Show generated YAML (head & tail)
-        run: |
+          python3 bhn/scripts/build_bhn_data.py
           echo "----- HEAD -----"; sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
           echo "----- TAIL -----"; tail -n 30 _data/bhn_ncos_schedule.yml || true
 
-      - name: Commit & push updated schedule (explicit refspec)
+      - name: Commit & push updated schedule
         if: github.ref == 'refs/heads/main'
-        env:
-          BRANCH_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add _data/bhn_ncos_schedule.yml
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
             git commit -m "chore: update BHN NCO schedule [skip ci]"
-            git push origin HEAD:"refs/heads/${BRANCH_NAME}"
+            git push
           fi
-          echo "----- REMOTE file preview (origin/${BRANCH_NAME}) -----"
-          git fetch origin "${BRANCH_NAME}"
-          git show origin/${BRANCH_NAME}:_data/bhn_ncos_schedule.yml | sed -n '1,30p'
 
       - uses: ruby/setup-ruby@v1
         with:
