@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate _data/bhn_ncos_schedule.yml from _data/ncos.yml
+
 Logic per date (next N Saturdays):
   1) If override with {date, callsign, note} exists, use that.
   2) Else use rotation by nth Saturday (1..5).

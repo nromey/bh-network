@@ -6,7 +6,7 @@ on:
     branches: [ main ]
     paths:
       - "_data/**"
-            - "scripts/**"        # 👈 if your script is under bhn/scripts/, change to "bhn/scripts/**"
+      - "scripts/**"        # 👈 if your script is under bhn/scripts/, change to "bhn/scripts/**"
       - "_includes/**"
       - "_layouts/**"
       - "assets/**"
