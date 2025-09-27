@@ -7,7 +7,8 @@ markdown: kramdown
 theme: minima
 plugins:
   - jekyll-feed
-minima:
+  - jemoji
+  minima:
   custom_css:
     - /assets/css/extra.css
 header_pages:
