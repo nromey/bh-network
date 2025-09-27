@@ -98,10 +98,12 @@ nets:
     # Provide a link so we don't default to the Bridge:
     location: "[SFARC repeater and linking info](https://www.w6ek.org) or allstar 51018"
 
-  - id: Friday-Night-net
+  - id: friday-night-net
+    category: "bhn"
     name: "The Friday Night Blind Hams Allstar and Echolink Net"
-    Description: "Join KY2D, Jim,  from Maine as he leads an informal check-in / comments naet to give Blind and Visually Impaired amateur radio operators a place to hang out on a Friday night. All topics are welcome."
-    Start_local: "20:00"
-    duration_min=60
+    description: "Join KY2D, Jim,  from Maine as he leads an informal check-in / comments net to give Blind and Visually Impaired amateur radio operators a place to hang out on Allstar and Echolink each Friday night."
+    start_local: "20:00" # 8:00 PM Eastern
+    duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=FR"
-    
+    allstar: "blind hams allstar or the KY2D allstar node 2396"
+    echolink: "*blind* conference or ky2d-r
