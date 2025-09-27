@@ -3,7 +3,7 @@ layout: default
 title: Blind Hams Digital Network Home
 ---
 
-# Welcome to the Blind Hams Digital Network
+# Welcome to the Blind Hams Digital Network!
 
 The **Blind Hams Digital Network** is a community built by and for blind and visually impaired amateur radio operators. While many of our conversations highlight accessibility and tools that work well for us, **all licensed radio amateurs are welcome** to join in.
 

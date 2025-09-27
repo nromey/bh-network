@@ -48,7 +48,7 @@ jobs:
           STRICT_NCO: "0"   # build succeeds even if TBD rows exist
         run: |
           set -euo pipefail
-          python3 bhn/scripts/build_bhn_data.py
+          python3 /scripts/build_bhn_data.py
           echo "----- HEAD -----"; sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
           echo "----- TAIL -----"; tail -n 30 _data/bhn_ncos_schedule.yml || true
 
