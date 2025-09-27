@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate _data/bhn_ncos_schedule.yml from _data/ncos.yml
+Note: the file location in thek repository as it stands now is scripts/build_bhn_data.pyu
 Rules per Saturday:
   1) If there's an override (date+callsign), use that (and note).
   2) Else use rotation by nth Saturday (1..5).

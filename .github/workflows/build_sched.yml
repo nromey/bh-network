@@ -1,21 +1,21 @@
-name: "Generate NCO + Build and Deploy"
+# .github/workflows/build.yml
+name: Generate NCO + Build & Deploy
 
 on:
   push:
     branches: [ main ]
     paths:
-      - "**.md"
-      - "**.html"
       - "_data/ncos.yml"
+      - "scripts/**"        # 👈 if your script is under bhn/scripts/, change to "bhn/scripts/**"
       - "_includes/**"
       - "_layouts/**"
       - "assets/**"
       - "_config.yml"
-      - "Gemfile"
-      - "Gemfile.lock"
-      - "bhn/scripts/**"
+      - "Gemfile*"
+      - "**.md"
+      - "**.html"
   schedule:
-    - cron: "17 11 * * *"
+    - cron: "17 11 * * *"   # daily ~07:17 ET (DST)
   workflow_dispatch:
 
 permissions:
@@ -43,46 +43,30 @@ jobs:
       - name: Install Python deps
         run: pip install pyyaml
 
-      - name: Locate & run generator
+      - name: Assert generator exists
         run: |
-          set -euo pipefail
-          echo "PWD=$(pwd)"
-          echo "Repo root: $(git rev-parse --show-toplevel)"
-          echo "---- first 200 tracked files ----"
-          git ls-files | sed -n '1,200p'
-          echo "---------------------------------"
+          set -e
+          test -f scripts/build_bhn_data.py || { echo "::error ::missing scripts/build_bhn_data.py"; exit 1; }
+          # If your script is actually bhn/scripts/build_bhn_data.py, use this instead:
+          # test -f bhn/scripts/build_bhn_data.py || { echo "::error ::missing bhn/scripts/build_bhn_data.py"; exit 1; }
 
-          candidates=(
-            "bhn/scripts/build_bhn_data.py"
-            "bhn/scripts/bhn_build_data.py"
-            "scripts/build_bhn_data.py"
-            "scripts/bhn_build_data.py"
-          )
-
-          SCRIPT=""
-          for p in "${candidates[@]}"; do
-            if [ -f "$p" ]; then SCRIPT="$p"; break; fi
-          done
-
-          if [ -z "$SCRIPT" ]; then
-            echo "No candidate matched; scanning…"
-            find . -maxdepth 4 -type f -iname '*bhn*data*.py' -print
-            echo "::error ::Generator script not found. Adjust the path or move/rename the file."
-            exit 1
-          fi
-
-          echo "Using generator: $SCRIPT"
-          python3 "$SCRIPT"
-
-      - name: Show generated YAML (head & tail)
+      - name: Run generator
+        env:
+          STRICT_NCO: "0"  # don't fail build if there are TBD/unassigned rows
         run: |
-          echo "----- HEAD -----"; sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
-          echo "----- TAIL -----"; tail -n 30 _data/bhn_ncos_schedule.yml || true
+          python3 scripts/build_bhn_data.py
+          # If it's in bhn/scripts/, use:
+          # python3 bhn/scripts/build_bhn_data.py
+
+          echo "----- HEAD of generated YAML -----"
+          sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
+          echo "----- TAIL of generated YAML -----"
+          tail -n 30 _data/bhn_ncos_schedule.yml || true
 
       - name: Commit & push updated schedule
         if: github.ref == 'refs/heads/main'
         run: |
-          set -euo pipefail
+          set -e
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add _data/bhn_ncos_schedule.yml
