@@ -36,9 +36,9 @@ items:
   notes: ''
   unassigned: false
 - date: '2025-11-29'
-  nco: TBD
-  notes: No NCO assigned (5th Saturday). Please add an override in _data/ncos.yml.
-  unassigned: true
+  nco: W5MRR
+  notes: ''
+  unassigned: false
 - date: '2025-12-06'
   nco: N2DYI
   notes: ''
