@@ -2,6 +2,7 @@
 """
 Generate _data/bhn_ncos_schedule.yml from _data/ncos.yml
 
+Set up the workflow so that it runs correctlyu with the right file. This will run strictly whether or not unassigned rows are present or nmopt, fifth Saturdays.
 Rules per Saturday:
   1) If there's an override (date+callsign), use that (and note).
   2) Else use rotation by nth Saturday (1..5).
