@@ -19,8 +19,8 @@ This site is a work in progress, and we’ll keep improving it. Thanks for your 
 
 ## What you can do today
 - Browse current nets on our network (and a few partner nets). If we’re missing one, let us know! The new system makes it super easy to add them so don't be shy, the sky's the limit!
-- Check the NCO rotation for our flagship Saturday morning net:  
-  **[Blind Hams Digital Net — NCO Schedule](/nets/blind-hams/nco-schedule/)**
+- Bored? Want to see something cool that took way too long to make but looks positively normal? Check the dynamically generated NCO rotation for our flagship Saturday morning net:
+  **[The Blind Hams Digital Net — Nifty NER:tm:'s NCO Schedule](/nets/blind-hams/nco-schedule/)**
 
 ---
 
