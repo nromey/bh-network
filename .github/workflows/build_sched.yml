@@ -13,7 +13,7 @@ on:
       - "_config.yml"
       - "Gemfile"
       - "Gemfile.lock"
-      - "bhn/scripts/**"   # only watch the script in its known place
+      - "bhn/scripts/**"
   schedule:
     - cron: "17 11 * * *"
   workflow_dispatch:
@@ -43,36 +43,41 @@ jobs:
       - name: Install Python deps
         run: pip install pyyaml
 
-- name: Locate & run generator
-  run: |
-    set -euo pipefail
-    echo "PWD=$(pwd)"
-    echo "Repo root: $(git rev-parse --show-toplevel)"
-    echo "---- first 200 tracked files ----"
-    git ls-files | sed -n '1,200p'
-    echo "---------------------------------"
+      - name: Locate & run generator
+        run: |
+          set -euo pipefail
+          echo "PWD=$(pwd)"
+          echo "Repo root: $(git rev-parse --show-toplevel)"
+          echo "---- first 200 tracked files ----"
+          git ls-files | sed -n '1,200p'
+          echo "---------------------------------"
 
-    candidates=(
-      "scripts/build_bhn_data.py"
-      "scripts/bhn_build_data.py"
-      "bhn/scripts/build_bhn_data.py"
-      "bhn/scripts/bhn_build_data.py"
-    )
+          candidates=(
+            "bhn/scripts/build_bhn_data.py"
+            "bhn/scripts/bhn_build_data.py"
+            "scripts/build_bhn_data.py"
+            "scripts/bhn_build_data.py"
+          )
 
-    SCRIPT=""
-    for p in "${candidates[@]}"; do
-      if [ -f "$p" ]; then SCRIPT="$p"; break; fi
-    done
+          SCRIPT=""
+          for p in "${candidates[@]}"; do
+            if [ -f "$p" ]; then SCRIPT="$p"; break; fi
+          done
 
-    if [ -z "$SCRIPT" ]; then
-      echo "No candidate matched; scanning…"
-      find . -maxdepth 4 -type f -iname '*bhn*data*.py' -print
-      echo "::error ::Generator script not found. Adjust the path or move/rename the file."
-      exit 1
-    fi
+          if [ -z "$SCRIPT" ]; then
+            echo "No candidate matched; scanning…"
+            find . -maxdepth 4 -type f -iname '*bhn*data*.py' -print
+            echo "::error ::Generator script not found. Adjust the path or move/rename the file."
+            exit 1
+          fi
 
-    echo "Using generator: $SCRIPT"
-    python3 "$SCRIPT"
+          echo "Using generator: $SCRIPT"
+          python3 "$SCRIPT"
+
+      - name: Show generated YAML (head & tail)
+        run: |
+          echo "----- HEAD -----"; sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
+          echo "----- TAIL -----"; tail -n 30 _data/bhn_ncos_schedule.yml || true
 
       - name: Commit & push updated schedule
         if: github.ref == 'refs/heads/main'
