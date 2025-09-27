@@ -102,6 +102,6 @@ nets:
     name: "The Friday Night Blind Hams Allstar and Echolink Net"
     Description: "Join KY2D, Jim,  from Maine as he leads an informal check-in / comments naet to give Blind and Visually Impaired amateur radio operators a place to hang out on a Friday night. All topics are welcome."
     Start_local: "20:00"
-    Duration=90
+    duration_min=60
     rrule: "FREQ=WEEKLY;BYDAY=FR"
     
