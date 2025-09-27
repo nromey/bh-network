@@ -97,3 +97,11 @@ nets:
     rrule: "FREQ=DAILY"
     # Provide a link so we don't default to the Bridge:
     location: "[SFARC repeater and linking info](https://www.w6ek.org) or allstar 51018"
+
+  - id: Friday-Night-net
+    name: "The Friday Night Blind Hams Allstar and Echolink Net"
+    Description: "Join KY2D, Jim,  from Maine as he leads an informal check-in / comments naet to give Blind and Visually Impaired amateur radio operators a place to hang out on a Friday night. All topics are welcome."
+    Start_local: "20:00"
+    Duration=90
+    rrule: "FREQ=WEEKLY;BYDAY=FR"
+    
