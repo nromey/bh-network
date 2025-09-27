@@ -5,11 +5,23 @@ title: Blind Hams Digital Network Home
 
 # Welcome to the Blind Hams Digital Network!
 
-The **Blind Hams Digital Network** is a community built by and for blind and visually impaired amateur radio operators. While many of our conversations highlight accessibility and tools that work well for us, **all licensed radio amateurs are welcome** to join in.
+The **Blind Hams Digital Network** is a community built by and for blind and visually impaired amateur radio operators. While many of our conversations highlight accessibility and tools that work well for us, **all licensed radio amateurs are welcome** to join in.  
 
-This site is a work in progress, and we’ll keep improving it. Thanks for your patience while things evolve.
+## News
 
-## What’s coming
+{% assign latest = site.posts.first %}
+{% if latest %}
+### [{{ latest.title }}]({{ latest.url | relative_url }})
+*{{ latest.date | date: "%B %-d, %Y" }}*
+
+{{ latest.excerpt | strip_html | strip_newlines | truncate: 300 }}
+[Read more →]({{ latest.url | relative_url }})
+{% else %}
+_No news posts yet. Check back soon!_
+{% endif %}
+
+
+## What’s coming, the to-do list
 - Up-to-the-minute solar data and a calculated MUF based on your location, presented in a clean, accessible format.
 - A quick “Up next” list of upcoming nets on the system.
 - Organized, filterable info on accessible radios and accessibility tips for various rigs.

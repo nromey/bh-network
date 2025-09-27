@@ -8,17 +8,18 @@ theme: minima
 
 plugins:
   - jekyll-feed
-  - jemoji
   # - jekyll-seo-tag      # optional, useful
   # - jekyll-sitemap      # optional, useful
 
 # Minima theme settings (note: this key must be top-level, not under `plugins`)
 minima:
   custom_css:
-    - /assets/css/extra.css
+     - /assets/css/extra.css
 
 header_pages:
   - index.md
   - nets/blind-hams/index.md
   - nets/disabilities/index.md
   - nets/general/index.md
+  - news.md
+  
