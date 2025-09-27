@@ -106,4 +106,4 @@ nets:
     duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=FR"
     allstar: "blind hams allstar or the KY2D allstar node 2396"
-    echolink: "*blind* conference or ky2d-r
+    echolink: "*blind* conference or ky2d-r"
