@@ -34,10 +34,132 @@ caption { text-align:left; font-weight:600; margin-bottom:.5rem; }
   display: block;          /* each link on its own "line" for arrowing */
 }
 
- / If you want them to lay out horizontally on wide screens, uncomment: 
+/* If you want them to lay out horizontally on wide screens, uncomment: */
 @media (min-width: 800px) {
   .nav-list { display: flex; gap: 1rem; }
   .nav-list li { margin: 0; }
   .nav-list a { display: inline-block; }
 }
 
+/* Next net section */
+.home-next-nets {
+  border: 2px solid #fff;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  background: #111;
+}
+
+.home-next-nets h2,
+.home-next-nets h3,
+.home-next-nets h4,
+.home-next-nets h5 {
+  margin-top: 1rem;
+  margin-bottom: .5rem;
+}
+
+.next-net-card,
+.next-net-item {
+  border: 2px solid #444;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: #000;
+}
+
+.next-net-meta {
+  margin: .5rem 0 1rem;
+}
+
+.next-net-label {
+  display: inline-block;
+  font-weight: 600;
+  margin-right: .5rem;
+}
+
+.next-net-duration,
+.next-net-tz {
+  margin-left: .5rem;
+}
+
+.next-net-accordion {
+  margin-top: 1.5rem;
+}
+
+.next-net-accordion summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.next-net-accordion summary:focus {
+  outline: 2px solid currentColor;
+  outline-offset: .2rem;
+}
+
+.next-net-accordion-body {
+  margin-top: 1rem;
+}
+
+.home-week-nets {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.home-week-nets .nets-header {
+  margin-bottom: 1rem;
+}
+
+.home-week-nets table {
+  background: #000;
+}
+
+.week-empty-message {
+  margin: 0 0 1rem;
+  font-style: italic;
+}
+
+.week-category-filter {
+  border: 2px solid #444;
+  padding: 1rem;
+  margin: 1rem 0;
+  background: #000;
+}
+
+.week-category-filter legend {
+  font-weight: 600;
+}
+
+.week-category-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1rem;
+}
+
+.week-category-option {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+
+.week-category-actions {
+  margin-top: .75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.week-category-actions button {
+  background: #111;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: .25rem .75rem;
+  cursor: pointer;
+}
+
+.week-category-actions button:hover {
+  background: #222;
+}
+
+.week-category-actions button:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

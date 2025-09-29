@@ -47,6 +47,7 @@ jobs:
         run: |
           set -e
           test -f scripts/build_bhn_data.py || { echo "::error ::missing scripts/build_bhn_data.py"; exit 1; }
+          test -f scripts/build_next_net.py || { echo "::error ::missing scripts/build_next_net.py"; exit 1; }
           # If your script is actually bhn/scripts/build_bhn_data.py, use this instead:
           # test -f bhn/scripts/build_bhn_data.py || { echo "::error ::missing bhn/scripts/build_bhn_data.py"; exit 1; }
 
@@ -55,8 +56,14 @@ jobs:
           STRICT_NCO: "0"  # don't fail build if there are TBD/unassigned rows
         run: |
           python3 scripts/build_bhn_data.py
+          python3 scripts/build_next_net.py
           # If it's in bhn/scripts/, use:
           # python3 bhn/scripts/build_bhn_data.py
+
+          echo "----- HEAD of next-net YAML -----"
+          sed -n '1,30p' _data/next_net.yml || true
+          echo "----- TAIL of next-net YAML -----"
+          tail -n 30 _data/next_net.yml || true
 
           echo "----- HEAD of generated YAML -----"
           sed -n '1,30p' _data/bhn_ncos_schedule.yml || true
@@ -69,11 +76,11 @@ jobs:
           set -e
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add _data/bhn_ncos_schedule.yml
+          git add _data/bhn_ncos_schedule.yml _data/next_net.yml
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: update BHN NCO schedule [skip ci]"
+            git commit -m "chore: refresh schedules [skip ci]"
             git push
           fi
 

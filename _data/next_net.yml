@@ -1,0 +1,174 @@
+generated_at: '2025-09-29T16:32:27.957631-04:00'
+time_zone: America/New_York
+next_net:
+  id: sounds-good
+  name: The Sounds Good Net
+  description: "For music fans and musicians, audio nerds and pros \u2014 anything\
+    \ to do with music and sound."
+  category: bhn
+  start_local_iso: '2025-09-29T20:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+week:
+- id: sounds-good
+  name: The Sounds Good Net
+  description: "For music fans and musicians, audio nerds and pros \u2014 anything\
+    \ to do with music and sound."
+  category: bhn
+  start_local_iso: '2025-09-29T20:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+- id: sfarc-coffee-break
+  name: Sierra Foothills ARC Coffee Break Net
+  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
+  category: general
+  start_local_iso: '2025-09-30T10:30:00-04:00'
+  duration_min: 150
+  time_zone: America/New_York
+- id: handi-hams-midday
+  name: Handi Hams Net
+  description: Weekday net hosted by Handi Hams.
+  category: disability
+  start_local_iso: '2025-09-30T12:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+- id: absolute-tech
+  name: Absolute Tech Net
+  description: A net to discuss technical amateur radio topics and troubleshoot issues
+    faced by hams around the world.
+  category: bhn
+  start_local_iso: '2025-09-30T19:00:00-04:00'
+  duration_min: 120
+  time_zone: America/New_York
+- id: sfarc-coffee-break
+  name: Sierra Foothills ARC Coffee Break Net
+  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
+  category: general
+  start_local_iso: '2025-10-01T10:30:00-04:00'
+  duration_min: 150
+  time_zone: America/New_York
+- id: handi-hams-midday
+  name: Handi Hams Net
+  description: Weekday net hosted by Handi Hams.
+  category: disability
+  start_local_iso: '2025-10-01T12:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+- id: look-at-this
+  name: Look At This Net
+  description: Smart glasses and assistive wearables from a blind/VI perspective,
+    for amateur radio and daily life.
+  category: bhn
+  start_local_iso: '2025-10-01T20:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+- id: handi-hams-trivia
+  name: Handi Hams Trivia Net
+  description: Weekly trivia net hosted by Handi Hams.
+  category: disability
+  start_local_iso: '2025-10-01T20:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+- id: sfarc-coffee-break
+  name: Sierra Foothills ARC Coffee Break Net
+  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
+  category: general
+  start_local_iso: '2025-10-02T10:30:00-04:00'
+  duration_min: 150
+  time_zone: America/New_York
+- id: handi-hams-midday
+  name: Handi Hams Net
+  description: Weekday net hosted by Handi Hams.
+  category: disability
+  start_local_iso: '2025-10-02T12:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+- id: blind-hams-tech
+  name: Blind Hams Tech Net
+  description: Monthly technical deep-dive net.
+  category: bhn
+  start_local_iso: '2025-10-02T20:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+- id: sfarc-coffee-break
+  name: Sierra Foothills ARC Coffee Break Net
+  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
+  category: general
+  start_local_iso: '2025-10-03T10:30:00-04:00'
+  duration_min: 150
+  time_zone: America/New_York
+- id: handi-hams-midday
+  name: Handi Hams Net
+  description: Weekday net hosted by Handi Hams.
+  category: disability
+  start_local_iso: '2025-10-03T12:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+- id: friday-night-net
+  name: The Friday Night Blind Hams Allstar and Echolink Net
+  description: Join KY2D, Jim,  from Maine as he leads an informal check-in / comments
+    net to give Blind and Visually Impaired amateur radio operators a place to hang
+    out on Allstar and Echolink each Friday night.
+  category: bhn
+  start_local_iso: '2025-10-03T20:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+- id: bh-digital
+  name: Blind Hams Digital Net
+  description: Weekly net for blind and sighted amateur radio operators to gather
+    and share timely info for the ham community.
+  category: bhn
+  start_local_iso: '2025-10-04T10:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+- id: sfarc-coffee-break
+  name: Sierra Foothills ARC Coffee Break Net
+  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
+  category: general
+  start_local_iso: '2025-10-04T10:30:00-04:00'
+  duration_min: 150
+  time_zone: America/New_York
+- id: visually-inconvenienced
+  name: Visually Inconvenienced Hams Net
+  description: "Topical net for all hams from a visually \u2018inconvenienced\u2019\
+    \ angle. Final net of the month highlights weather talk and Q&A."
+  category: bhn
+  start_local_iso: '2025-10-04T20:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+- id: sfarc-coffee-break
+  name: Sierra Foothills ARC Coffee Break Net
+  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
+  category: general
+  start_local_iso: '2025-10-05T10:30:00-04:00'
+  duration_min: 150
+  time_zone: America/New_York
+- id: bh-hf-20m
+  name: Blind Hams HF Net (20m)
+  description: HF net on 20 meters for the Blind Hams community. Check your propagation
+    and talk to other blind hams and friends of the network on HF.
+  category: bhn
+  start_local_iso: '2025-10-05T15:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+- id: sfarc-coffee-break
+  name: Sierra Foothills ARC Coffee Break Net
+  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
+  category: general
+  start_local_iso: '2025-10-06T10:30:00-04:00'
+  duration_min: 150
+  time_zone: America/New_York
+- id: handi-hams-midday
+  name: Handi Hams Net
+  description: Weekday net hosted by Handi Hams.
+  category: disability
+  start_local_iso: '2025-10-06T12:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+categories:
+- bhn
+- disability
+- general
+primary_category: bhn
+default_categories:
+- bhn

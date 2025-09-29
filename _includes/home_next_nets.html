@@ -1,0 +1,152 @@
+{%- assign payload = site.data.next_net -%}
+{%- if payload -%}
+<section class="home-next-nets" aria-labelledby="next-net-heading">
+  <h2 id="next-net-heading">Up Next on the Blind Hams Bridge</h2>
+  {%- assign next = payload.next_net -%}
+  {%- if next -%}
+  <article class="next-net-card" aria-labelledby="next-net-title">
+    <h3 id="next-net-title">{{ next.name }}</h3>
+    <p class="next-net-meta">
+      <span class="next-net-label">When</span>
+      <time datetime="{{ next.start_local_iso }}">{{ next.start_local_iso | date: "%A, %B %-d, %Y at %-I:%M %p" }}</time>
+      <span class="next-net-tz">{{ next.time_zone | replace: "America/New_York", "Eastern" }}</span>
+      {%- if next.duration_min -%}
+      <span class="next-net-duration">· {{ next.duration_min }} min</span>
+      {%- endif -%}
+    </p>
+    <h4>What to expect</h4>
+    <p>{{ next.description }}</p>
+  </article>
+  {%- else -%}
+  <p class="next-net-empty">No upcoming nets found in this category.</p>
+  {%- endif -%}
+
+  {%- assign week = payload.week -%}
+  {%- assign all_nets = site.data.nets.nets | default: empty -%}
+  {%- if week and week != empty -%}
+  {%- assign available_categories = payload.categories | default: empty -%}
+  {%- assign default_categories = payload.default_categories | default: nil -%}
+  {%- if default_categories == nil or default_categories == empty -%}
+    {%- assign default_categories = payload.primary_category | split: "," -%}
+  {%- endif -%}
+  <details class="next-net-accordion">
+    <summary id="week-nets-summary"><span>Show nets for the next week</span></summary>
+    <div class="next-net-accordion-body" aria-labelledby="week-nets-summary">
+      <section class="nets-section home-week-nets" data-view="table" id="home-week-nets" data-primary-category="{{ payload.primary_category }}">
+        <header class="nets-header">
+          <h3>Week at a glance</h3>
+          {%- if available_categories and available_categories != empty -%}
+          <fieldset class="week-category-filter" aria-label="Filter weekly nets by category">
+            <legend>Categories</legend>
+            <div class="week-category-options">
+            {%- for cat in available_categories -%}
+              {%- capture cat_label -%}
+                {%- case cat -%}
+                  {%- when "bhn" -%}Blind Hams Network
+                  {%- when "disability" -%}Disability Nets
+                  {%- when "general" -%}General Interest
+                  {%- else -%}{{ cat | capitalize }}
+                {%- endcase -%}
+              {%- endcapture -%}
+              <div class="week-category-option">
+                <input type="checkbox" id="week-cat-{{ cat }}" value="{{ cat }}" data-category-toggle data-label="{{ cat_label | strip }}" {% if default_categories contains cat %}checked{% endif %}>
+                <label for="week-cat-{{ cat }}">{{ cat_label | strip }}</label>
+              </div>
+            {%- endfor -%}
+            </div>
+            <div class="week-category-actions">
+              {%- capture primary_label -%}
+                {%- case payload.primary_category -%}
+                  {%- when "bhn" -%}Blind Hams only
+                  {%- when "disability" -%}Disability only
+                  {%- when "general" -%}General Interest only
+                  {%- else -%}Primary category only
+                {%- endcase -%}
+              {%- endcapture -%}
+              <button type="button" data-category-select="all">Select all</button>
+              <button type="button" data-category-select="primary">{{ primary_label | strip }}</button>
+            </div>
+            <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-week-filter-status></span>
+          </fieldset>
+          {%- endif -%}
+          <fieldset class="view-toggle" aria-label="Display format for weekly nets">
+            <legend class="sr-only">Display format</legend>
+            <button type="button" data-view-button="table" aria-pressed="true">Table view</button>
+            <button type="button" data-view-button="headings" aria-pressed="false">Headings view</button>
+            <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-net-view-status></span>
+          </fieldset>
+        </header>
+
+        <p class="week-empty-message" hidden data-week-empty>No categories selected. Choose at least one category to show weekly nets.</p>
+
+        <div class="view view-table">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Net</th>
+                <th scope="col">When</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Location</th>
+              </tr>
+            </thead>
+            <tbody>
+              {%- for occ in week -%}
+                {%- assign net = all_nets | where: "id", occ.id | first -%}
+                {%- assign is_default = default_categories contains occ.category -%}
+                <tr data-category-item data-category="{{ occ.category }}" {% unless is_default %}hidden{% endunless %}>
+                  <td>
+                    <strong>{{ occ.name }}</strong><br>
+                    <small>{{ occ.description }}</small>
+                  </td>
+                  <td>
+                    <time datetime="{{ occ.start_local_iso }}">{{ occ.start_local_iso | date: "%A, %B %-d at %-I:%M %p" }}</time>
+                    <span class="next-net-tz">{{ occ.time_zone | replace: "America/New_York", "Eastern" }}</span>
+                  </td>
+                  <td>{%- if occ.duration_min -%}{{ occ.duration_min }} min{%- else -%}—{%- endif -%}</td>
+                  <td>
+                    {%- if net -%}
+                      {%- include net_location.html net=net -%}
+                    {%- else -%}
+                      Blind Hams Bridge
+                    {%- endif -%}
+                  </td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="view view-headings" hidden>
+          {%- for occ in week -%}
+            {%- assign net = all_nets | where: "id", occ.id | first -%}
+            {%- assign is_default = default_categories contains occ.category -%}
+            <article class="next-net-item" aria-labelledby="week-net-{{ forloop.index }}" data-category-item data-category="{{ occ.category }}" {% unless is_default %}hidden{% endunless %}>
+              <h4 id="week-net-{{ forloop.index }}">{{ occ.name }}</h4>
+              <p class="next-net-meta">
+                <span class="next-net-label">When</span>
+                <time datetime="{{ occ.start_local_iso }}">{{ occ.start_local_iso | date: "%A, %B %-d at %-I:%M %p" }}</time>
+                <span class="next-net-tz">{{ occ.time_zone | replace: "America/New_York", "Eastern" }}</span>
+                {%- if occ.duration_min -%}
+                <span class="next-net-duration">· {{ occ.duration_min }} min</span>
+                {%- endif -%}
+              </p>
+              <h5>About this net</h5>
+              <p>{{ occ.description }}</p>
+              <h5>Where</h5>
+              <p>
+                {%- if net -%}
+                  {%- include net_location.html net=net -%}
+                {%- else -%}
+                  Blind Hams Bridge
+                {%- endif -%}
+              </p>
+            </article>
+          {%- endfor -%}
+        </div>
+      </section>
+    </div>
+  </details>
+  {%- endif -%}
+</section>
+{%- endif -%}
+<script defer src="{{ '/assets/js/home-week-filter.js' | relative_url }}"></script>

@@ -7,6 +7,8 @@ title: Blind Hams Digital Network Home
 
 The **Blind Hams Digital Network** is a community built by and for blind and visually impaired amateur radio operators. While many of our conversations highlight accessibility and tools that work well for us, **all licensed radio amateurs are welcome** to join in.  
 
+{% include home_next_nets.html %}
+
 ## News
 
 {% assign latest = site.posts.first %}
@@ -40,4 +42,3 @@ Questions, ideas, or something we should add? We’d love to hear from you.
 
 **73,**  
 **K5NER** — Webmaster and Net Manager, Blind Hams Network
-
