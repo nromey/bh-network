@@ -3,7 +3,20 @@
   // Use one global key for all nets sections across the site
   const KEY = "netView:global:nets";
 
-  const setView = (view) => {
+  const announceView = (section, view) => {
+    const status = section.querySelector('[data-net-view-status]');
+    if (!status) return;
+
+    const message = view === "headings"
+      ? "Headings view selected"
+      : "Table view selected";
+
+    status.textContent = message;
+  };
+
+  const setView = (view, options = {}) => {
+    const { announce = false } = options;
+
     // Persist the chosen view
     try { localStorage.setItem(KEY, view); } catch (_) {}
 
@@ -23,11 +36,14 @@
         section.dataset.view = "table";
       }
 
-      // Sync radio buttons
-      const radios = section.querySelectorAll('input[name^="net-view"]');
-      radios.forEach((r) => {
-        r.checked = (r.value === view);
+      // Sync toggle buttons
+      const buttons = section.querySelectorAll('[data-view-button]');
+      buttons.forEach((btn) => {
+        const isActive = btn.dataset.viewButton === view;
+        btn.setAttribute("aria-pressed", isActive ? "true" : "false");
       });
+
+      if (announce) announceView(section, view);
     });
   };
 
@@ -48,13 +64,16 @@
   }
   setView(initial);
 
-  // Listen for changes in any section (radio buttons)
-  document.addEventListener("change", (e) => {
-    const t = e.target;
-    if (t && t.name && t.name.startsWith("net-view")) {
-      if (t.value === "table" || t.value === "headings") {
-        setView(t.value); // updates all sections + saves globally
-      }
-    }
+  // Listen for clicks on the toggle buttons
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest('[data-view-button]');
+    if (!btn) return;
+
+    const value = btn.dataset.viewButton;
+    if (!value || (value !== "table" && value !== "headings")) return;
+
+    if (btn.getAttribute("aria-pressed") === "true") return;
+
+    setView(value, { announce: true });
   });
 })();

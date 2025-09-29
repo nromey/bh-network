@@ -31,19 +31,14 @@ This block is duplicated in both views (scoped to each n).
 
     <fieldset class="view-toggle" aria-label="Display format">
       <legend class="sr-only">Display format</legend>
-      <label>
-        <input type="radio" name="net-view-{{ section_id }}" value="table" checked>
-        Table
-      </label>
-      <label>
-        <input type="radio" name="net-view-{{ section_id }}" value="headings">
-        Headings
-      </label>
+      <button type="button" data-view-button="table" aria-pressed="true">Table view</button>
+      <button type="button" data-view-button="headings" aria-pressed="false">Headings view</button>
+      <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-net-view-status></span>
     </fieldset>
   </header>
 
   <!-- TABLE VIEW -->
-  <div class="view view-table" aria-live="polite">
+  <div class="view view-table">
     <table>
       <thead>
         <tr>
@@ -172,7 +167,7 @@ This block is duplicated in both views (scoped to each n).
             <strong>{{ n.name }}</strong><br>
             <small>{{ n.description }}</small>
             {%- if n.id == "bh-digital" -%}
-              <br><a href="#{{ nco_anchor }}">See NCO schedule ↓</a>
+              <br><a href="#{{ nco_anchor }}">See NCO schedule <span aria-hidden="true">↓</span></a>
             {%- endif -%}
           </td>
           <td>
@@ -187,7 +182,7 @@ This block is duplicated in both views (scoped to each n).
   </div>
 
   <!-- HEADINGS VIEW -->
-  <div class="view view-headings" hidden aria-live="polite">
+  <div class="view view-headings" hidden>
     {% for n in filtered %}
       {%- assign _tz_full = n.tz_full | default: "Eastern" -%}
 
@@ -299,7 +294,7 @@ This block is duplicated in both views (scoped to each n).
           {%- if n.duration_min %} ({{ n.duration_min }} min){% endif -%}
         </p>
         {%- if n.id == "bh-digital" -%}
-          <p><a href="#{{ nco_anchor }}">See NCO schedule ↓</a></p>
+          <p><a href="#{{ nco_anchor }}">See NCO schedule <span aria-hidden="true">↓</span></a></p>
         {%- endif -%}
         <p class="net-where"><strong>Where:</strong> {% include net_location.html net=n %}</p>
         <p class="net-desc">{{ n.description }}</p>
