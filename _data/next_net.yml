@@ -1,23 +1,15 @@
-generated_at: '2025-09-29T16:51:28.977977-04:00'
+generated_at: '2025-09-29T22:40:24.714627-04:00'
 time_zone: America/New_York
 next_net:
-  id: sounds-good
-  name: The Sounds Good Net
-  description: "For music fans and musicians, audio nerds and pros \u2014 anything\
-    \ to do with music and sound."
+  id: absolute-tech
+  name: Absolute Tech Net
+  description: A net to discuss technical amateur radio topics and troubleshoot issues
+    faced by hams around the world.
   category: bhn
-  start_local_iso: '2025-09-29T20:00:00-04:00'
-  duration_min: 90
+  start_local_iso: '2025-09-30T19:00:00-04:00'
+  duration_min: 120
   time_zone: America/New_York
 week:
-- id: sounds-good
-  name: The Sounds Good Net
-  description: "For music fans and musicians, audio nerds and pros \u2014 anything\
-    \ to do with music and sound."
-  category: bhn
-  start_local_iso: '2025-09-29T20:00:00-04:00'
-  duration_min: 90
-  time_zone: America/New_York
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
   description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
@@ -143,12 +135,12 @@ week:
   start_local_iso: '2025-10-05T10:30:00-04:00'
   duration_min: 150
   time_zone: America/New_York
-- id: bh-hf-20m
-  name: Blind Hams HF Net (20m)
-  description: HF net on 20 meters for the Blind Hams community. Check your propagation
-    and talk to other blind hams and friends of the network on HF.
+- id: bh-cross-country-hf
+  name: Blind Hams Cross Country Net
+  description: HF net for the Blind Hams community. Check your propagation and talk
+    to other blind hams and friends of the network on HF.
   category: bhn
-  start_local_iso: '2025-10-05T15:00:00-04:00'
+  start_local_iso: '2025-10-05T16:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
 - id: sfarc-coffee-break
@@ -163,6 +155,14 @@ week:
   description: Weekday net hosted by Handi Hams.
   category: disability
   start_local_iso: '2025-10-06T12:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+- id: sounds-good
+  name: The Sounds Good Net
+  description: "For music fans and musicians, audio nerds and pros \u2014 anything\
+    \ to do with music and sound."
+  category: bhn
+  start_local_iso: '2025-10-06T20:00:00-04:00'
   duration_min: 90
   time_zone: America/New_York
 categories:
