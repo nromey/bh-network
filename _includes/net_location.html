@@ -34,6 +34,46 @@ Order/logic:
     {%- assign pieces = pieces | push: "EchoLink " | push: net.echolink -%}
   {%- endif -%}
 
+  {%- comment -%}
+  Additional digital voice and app links commonly used:
+  - Peanut (dvmega app)
+  - D-STAR (accept both `dstar` and `DStar` keys)
+  - YSF (Yaesu System Fusion)
+  - WIRES-X (accept `wiresx` or `wires_x`)
+  - P25
+  - NXDN
+  {%- endcomment -%}
+
+  {%- assign peanut_val = net.peanut -%}
+  {%- if peanut_val -%}
+    {%- assign pieces = pieces | push: "Peanut " | push: peanut_val -%}
+  {%- endif -%}
+
+  {%- assign dstar_val = net.dstar | default: net.DStar -%}
+  {%- if dstar_val -%}
+    {%- assign pieces = pieces | push: "D-STAR " | push: dstar_val -%}
+  {%- endif -%}
+
+  {%- assign ysf_val = net.ysf -%}
+  {%- if ysf_val -%}
+    {%- assign pieces = pieces | push: "YSF " | push: ysf_val -%}
+  {%- endif -%}
+
+  {%- assign wiresx_val = net.wiresx | default: net.wires_x -%}
+  {%- if wiresx_val -%}
+    {%- assign pieces = pieces | push: "WIRES-X " | push: wiresx_val -%}
+  {%- endif -%}
+
+  {%- assign p25_val = net.p25 -%}
+  {%- if p25_val -%}
+    {%- assign pieces = pieces | push: "P25 " | push: p25_val -%}
+  {%- endif -%}
+
+  {%- assign nxdn_val = net.nxdn -%}
+  {%- if nxdn_val -%}
+    {%- assign pieces = pieces | push: "NXDN " | push: nxdn_val -%}
+  {%- endif -%}
+
   {%- assign joined = pieces | join: " · " | strip -%}
 
   {%- if joined == "" and net.website -%}

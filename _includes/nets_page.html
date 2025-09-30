@@ -43,14 +43,18 @@ This block is duplicated in both views (scoped to each n).
       <thead>
         <tr>
           <th scope="col">Net</th>
+          <th scope="col">Description</th>
           <th scope="col">When</th>
           <th scope="col">Duration</th>
-          <th scope="col">Location</th>
+          <th scope="col">AllStar</th>
+          <th scope="col">EchoLink</th>
+          <th scope="col">Other modes</th>
         </tr>
       </thead>
       <tbody>
       {% for n in filtered %}
-        {%- assign _tz_full = n.tz_full | default: "Eastern" -%}
+        {%- assign tzname = n.time_zone | default: "America/New_York" -%}
+        {%- assign _tz_full = tzname | replace: "America/New_York", "Eastern" -%}
 
         {%- comment -%} Time display from start_local or legacy " at " in rrule {%- endcomment -%}
         {%- assign _display_time = "" -%}
@@ -164,17 +168,73 @@ This block is duplicated in both views (scoped to each n).
 
         <tr>
           <td>
-            <strong>{{ n.name }}</strong><br>
-            <small>{{ n.description }}</small>
+            <strong>{{ n.name }}</strong>
             {%- if n.id == "bh-digital" -%}
               <br><a href="#{{ nco_anchor }}">See NCO schedule <span aria-hidden="true">↓</span></a>
             {%- endif -%}
           </td>
+          <td class="net-desc">{{ n.description }}</td>
           <td>
             {%- if _schedule_phrase != "" -%}{{ _schedule_phrase }}{%- else -%}—{%- endif -%}
           </td>
           <td>{%- if n.duration_min -%}{{ n.duration_min }} min{%- else -%}—{%- endif -%}</td>
-          <td>{% include net_location.html net=n %}</td>
+          <td>{%- if n.allstar and n.allstar != "" -%}{{ n.allstar }}{%- else -%}—{%- endif -%}</td>
+          <td>{%- if n.echolink and n.echolink != "" -%}{{ n.echolink }}{%- else -%}—{%- endif -%}</td>
+          <td>
+            {%- assign _other = "" | split: "" -%}
+            {%- if n.frequency -%}
+              {%- assign _freq = n.frequency -%}
+              {%- if n.mode and n.mode != "" -%}{%- assign _freq = _freq | append: " " | append: n.mode -%}{%- endif -%}
+              {%- assign _other = _other | push: _freq -%}
+            {%- endif -%}
+            {%- assign _dmr_sys = n.dmr_system | default: n.DMR_System -%}
+            {%- assign _dmr_tg = n.dmr_tg | default: n.DMR_TG -%}
+            {%- assign _has_dmr_struct = '' -%}
+            {%- if _dmr_sys and _dmr_tg -%}{%- assign _has_dmr_struct = 'yes' -%}{%- endif -%}
+            {%- if n.talkgroup and _has_dmr_struct == '' -%}
+              {%- assign _other = _other | push: "Talkgroup " | push: n.talkgroup -%}
+            {%- endif -%}
+            {%- assign _dmr_val = n.dmr | default: n.DMR -%}
+            {%- if _dmr_sys and _dmr_tg -%}
+              {%- assign _other = _other | push: "DMR " | push: _dmr_sys | push: " TG " | push: _dmr_tg -%}
+            {%- elsif _dmr_val -%}
+              {%- assign _other = _other | push: "DMR " | push: _dmr_val -%}
+            {%- endif -%}
+            {%- assign _mode_up = n.mode | upcase -%}
+            {%- if _has_dmr_struct == '' and (_dmr_val == nil or _dmr_val == '') and _mode_up == "DMR" -%}
+              {%- assign _other = _other | push: "DMR" -%}
+            {%- endif -%}
+            {%- assign _dstar = n.dstar | default: n.DStar -%}
+            {%- if _dstar -%}
+              {%- assign _other = _other | push: "D-STAR " | push: _dstar -%}
+            {%- endif -%}
+            {%- if n.peanut -%}
+              {%- assign _other = _other | push: "Peanut " | push: n.peanut -%}
+            {%- endif -%}
+            {%- if n.ysf -%}
+              {%- assign _other = _other | push: "YSF " | push: n.ysf -%}
+            {%- endif -%}
+            {%- assign _wiresx = n.wiresx | default: n.wires_x -%}
+            {%- if _wiresx -%}
+              {%- assign _other = _other | push: "WIRES-X " | push: _wiresx -%}
+            {%- endif -%}
+            {%- if n.p25 -%}
+              {%- assign _other = _other | push: "P25 " | push: n.p25 -%}
+            {%- endif -%}
+            {%- if n.nxdn -%}
+              {%- assign _other = _other | push: "NXDN " | push: n.nxdn -%}
+            {%- endif -%}
+            {%- assign _other_joined = _other | join: " · " | strip -%}
+            {%- if _other_joined == "" and n.location -%}
+              {%- assign _loc = n.location | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip -%}
+              {%- assign _other_joined = _loc -%}
+            {%- endif -%}
+            {%- if _other_joined == "" and n.website -%}
+              {%- assign _other_joined = "[More info](" | append: n.website | append: ")" 
+                 | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip -%}
+            {%- endif -%}
+            {%- if _other_joined != "" -%}{{ _other_joined }}{%- else -%}—{%- endif -%}
+          </td>
         </tr>
       {% endfor %}
       </tbody>
@@ -184,7 +244,8 @@ This block is duplicated in both views (scoped to each n).
   <!-- HEADINGS VIEW -->
   <div class="view view-headings" hidden>
     {% for n in filtered %}
-      {%- assign _tz_full = n.tz_full | default: "Eastern" -%}
+      {%- assign tzname = n.time_zone | default: "America/New_York" -%}
+      {%- assign _tz_full = tzname | replace: "America/New_York", "Eastern" -%}
 
       {%- assign _display_time = "" -%}
       {%- if n.start_local and n.start_local != "" -%}
@@ -297,6 +358,46 @@ This block is duplicated in both views (scoped to each n).
           <p><a href="#{{ nco_anchor }}">See NCO schedule <span aria-hidden="true">↓</span></a></p>
         {%- endif -%}
         <p class="net-where"><strong>Where:</strong> {% include net_location.html net=n %}</p>
+
+        {%- assign _other = "" | split: "" -%}
+        {%- if n.frequency -%}
+          {%- assign _freq = n.frequency -%}
+          {%- if n.mode and n.mode != "" -%}{%- assign _freq = _freq | append: " " | append: n.mode -%}{%- endif -%}
+          {%- assign _other = _other | push: _freq -%}
+        {%- endif -%}
+        {%- if n.talkgroup -%}
+          {%- assign _other = _other | push: "Talkgroup " | push: n.talkgroup -%}
+        {%- endif -%}
+        {%- assign _dstar = n.dstar | default: n.DStar -%}
+        {%- if _dstar -%}
+          {%- assign _other = _other | push: "D-STAR " | push: _dstar -%}
+        {%- endif -%}
+        {%- if n.peanut -%}
+          {%- assign _other = _other | push: "Peanut " | push: n.peanut -%}
+        {%- endif -%}
+        {%- if n.ysf -%}
+          {%- assign _other = _other | push: "YSF " | push: n.ysf -%}
+        {%- endif -%}
+        {%- assign _wiresx = n.wiresx | default: n.wires_x -%}
+        {%- if _wiresx -%}
+          {%- assign _other = _other | push: "WIRES-X " | push: _wiresx -%}
+        {%- endif -%}
+        {%- if n.p25 -%}
+          {%- assign _other = _other | push: "P25 " | push: n.p25 -%}
+        {%- endif -%}
+        {%- if n.nxdn -%}
+          {%- assign _other = _other | push: "NXDN " | push: n.nxdn -%}
+        {%- endif -%}
+        {%- assign _other_joined = _other | join: " · " | strip -%}
+
+        <p class="net-connections">
+          <strong>Connections:</strong>
+          AllStar: {%- if n.allstar and n.allstar != "" -%} {{ n.allstar }} {%- else -%} — {%- endif -%}
+          · EchoLink: {%- if n.echolink and n.echolink != "" -%} {{ n.echolink }} {%- else -%} — {%- endif -%}
+          {%- if _other_joined != "" -%}
+          · Other: {{ _other_joined }}
+          {%- endif -%}
+        </p>
         <p class="net-desc">{{ n.description }}</p>
       </article>
       {% unless forloop.last %}<hr>{% endunless %}

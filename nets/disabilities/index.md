@@ -16,4 +16,5 @@ can easily find and join. If you have a net to suggest, contact
 </span>
 and we’ll get it added.
 
+{% include next_net_card.html heading_id="disability-next-net-heading" title="Next featured net" %}
 {% include nets_page.html nets=site.data.nets.nets   title="Disability Nets" category="disability" section_id="nets-disability" %}

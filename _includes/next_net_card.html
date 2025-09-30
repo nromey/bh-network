@@ -1,0 +1,22 @@
+{%- assign payload = site.data.next_net -%}
+{%- if payload and payload.next_net -%}
+  {%- assign next = payload.next_net -%}
+  {%- assign heading_id = include.heading_id | default: "next-net-heading" -%}
+  {%- assign title = include.title | default: "Up Next on the Blind Hams Bridge" -%}
+<section class="next-net-card-block" aria-labelledby="{{ heading_id }}">
+  <h2 id="{{ heading_id }}">{{ title }}</h2>
+  <article class="next-net-card" aria-labelledby="{{ heading_id }}-title">
+    <h3 id="{{ heading_id }}-title">{{ next.name }}</h3>
+    <p class="next-net-meta">
+      <span class="next-net-label">When</span>
+      <time datetime="{{ next.start_local_iso }}">{{ next.start_local_iso | date: "%A, %B %-d, %Y at %-I:%M %p" }}</time>
+      <span class="next-net-tz">{{ next.time_zone | replace: "America/New_York", "Eastern" }}</span>
+      {%- if next.duration_min -%}
+      <span class="next-net-duration">· {{ next.duration_min }} min</span>
+      {%- endif -%}
+    </p>
+    <h4>What to expect</h4>
+    <p>{{ next.description }}</p>
+  </article>
+</section>
+{%- endif -%}

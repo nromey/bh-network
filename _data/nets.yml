@@ -20,7 +20,7 @@ nets:
 
   - id: absolute-tech
     category: "bhn"
-    name: "Absolute Tech Net"
+    name: "$Absolute Tech Net"
     description: "A net to discuss technical amateur radio topics and troubleshoot issues faced by hams around the world."
     start_local: "19:00"     # 7:00 PM ET
     duration_min: 120
@@ -67,12 +67,12 @@ nets:
     rrule: "FREQ=WEEKLY;BYDAY=SU"
     frequency: "14.303 MHz"
     mode: "USB"
-    location: "20 m HF"      # override default Bridge label for HF nets
+    location: "20 meters band on HF"      # override default Bridge label for this net
 
   - id: handi-hams-midday
     category: "disability"
     name: "Handi Hams Net"
-    description: "Weekday net hosted by Handi Hams."
+    description: "Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org) discussing topics of interest to radio amateurs who have different disabilities."
     start_local: "12:00"     # 12:00 PM ET
     duration_min: 90
     rrule: "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"
@@ -97,14 +97,39 @@ nets:
     duration_min: 150
     rrule: "FREQ=DAILY"
     # Provide a link so we don't default to the Bridge:
-    location: "[SFARC repeater and linking info](https://www.w6ek.org) or allstar 51018"
+    location: "[SFARC repeater system](https://www.w6ek.org) or allstar 51018"
 
   - id: friday-night-net
     category: "bhn"
     name: "The Friday Night Blind Hams Allstar and Echolink Net"
-    description: "Join KY2D, Jim,  from Maine as he leads an informal check-in / comments net to give Blind and Visually Impaired amateur radio operators a place to hang out on Allstar and Echolink each Friday night."
+    description: "Join [KY2D, Jim,  from Maine as he leads an informal check-in / comments net to give Blind and Visually Impaired amateur radio operators a place to hang out on Allstar and Echolink each Friday night."
     start_local: "20:00" # 8:00 PM Eastern
     duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=FR"
     allstar: "blind hams allstar or the KY2D allstar node 2396"
     echolink: "*blind* conference or ky2d-r"
+
+  - id: newsline
+    category: bhn
+    name: "Amateur Radio Newsline"
+    description: "Amateur Radio Newsline™ is a free service to the amateur radio community.  [Amateur Radio Newsline](https://www.arnewsline.org)   produces a weekly audio news bulletin called a “QST” or “bulletin of interest to radio amateurs” that can be heard on the blind hams digital network, or via a podcast download."
+    start_local: "15:00"
+    allstar: "See the [Blind Hams Digital Network](www.blindhamsnetwork) homepage to get the correct AllStar node number for your international region"
+    echolink: "*blind* conference"
+    rrule: "FREQ=WEEKLY;BYDAY=SU"
+    
+  - id: active-elements
+    category: "disability"
+    name: "Active Elements Digital Net"
+    description: "Weekly UK digital net."
+    start_local: "20:00" # 20:00 UTC
+    duration_min: 60
+    time_zone: UTC
+    rrule: "FREQ=WEEKLY;BYDAY=MO"
+    allstar: "node 56870"
+    dstar: "XRF299S"
+    peanut: "XRF299S"
+    mode: "DMR"
+    dmr_system: "BrandMeister"
+    dmr_tg: "53085"
+    location: "Active Elements Digital System"

@@ -1,4 +1,5 @@
 {%- assign payload = site.data.next_net -%}
+{%- assign all_nets = site.data.nets.nets | default: empty -%}
 {%- if payload -%}
 <section class="home-next-nets" aria-labelledby="next-net-heading">
   <h2 id="next-net-heading">Up Next on the Blind Hams Bridge</h2>
@@ -14,6 +15,66 @@
       <span class="next-net-duration">· {{ next.duration_min }} min</span>
       {%- endif -%}
     </p>
+    {%- comment -%} Connections for the next-up card {%- endcomment -%}
+    {%- assign next_net_def = all_nets | where: "id", next.id | first -%}
+    {%- assign nc = next.connections | default: nil -%}
+    {%- assign _allstar = nil -%}
+    {%- assign _echolink = nil -%}
+    {%- if nc -%}
+      {%- assign _allstar = nc.allstar -%}
+      {%- assign _echolink = nc.echolink -%}
+    {%- endif -%}
+    {%- if _allstar == nil and next_net_def and next_net_def.allstar -%}{%- assign _allstar = next_net_def.allstar -%}{%- endif -%}
+    {%- if _echolink == nil and next_net_def and next_net_def.echolink -%}{%- assign _echolink = next_net_def.echolink -%}{%- endif -%}
+
+    {%- assign _other = "" | split: "" -%}
+    {%- assign _freq = nil -%}
+    {%- if nc and nc.frequency -%}
+      {%- assign _freq = nc.frequency -%}
+      {%- if nc.mode and nc.mode != "" -%}{%- assign _freq = _freq | append: " " | append: nc.mode -%}{%- endif -%}
+    {%- elsif next_net_def and next_net_def.frequency -%}
+      {%- assign _freq = next_net_def.frequency -%}
+      {%- if next_net_def.mode and next_net_def.mode != "" -%}{%- assign _freq = _freq | append: " " | append: next_net_def.mode -%}{%- endif -%}
+    {%- endif -%}
+    {%- if _freq -%}{%- assign _other = _other | push: _freq -%}{%- endif -%}
+    {%- assign _dmr_sys = nc.dmr_system | default: next_net_def.dmr_system | default: next_net_def.DMR_System -%}
+    {%- assign _dmr_tg = nc.dmr_tg | default: next_net_def.dmr_tg | default: next_net_def.DMR_TG -%}
+    {%- assign _has_dmr_struct = '' -%}
+    {%- if _dmr_sys and _dmr_tg -%}{%- assign _has_dmr_struct = 'yes' -%}{%- endif -%}
+    {%- assign _tg = nc.talkgroup | default: next_net_def.talkgroup -%}
+    {%- if _tg and _has_dmr_struct == '' -%}{%- assign _other = _other | push: "Talkgroup " | push: _tg -%}{%- endif -%}
+    {%- assign _dmr = nc.dmr | default: next_net_def.dmr | default: next_net_def.DMR -%}
+    {%- if _dmr_sys and _dmr_tg -%}
+      {%- assign _other = _other | push: "DMR " | push: _dmr_sys | push: " TG " | push: _dmr_tg -%}
+    {%- elsif _dmr -%}
+      {%- assign _other = _other | push: "DMR " | push: _dmr -%}
+    {%- endif -%}
+    {%- assign _dstar = nc.dstar | default: next_net_def.dstar | default: next_net_def.DStar -%}
+    {%- if _dstar -%}{%- assign _other = _other | push: "D-STAR " | push: _dstar -%}{%- endif -%}
+    {%- assign _peanut = nc.peanut | default: next_net_def.peanut -%}
+    {%- if _peanut -%}{%- assign _other = _other | push: "Peanut " | push: _peanut -%}{%- endif -%}
+    {%- assign _ysf = nc.ysf | default: next_net_def.ysf -%}
+    {%- if _ysf -%}{%- assign _other = _other | push: "YSF " | push: _ysf -%}{%- endif -%}
+    {%- assign _wiresx = nc.wiresx | default: nc.wires_x | default: next_net_def.wiresx | default: next_net_def.wires_x -%}
+    {%- if _wiresx -%}{%- assign _other = _other | push: "WIRES-X " | push: _wiresx -%}{%- endif -%}
+    {%- assign _p25 = nc.p25 | default: next_net_def.p25 -%}
+    {%- if _p25 -%}{%- assign _other = _other | push: "P25 " | push: _p25 -%}{%- endif -%}
+    {%- assign _nxdn = nc.nxdn | default: next_net_def.nxdn -%}
+    {%- if _nxdn -%}{%- assign _other = _other | push: "NXDN " | push: _nxdn -%}{%- endif -%}
+    {%- assign _mode_up = nc.mode | default: next_net_def.mode | upcase -%}
+    {%- if _dmr == nil and _mode_up == "DMR" -%}
+      {%- assign _other = _other | push: "DMR" -%}
+    {%- endif -%}
+    {%- assign _other_joined = _other | join: " · " | strip -%}
+
+    <p class="next-net-connections">
+      <span class="next-net-label">Connections</span>
+      AllStar: {%- if _allstar and _allstar != "" -%} {{ _allstar }} {%- else -%} — {%- endif -%}
+      · EchoLink: {%- if _echolink and _echolink != "" -%} {{ _echolink }} {%- else -%} — {%- endif -%}
+      {%- if _other_joined != "" -%}
+      · Other: {{ _other_joined }}
+      {%- endif -%}
+    </p>
     <h4>What to expect</h4>
     <p>{{ next.description }}</p>
   </article>
@@ -22,8 +83,8 @@
   {%- endif -%}
 
   {%- assign week = payload.week -%}
-  {%- assign all_nets = site.data.nets.nets | default: empty -%}
   {%- if week and week != empty -%}
+  {%- assign week_sorted = week | sort: "start_local_iso" -%}
   {%- assign available_categories = payload.categories | default: empty -%}
   {%- assign default_categories = payload.default_categories | default: nil -%}
   {%- if default_categories == nil or default_categories == empty -%}
@@ -84,31 +145,80 @@
             <thead>
               <tr>
                 <th scope="col">Net</th>
+                <th scope="col">Description</th>
                 <th scope="col">When</th>
                 <th scope="col">Duration</th>
-                <th scope="col">Location</th>
+                <th scope="col">AllStar</th>
+                <th scope="col">EchoLink</th>
+                <th scope="col">Other modes</th>
               </tr>
             </thead>
             <tbody>
-              {%- for occ in week -%}
+              {%- for occ in week_sorted -%}
                 {%- assign net = all_nets | where: "id", occ.id | first -%}
                 {%- assign is_default = default_categories contains occ.category -%}
                 <tr data-category-item data-category="{{ occ.category }}" {% unless is_default %}hidden{% endunless %}>
                   <td>
-                    <strong>{{ occ.name }}</strong><br>
-                    <small>{{ occ.description }}</small>
+                    <strong>{{ occ.name }}</strong>
                   </td>
+                  <td class="net-desc">{{ occ.description }}</td>
                   <td>
                     <time datetime="{{ occ.start_local_iso }}">{{ occ.start_local_iso | date: "%A, %B %-d at %-I:%M %p" }}</time>
                     <span class="next-net-tz">{{ occ.time_zone | replace: "America/New_York", "Eastern" }}</span>
                   </td>
                   <td>{%- if occ.duration_min -%}{{ occ.duration_min }} min{%- else -%}—{%- endif -%}</td>
+                  {%- assign oc = occ.connections | default: nil -%}
+                  <td>{%- if oc and oc.allstar -%}{{ oc.allstar }}{%- elsif net and net.allstar -%}{{ net.allstar }}{%- else -%}—{%- endif -%}</td>
+                  <td>{%- if oc and oc.echolink -%}{{ oc.echolink }}{%- elsif net and net.echolink -%}{{ net.echolink }}{%- else -%}—{%- endif -%}</td>
                   <td>
-                    {%- if net -%}
-                      {%- include net_location.html net=net -%}
-                    {%- else -%}
-                      Blind Hams Bridge
+                    {%- assign _other = "" | split: "" -%}
+                    {%- assign _freq = nil -%}
+                    {%- if oc and oc.frequency -%}
+                      {%- assign _freq = oc.frequency -%}
+                      {%- if oc.mode and oc.mode != "" -%}{%- assign _freq = _freq | append: " " | append: oc.mode -%}{%- endif -%}
+                    {%- elsif net and net.frequency -%}
+                      {%- assign _freq = net.frequency -%}
+                      {%- if net.mode and net.mode != "" -%}{%- assign _freq = _freq | append: " " | append: net.mode -%}{%- endif -%}
                     {%- endif -%}
+                    {%- if _freq -%}{%- assign _other = _other | push: _freq -%}{%- endif -%}
+                    {%- assign _dmr_sys = oc.dmr_system | default: net.dmr_system | default: net.DMR_System -%}
+                    {%- assign _dmr_tg = oc.dmr_tg | default: net.dmr_tg | default: net.DMR_TG -%}
+                    {%- assign _has_dmr_struct = '' -%}
+                    {%- if _dmr_sys and _dmr_tg -%}{%- assign _has_dmr_struct = 'yes' -%}{%- endif -%}
+                    {%- assign _tg = oc.talkgroup | default: net.talkgroup -%}
+                    {%- if _tg and _has_dmr_struct == '' -%}{%- assign _other = _other | push: "Talkgroup " | push: _tg -%}{%- endif -%}
+                    {%- assign _dstar = oc.dstar | default: net.dstar | default: net.DStar -%}
+                    {%- if _dstar -%}{%- assign _other = _other | push: "D-STAR " | push: _dstar -%}{%- endif -%}
+                    {%- assign _peanut = oc.peanut | default: net.peanut -%}
+                    {%- if _peanut -%}{%- assign _other = _other | push: "Peanut " | push: _peanut -%}{%- endif -%}
+                    {%- assign _ysf = oc.ysf | default: net.ysf -%}
+                    {%- if _ysf -%}{%- assign _other = _other | push: "YSF " | push: _ysf -%}{%- endif -%}
+                    {%- assign _wiresx = oc.wiresx | default: oc.wires_x | default: net.wiresx | default: net.wires_x -%}
+                    {%- if _wiresx -%}{%- assign _other = _other | push: "WIRES-X " | push: _wiresx -%}{%- endif -%}
+                    {%- assign _p25 = oc.p25 | default: net.p25 -%}
+                    {%- if _p25 -%}{%- assign _other = _other | push: "P25 " | push: _p25 -%}{%- endif -%}
+                    {%- assign _nxdn = oc.nxdn | default: net.nxdn -%}
+                    {%- if _nxdn -%}{%- assign _other = _other | push: "NXDN " | push: _nxdn -%}{%- endif -%}
+                    {%- assign _dmr = oc.dmr | default: net.dmr | default: net.DMR -%}
+                    {%- if _has_dmr_struct == 'yes' -%}
+                      {%- assign _other = _other | push: "DMR " | push: _dmr_sys | push: " TG " | push: _dmr_tg -%}
+                    {%- elsif _dmr -%}
+                      {%- assign _other = _other | push: "DMR " | push: _dmr -%}
+                    {%- endif -%}
+                    {%- assign _mode_up = oc.mode | default: net.mode | upcase -%}
+                    {%- if _has_dmr_struct == '' and _dmr == nil and _mode_up == "DMR" -%}
+                      {%- assign _other = _other | push: "DMR" -%}
+                    {%- endif -%}
+                    {%- assign _other_joined = _other | join: " · " | strip -%}
+                    {%- if _other_joined == "" and net and net.location -%}
+                      {%- assign _loc = net.location | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip -%}
+                      {%- assign _other_joined = _loc -%}
+                    {%- endif -%}
+                    {%- if _other_joined == "" and net and net.website -%}
+                      {%- assign _other_joined = "[More info](" | append: net.website | append: ")" 
+                         | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip -%}
+                    {%- endif -%}
+                    {%- if _other_joined != "" -%}{{ _other_joined }}{%- else -%}—{%- endif -%}
                   </td>
                 </tr>
               {%- endfor -%}
@@ -117,7 +227,7 @@
         </div>
 
         <div class="view view-headings" hidden>
-          {%- for occ in week -%}
+          {%- for occ in week_sorted -%}
             {%- assign net = all_nets | where: "id", occ.id | first -%}
             {%- assign is_default = default_categories contains occ.category -%}
             <article class="next-net-item" aria-labelledby="week-net-{{ forloop.index }}" data-category-item data-category="{{ occ.category }}" {% unless is_default %}hidden{% endunless %}>
@@ -128,6 +238,64 @@
                 <span class="next-net-tz">{{ occ.time_zone | replace: "America/New_York", "Eastern" }}</span>
                 {%- if occ.duration_min -%}
                 <span class="next-net-duration">· {{ occ.duration_min }} min</span>
+                {%- endif -%}
+              </p>
+              {%- assign oc = occ.connections | default: nil -%}
+              {%- assign _allstar = nil -%}
+              {%- assign _echolink = nil -%}
+              {%- if oc -%}
+                {%- assign _allstar = oc.allstar -%}
+                {%- assign _echolink = oc.echolink -%}
+              {%- endif -%}
+              {%- if _allstar == nil and net and net.allstar -%}{%- assign _allstar = net.allstar -%}{%- endif -%}
+              {%- if _echolink == nil and net and net.echolink -%}{%- assign _echolink = net.echolink -%}{%- endif -%}
+
+              {%- assign _other = "" | split: "" -%}
+              {%- assign _freq = nil -%}
+              {%- if oc and oc.frequency -%}
+                {%- assign _freq = oc.frequency -%}
+                {%- if oc.mode and oc.mode != "" -%}{%- assign _freq = _freq | append: " " | append: oc.mode -%}{%- endif -%}
+              {%- elsif net and net.frequency -%}
+                {%- assign _freq = net.frequency -%}
+                {%- if net.mode and net.mode != "" -%}{%- assign _freq = _freq | append: " " | append: net.mode -%}{%- endif -%}
+              {%- endif -%}
+              {%- if _freq -%}{%- assign _other = _other | push: _freq -%}{%- endif -%}
+              {%- assign _dmr_sys = oc.dmr_system | default: net.dmr_system | default: net.DMR_System -%}
+              {%- assign _dmr_tg = oc.dmr_tg | default: net.dmr_tg | default: net.DMR_TG -%}
+              {%- assign _has_dmr_struct = '' -%}
+              {%- if _dmr_sys and _dmr_tg -%}{%- assign _has_dmr_struct = 'yes' -%}{%- endif -%}
+              {%- assign _tg = oc.talkgroup | default: net.talkgroup -%}
+              {%- if _tg and _has_dmr_struct == '' -%}{%- assign _other = _other | push: "Talkgroup " | push: _tg -%}{%- endif -%}
+              {%- assign _dstar = oc.dstar | default: net.dstar | default: net.DStar -%}
+              {%- if _dstar -%}{%- assign _other = _other | push: "D-STAR " | push: _dstar -%}{%- endif -%}
+              {%- assign _peanut = oc.peanut | default: net.peanut -%}
+              {%- if _peanut -%}{%- assign _other = _other | push: "Peanut " | push: _peanut -%}{%- endif -%}
+              {%- assign _ysf = oc.ysf | default: net.ysf -%}
+              {%- if _ysf -%}{%- assign _other = _other | push: "YSF " | push: _ysf -%}{%- endif -%}
+              {%- assign _wiresx = oc.wiresx | default: oc.wires_x | default: net.wiresx | default: net.wires_x -%}
+              {%- if _wiresx -%}{%- assign _other = _other | push: "WIRES-X " | push: _wiresx -%}{%- endif -%}
+              {%- assign _p25 = oc.p25 | default: net.p25 -%}
+              {%- if _p25 -%}{%- assign _other = _other | push: "P25 " | push: _p25 -%}{%- endif -%}
+              {%- assign _nxdn = oc.nxdn | default: net.nxdn -%}
+              {%- if _nxdn -%}{%- assign _other = _other | push: "NXDN " | push: _nxdn -%}{%- endif -%}
+              {%- assign _dmr = oc.dmr | default: net.dmr | default: net.DMR -%}
+              {%- if _has_dmr_struct == 'yes' -%}
+                {%- assign _other = _other | push: "DMR " | push: _dmr_sys | push: " TG " | push: _dmr_tg -%}
+              {%- elsif _dmr -%}
+                {%- assign _other = _other | push: "DMR " | push: _dmr -%}
+              {%- endif -%}
+              {%- assign _mode_up = oc.mode | default: net.mode | upcase -%}
+              {%- if _has_dmr_struct == '' and _dmr == nil and _mode_up == "DMR" -%}
+                {%- assign _other = _other | push: "DMR" -%}
+              {%- endif -%}
+              {%- assign _other_joined = _other | join: " · " | strip -%}
+
+              <p class="next-net-connections">
+                <span class="next-net-label">Connections</span>
+                AllStar: {%- if _allstar and _allstar != "" -%} {{ _allstar }} {%- else -%} — {%- endif -%}
+                · EchoLink: {%- if _echolink and _echolink != "" -%} {{ _echolink }} {%- else -%} — {%- endif -%}
+                {%- if _other_joined != "" -%}
+                · Other: {{ _other_joined }}
                 {%- endif -%}
               </p>
               <h5>About this net</h5>

@@ -267,6 +267,26 @@ def build_next_net(
     week_occurrences = [occ for occ in occurrences if occ.start <= week_cutoff]
 
     def serialize_occ(occ: Occurrence) -> dict:
+        # Pull commonly used connection fields directly from the raw net entry
+        raw = occ.net.raw or {}
+        connections = {
+            "allstar": raw.get("allstar"),
+            "echolink": raw.get("echolink"),
+            "frequency": raw.get("frequency"),
+            "mode": raw.get("mode"),
+            "dmr": raw.get("dmr") or raw.get("DMR"),
+            "dmr_system": raw.get("dmr_system") or raw.get("DMR_System"),
+            "dmr_tg": raw.get("dmr_tg") or raw.get("DMR_TG"),
+            "talkgroup": raw.get("talkgroup"),
+            "peanut": raw.get("peanut"),
+            "dstar": raw.get("dstar") or raw.get("DStar"),
+            "ysf": raw.get("ysf"),
+            "wiresx": raw.get("wiresx") or raw.get("wires_x"),
+            "p25": raw.get("p25"),
+            "nxdn": raw.get("nxdn"),
+            "location": raw.get("location"),
+            "website": raw.get("website"),
+        }
         return {
             "id": occ.net.id,
             "name": occ.net.name,
@@ -275,6 +295,7 @@ def build_next_net(
             "start_local_iso": occ.start.isoformat(),
             "duration_min": occ.net.duration_min,
             "time_zone": occ.net.tzname,
+            "connections": connections,
         }
 
     payload = {
