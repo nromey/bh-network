@@ -58,15 +58,16 @@ nets:
     duration_min: 90
     rrule: "FREQ=WEEKLY;BYDAY=MO"
 
-  - id: bh-hf-20m
+  - id: bh-cross-country-hf
     category: "bhn"
-    name: "Blind Hams HF Net (20m)"
-    description: "HF net on 20 meters for the Blind Hams community. Check your propagation and talk to other blind hams and friends of the network on HF."
-    start_local: "15:00"     # Sunday afternoon
+    name: "Blind Hams Cross Country Net"
+    description: "HF net for the Blind Hams community. Check your propagation and talk to other blind hams and friends of the network on HF."
+    start_local: "16:00"     # Sunday afternoon
     duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=SU"
     frequency: "14.303 MHz"
-    mode: "USB"              # not on the Bridge → location renders from frequency+mode
+    mode: "USB"
+    location: "20 m HF"      # override default Bridge label for HF nets
 
   - id: handi-hams-midday
     category: "disability"

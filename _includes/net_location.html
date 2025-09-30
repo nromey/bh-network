@@ -7,7 +7,10 @@ Order/logic:
 4) Else → default to "Blind Hams Bridge".
 {%- endcomment -%}
 
-{%- if net.location -%}
+{%- assign net = include.net | default: nil -%}
+{%- if net == nil -%}
+  <span class="net-location">Blind Hams Bridge</span>
+{%- elsif net.location -%}
   {%- assign loc = net.location | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip -%}
   <span class="net-location">{{ loc }}</span>
 {%- else -%}
