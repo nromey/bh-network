@@ -224,7 +224,7 @@ This block is duplicated in both views (scoped to each n).
             {%- if n.nxdn -%}
               {%- assign _other = _other | push: "NXDN " | push: n.nxdn -%}
             {%- endif -%}
-            {%- assign _other_joined = _other | join: " · " | strip -%}
+            {%- assign _other_joined = _other | join: ", " | strip -%}
             {%- if _other_joined == "" and n.location -%}
               {%- assign _loc = n.location | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip -%}
               {%- assign _other_joined = _loc -%}
@@ -392,10 +392,10 @@ This block is duplicated in both views (scoped to each n).
 
         <p class="net-connections">
           <strong>Connections:</strong>
-          AllStar: {%- if n.allstar and n.allstar != "" -%} {{ n.allstar }} {%- else -%} — {%- endif -%}
-          · EchoLink: {%- if n.echolink and n.echolink != "" -%} {{ n.echolink }} {%- else -%} — {%- endif -%}
+          AllStar: {%- if n.allstar and n.allstar != "" -%} {{ n.allstar }} {%- else -%} — {%- endif -%},
+          EchoLink: {%- if n.echolink and n.echolink != "" -%} {{ n.echolink }} {%- else -%} — {%- endif -%}
           {%- if _other_joined != "" -%}
-          · Other: {{ _other_joined }}
+          , Other: {{ _other_joined }}
           {%- endif -%}
         </p>
         <p class="net-desc">{{ n.description }}</p>

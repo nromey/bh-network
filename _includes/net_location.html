@@ -74,7 +74,7 @@ Order/logic:
     {%- assign pieces = pieces | push: "NXDN " | push: nxdn_val -%}
   {%- endif -%}
 
-  {%- assign joined = pieces | join: " · " | strip -%}
+  {%- assign joined = pieces | join: ", " | strip -%}
 
   {%- if joined == "" and net.website -%}
     {%- assign joined = "[More info](" | append: net.website | append: ")" 

@@ -65,14 +65,14 @@
     {%- if _dmr == nil and _mode_up == "DMR" -%}
       {%- assign _other = _other | push: "DMR" -%}
     {%- endif -%}
-    {%- assign _other_joined = _other | join: " · " | strip -%}
+    {%- assign _other_joined = _other | join: ", " | strip -%}
 
     <p class="next-net-connections">
       <span class="next-net-label">Connections</span>
-      AllStar: {%- if _allstar and _allstar != "" -%} {{ _allstar }} {%- else -%} — {%- endif -%}
-      · EchoLink: {%- if _echolink and _echolink != "" -%} {{ _echolink }} {%- else -%} — {%- endif -%}
+      AllStar: {%- if _allstar and _allstar != "" -%} {{ _allstar }} {%- else -%} — {%- endif -%},
+      EchoLink: {%- if _echolink and _echolink != "" -%} {{ _echolink }} {%- else -%} — {%- endif -%}
       {%- if _other_joined != "" -%}
-      · Other: {{ _other_joined }}
+      , Other: {{ _other_joined }}
       {%- endif -%}
     </p>
     <h4>What to expect</h4>
@@ -209,7 +209,7 @@
                     {%- if _has_dmr_struct == '' and _dmr == nil and _mode_up == "DMR" -%}
                       {%- assign _other = _other | push: "DMR" -%}
                     {%- endif -%}
-                    {%- assign _other_joined = _other | join: " · " | strip -%}
+                    {%- assign _other_joined = _other | join: ", " | strip -%}
                     {%- if _other_joined == "" and net and net.location -%}
                       {%- assign _loc = net.location | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip -%}
                       {%- assign _other_joined = _loc -%}
@@ -292,10 +292,10 @@
 
               <p class="next-net-connections">
                 <span class="next-net-label">Connections</span>
-                AllStar: {%- if _allstar and _allstar != "" -%} {{ _allstar }} {%- else -%} — {%- endif -%}
-                · EchoLink: {%- if _echolink and _echolink != "" -%} {{ _echolink }} {%- else -%} — {%- endif -%}
+                AllStar: {%- if _allstar and _allstar != "" -%} {{ _allstar }} {%- else -%} — {%- endif -%},
+                EchoLink: {%- if _echolink and _echolink != "" -%} {{ _echolink }} {%- else -%} — {%- endif -%}
                 {%- if _other_joined != "" -%}
-                · Other: {{ _other_joined }}
+                , Other: {{ _other_joined }}
                 {%- endif -%}
               </p>
               <h5>About this net</h5>
