@@ -1,14 +1,31 @@
-generated_at: '2025-09-29T22:40:24.714627-04:00'
+generated_at: '2025-09-30T02:34:10.952341-04:00'
 time_zone: America/New_York
 next_net:
   id: absolute-tech
-  name: Absolute Tech Net
+  name: $Absolute Tech Net
   description: A net to discuss technical amateur radio topics and troubleshoot issues
     faced by hams around the world.
   category: bhn
   start_local_iso: '2025-09-30T19:00:00-04:00'
   duration_min: 120
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 week:
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
@@ -17,21 +34,73 @@ week:
   start_local_iso: '2025-09-30T10:30:00-04:00'
   duration_min: 150
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
+    website: null
 - id: handi-hams-midday
   name: Handi Hams Net
-  description: Weekday net hosted by Handi Hams.
+  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
+    discussing topics of interest to radio amateurs who have different disabilities.
   category: disability
   start_local_iso: '2025-09-30T12:00:00-04:00'
   duration_min: 90
   time_zone: America/New_York
+  connections:
+    allstar: 473760 (backup 473761)
+    echolink: N0BVE-L
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: absolute-tech
-  name: Absolute Tech Net
+  name: $Absolute Tech Net
   description: A net to discuss technical amateur radio topics and troubleshoot issues
     faced by hams around the world.
   category: bhn
   start_local_iso: '2025-09-30T19:00:00-04:00'
   duration_min: 120
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
   description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
@@ -39,13 +108,48 @@ week:
   start_local_iso: '2025-10-01T10:30:00-04:00'
   duration_min: 150
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
+    website: null
 - id: handi-hams-midday
   name: Handi Hams Net
-  description: Weekday net hosted by Handi Hams.
+  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
+    discussing topics of interest to radio amateurs who have different disabilities.
   category: disability
   start_local_iso: '2025-10-01T12:00:00-04:00'
   duration_min: 90
   time_zone: America/New_York
+  connections:
+    allstar: 473760 (backup 473761)
+    echolink: N0BVE-L
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: look-at-this
   name: Look At This Net
   description: Smart glasses and assistive wearables from a blind/VI perspective,
@@ -54,6 +158,23 @@ week:
   start_local_iso: '2025-10-01T20:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: handi-hams-trivia
   name: Handi Hams Trivia Net
   description: Weekly trivia net hosted by Handi Hams.
@@ -61,6 +182,23 @@ week:
   start_local_iso: '2025-10-01T20:00:00-04:00'
   duration_min: 90
   time_zone: America/New_York
+  connections:
+    allstar: 473760 (backup 473761)
+    echolink: N0BVE-L
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
   description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
@@ -68,13 +206,48 @@ week:
   start_local_iso: '2025-10-02T10:30:00-04:00'
   duration_min: 150
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
+    website: null
 - id: handi-hams-midday
   name: Handi Hams Net
-  description: Weekday net hosted by Handi Hams.
+  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
+    discussing topics of interest to radio amateurs who have different disabilities.
   category: disability
   start_local_iso: '2025-10-02T12:00:00-04:00'
   duration_min: 90
   time_zone: America/New_York
+  connections:
+    allstar: 473760 (backup 473761)
+    echolink: N0BVE-L
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: blind-hams-tech
   name: Blind Hams Tech Net
   description: Monthly technical deep-dive net.
@@ -82,6 +255,23 @@ week:
   start_local_iso: '2025-10-02T20:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
   description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
@@ -89,22 +279,74 @@ week:
   start_local_iso: '2025-10-03T10:30:00-04:00'
   duration_min: 150
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
+    website: null
 - id: handi-hams-midday
   name: Handi Hams Net
-  description: Weekday net hosted by Handi Hams.
+  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
+    discussing topics of interest to radio amateurs who have different disabilities.
   category: disability
   start_local_iso: '2025-10-03T12:00:00-04:00'
   duration_min: 90
   time_zone: America/New_York
+  connections:
+    allstar: 473760 (backup 473761)
+    echolink: N0BVE-L
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: friday-night-net
   name: The Friday Night Blind Hams Allstar and Echolink Net
-  description: Join KY2D, Jim,  from Maine as he leads an informal check-in / comments
+  description: Join [KY2D, Jim,  from Maine as he leads an informal check-in / comments
     net to give Blind and Visually Impaired amateur radio operators a place to hang
     out on Allstar and Echolink each Friday night.
   category: bhn
   start_local_iso: '2025-10-03T20:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
+  connections:
+    allstar: blind hams allstar or the KY2D allstar node 2396
+    echolink: '*blind* conference or ky2d-r'
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: bh-digital
   name: Blind Hams Digital Net
   description: Weekly net for blind and sighted amateur radio operators to gather
@@ -113,6 +355,23 @@ week:
   start_local_iso: '2025-10-04T10:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
   description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
@@ -120,6 +379,23 @@ week:
   start_local_iso: '2025-10-04T10:30:00-04:00'
   duration_min: 150
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
+    website: null
 - id: visually-inconvenienced
   name: Visually Inconvenienced Hams Net
   description: "Topical net for all hams from a visually \u2018inconvenienced\u2019\
@@ -128,6 +404,23 @@ week:
   start_local_iso: '2025-10-04T20:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
   description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
@@ -135,6 +428,52 @@ week:
   start_local_iso: '2025-10-05T10:30:00-04:00'
   duration_min: 150
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
+    website: null
+- id: newsline
+  name: Amateur Radio Newsline
+  description: "Amateur Radio Newsline\u2122 is a free service to the amateur radio\
+    \ community. \_[Amateur Radio Newsline](https://www.arnewsline.org)   produces\
+    \ a weekly audio news bulletin called a \u201CQST\u201D or \u201Cbulletin of interest\
+    \ to radio amateurs\u201D that can be heard on the blind hams digital network,\
+    \ or via a podcast download."
+  category: bhn
+  start_local_iso: '2025-10-05T15:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+  connections:
+    allstar: See the [Blind Hams Digital Network](www.blindhamsnetwork) homepage to
+      get the correct AllStar node number for your international region
+    echolink: '*blind* conference'
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 - id: bh-cross-country-hf
   name: Blind Hams Cross Country Net
   description: HF net for the Blind Hams community. Check your propagation and talk
@@ -143,6 +482,23 @@ week:
   start_local_iso: '2025-10-05T16:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: 14.303 MHz
+    mode: USB
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: 20 meters band on HF
+    website: null
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
   description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
@@ -150,13 +506,72 @@ week:
   start_local_iso: '2025-10-06T10:30:00-04:00'
   duration_min: 150
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
+    website: null
 - id: handi-hams-midday
   name: Handi Hams Net
-  description: Weekday net hosted by Handi Hams.
+  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
+    discussing topics of interest to radio amateurs who have different disabilities.
   category: disability
   start_local_iso: '2025-10-06T12:00:00-04:00'
   duration_min: 90
   time_zone: America/New_York
+  connections:
+    allstar: 473760 (backup 473761)
+    echolink: N0BVE-L
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
+- id: active-elements
+  name: Active Elements Digital Net
+  description: Weekly UK digital net.
+  category: disability
+  start_local_iso: '2025-10-06T20:00:00+00:00'
+  duration_min: 60
+  time_zone: UTC
+  connections:
+    allstar: node 56870
+    echolink: null
+    frequency: null
+    mode: DMR
+    dmr: null
+    dmr_system: BrandMeister
+    dmr_tg: '53085'
+    talkgroup: null
+    peanut: XRF299S
+    dstar: XRF299S
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: Active Elements Digital System
+    website: null
 - id: sounds-good
   name: The Sounds Good Net
   description: "For music fans and musicians, audio nerds and pros \u2014 anything\
@@ -165,6 +580,23 @@ week:
   start_local_iso: '2025-10-06T20:00:00-04:00'
   duration_min: 90
   time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 categories:
 - bhn
 - disability
