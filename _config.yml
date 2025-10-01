@@ -16,10 +16,20 @@ minima:
   custom_css:
      - /assets/css/extra.css
 
+# Social links (rendered in footer via minima's social include)
+# Mastodon supports rel="me" verification links
+mastodon:
+  - username: "BlindHams"
+    instance: "mastodon.hams.social"
+
 header_pages:
   - index.md
   - nets/blind-hams/index.md
   - nets/disabilities/index.md
   - nets/general/index.md
   - news.md
+  
+# Feature toggles / widgets
+widgets:
+  connect_banner: true
   

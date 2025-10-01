@@ -432,7 +432,7 @@ week:
   duration_min: 60
   time_zone: UTC
   connections:
-    allstar: node 56870
+    allstar: '56870'
     echolink: null
     frequency: null
     mode: DMR
@@ -472,6 +472,32 @@ week:
     p25: null
     nxdn: null
     location: null
+    website: null
+- id: all-nodes
+  name: All Nodes Net
+  description: Every Monday at 6:00 PM PT, this net is the place for discussions related
+    to the setup, configuration, and operation of digital nodes and the associated
+    hardware. A great place for noobies and experienced users alike.
+  category: general
+  start_local_iso: '2025-10-06T18:00:00-07:00'
+  duration_min: 60
+  time_zone: America/Los_Angeles
+  connections:
+    allstar: 51018
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: Sierra Foothills ARC Repeater System
     website: null
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net

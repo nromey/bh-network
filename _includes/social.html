@@ -1,0 +1,21 @@
+{%- comment -%}
+  Custom social links include to ensure Mastodon links include rel="me"
+  Uses Minima's expected config format for Mastodon:
+  
+  mastodon:
+    - username: "your_username"
+      instance: "example.social"
+{%- endcomment -%}
+<ul class="social-media-list">
+  {%- if site.mastodon -%}
+    {%- for m in site.mastodon -%}
+      <li>
+        <a rel="me" href="https://{{ m.instance }}/@{{ m.username }}">
+          <svg class="svg-icon"><use xlink:href="{{ '/assets/minima-social-icons.svg#mastodon' | relative_url }}"></use></svg>
+          <span class="username">{{ m.username }}</span>
+        </a>
+      </li>
+    {%- endfor -%}
+  {%- endif -%}
+</ul>
+
