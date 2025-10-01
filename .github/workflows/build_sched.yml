@@ -15,7 +15,14 @@ on:
       - "**.md"
       - "**.html"
   schedule:
-    - cron: "17 11 * * *"   # daily ~07:17 ET (DST)
+    # Daily run at 21:00 UTC as requested
+    - cron: "0 21 * * *"
+    # Hourly sweep to refresh next_net when occurrences roll over
+    - cron: "0 * * * *"
+    # Saturday post‑BHN commit after the 10:00–11:00 ET net ends (safe year‑round)
+    - cron: "10 17 * * 6"  # Saturdays 17:10 UTC
+    # After Patricia's 20:00 ET Saturday net ends (~21:00 ET), push shortly after
+    - cron: "10 2 * * 0"   # Sundays 02:10 UTC
   workflow_dispatch:
 
 permissions:
@@ -72,16 +79,20 @@ jobs:
 
       - name: Commit & push updated schedule
         if: github.ref == 'refs/heads/main'
+        id: commit
         run: |
           set -e
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add _data/bhn_ncos_schedule.yml _data/next_net.yml
+          # Always stage schedule + next_net; script avoids noisy diffs
+          git add _data/bhn_ncos_schedule.yml _data/next_net.yml || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "chore: refresh schedules [skip ci]"
             git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       - uses: ruby/setup-ruby@v1
@@ -90,11 +101,13 @@ jobs:
           bundler-cache: true
 
       - name: Build site
+        if: github.event_name == 'push' || steps.commit.outputs.changed == 'true'
         env:
           JEKYLL_ENV: production
         run: bundle exec jekyll build --trace
 
       - name: Upload artifact
+        if: github.event_name == 'push' || steps.commit.outputs.changed == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
@@ -106,3 +119,4 @@ jobs:
       name: github-pages
     steps:
       - uses: actions/deploy-pages@v4
+        if: github.event_name == 'push' || needs.build.result == 'success'

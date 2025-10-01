@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Iterable, List
@@ -134,9 +135,11 @@ def iter_daily(now: datetime, net: Net, horizon_days: int) -> Iterable[Occurrenc
     for delta in range(horizon_days + 1):
         day = now.date() + timedelta(days=delta)
         start = datetime.combine(day, net.start_local, tzinfo=ZoneInfo(net.tzname))
-        if start <= now:
+        occ = Occurrence(net, start)
+        # Keep occurrences whose end is still in the future
+        if occ.end <= now:
             continue
-        yield Occurrence(net, start)
+        yield occ
 
 
 def iter_weekly(now: datetime, net: Net, horizon_days: int) -> Iterable[Occurrence]:
@@ -149,9 +152,10 @@ def iter_weekly(now: datetime, net: Net, horizon_days: int) -> Iterable[Occurren
         if day.weekday() not in weekdays:
             continue
         start = datetime.combine(day, net.start_local, tzinfo=ZoneInfo(net.tzname))
-        if start <= now:
+        occ = Occurrence(net, start)
+        if occ.end <= now:
             continue
-        yield Occurrence(net, start)
+        yield occ
 
 
 def iter_monthly(now: datetime, net: Net, horizon_days: int) -> Iterable[Occurrence]:
@@ -184,9 +188,10 @@ def iter_monthly(now: datetime, net: Net, horizon_days: int) -> Iterable[Occurre
         if not occ_date:
             continue
         start = datetime.combine(occ_date, net.start_local, tz)
-        if start <= now:
+        occ = Occurrence(net, start)
+        if occ.end <= now:
             continue
-        yield Occurrence(net, start)
+        yield occ
 
 
 def upcoming_occurrences(net: Net, now: datetime, horizon_days: int) -> List[Occurrence]:
@@ -299,9 +304,12 @@ def build_next_net(
         }
 
     payload = {
-        "generated_at": now.isoformat(),
         "time_zone": tzname,
     }
+    # To avoid noisy commits, omit the timestamp by default.
+    # Include it only if NEXT_NET_INCLUDE_TIMESTAMP=1
+    if (os.getenv("NEXT_NET_INCLUDE_TIMESTAMP") or "0") == "1":
+        payload["generated_at"] = now.isoformat()
     if next_occ:
         payload["next_net"] = serialize_occ(next_occ)
     else:
