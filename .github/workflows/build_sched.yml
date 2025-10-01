@@ -37,6 +37,24 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Detect site changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            site:
+              - '_config.yml'
+              - '_includes/**'
+              - '_layouts/**'
+              - 'assets/**'
+              - '_data/**'
+              - '_posts/**'
+              - 'nets/**'
+              - '**/*.md'
+              - '**/*.html'
+            scripts:
+              - 'scripts/**'
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -95,13 +113,19 @@ jobs:
           bundler-cache: true
 
       - name: Build site
-        if: github.event_name == 'push' || steps.commit.outputs.changed == 'true'
+        if: >
+          (github.event_name == 'push' && steps.changes.outputs.site == 'true')
+          || steps.commit.outputs.changed == 'true'
+          || github.event_name == 'workflow_dispatch'
         env:
           JEKYLL_ENV: production
         run: bundle exec jekyll build --trace
 
       - name: Upload artifact
-        if: github.event_name == 'push' || steps.commit.outputs.changed == 'true'
+        if: >
+          (github.event_name == 'push' && steps.changes.outputs.site == 'true')
+          || steps.commit.outputs.changed == 'true'
+          || github.event_name == 'workflow_dispatch'
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
@@ -113,4 +137,7 @@ jobs:
       name: github-pages
     steps:
       - uses: actions/deploy-pages@v4
-        if: github.event_name == 'push' || needs.build.outputs.changed == 'true'
+        if: >
+          (github.event_name == 'push' && needs.build.outputs.changed != '')
+          || needs.build.outputs.changed == 'true'
+          || github.event_name == 'workflow_dispatch'
