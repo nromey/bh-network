@@ -25,6 +25,13 @@
 <link rel="stylesheet" href="{{ page.extra_css | relative_url }}?v={{ bust }}">
 {%- endif -%}
 
+{%- if page.ableplayer -%}
+  <!-- Able Player assets (loaded only on pages that set page.ableplayer: true) -->
+  <link rel="stylesheet" href="https://ableplayer.github.io/ableplayer/ableplayer.min.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://ableplayer.github.io/ableplayer/ableplayer.min.js"></script>
+{%- endif -%}
+
 {%- if site.favicon -%}
 <link rel="icon" href="{{ site.favicon | relative_url }}">
 {%- endif -%}
