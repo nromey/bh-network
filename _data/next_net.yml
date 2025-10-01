@@ -620,6 +620,31 @@ week:
     nxdn: null
     location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
     website: null
+- id: handi-hams-midday
+  name: Handi Hams Net
+  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
+    discussing topics of interest to radio amateurs who have different disabilities.
+  category: disability
+  start_local_iso: '2025-10-08T12:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+  connections:
+    allstar: 473760 (backup 473761)
+    echolink: N0BVE-L
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 categories:
 - bhn
 - disability
