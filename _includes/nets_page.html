@@ -54,7 +54,11 @@ This block is duplicated in both views (scoped to each n).
       <tbody>
       {% for n in filtered %}
         {%- assign tzname = n.time_zone | default: "America/New_York" -%}
-        {%- assign _tz_full = tzname | replace: "America/New_York", "Eastern" -%}
+        {%- assign _tz_full = tzname
+          | replace: "America/New_York", "Eastern"
+          | replace: "America/Los_Angeles", "Pacific"
+          | replace: "America/Chicago", "Central"
+          | replace: "America/Denver", "Mountain" -%}
 
         {%- comment -%} Time display from start_local or legacy " at " in rrule {%- endcomment -%}
         {%- assign _display_time = "" -%}
@@ -245,7 +249,11 @@ This block is duplicated in both views (scoped to each n).
   <div class="view view-headings" hidden>
     {% for n in filtered %}
       {%- assign tzname = n.time_zone | default: "America/New_York" -%}
-      {%- assign _tz_full = tzname | replace: "America/New_York", "Eastern" -%}
+      {%- assign _tz_full = tzname
+        | replace: "America/New_York", "Eastern"
+        | replace: "America/Los_Angeles", "Pacific"
+        | replace: "America/Chicago", "Central"
+        | replace: "America/Denver", "Mountain" -%}
 
       {%- assign _display_time = "" -%}
       {%- if n.start_local and n.start_local != "" -%}

@@ -4,7 +4,11 @@
     {%- assign local_dt = next.start_local_iso | date: "%A, %B %-d, %Y at %-I:%M %p" -%}
     <p>
       <strong>Next Net:</strong> {{ next.name }} —
-      {{ local_dt }} {{ next.time_zone | replace: "America/New_York","ET" }}
+      {{ local_dt }} {{ next.time_zone
+        | replace: "America/New_York","ET"
+        | replace: "America/Los_Angeles","PT"
+        | replace: "America/Chicago","CT"
+        | replace: "America/Denver","MT" }}
       ({{ next.duration_min }} min)
     </p>
     <p>

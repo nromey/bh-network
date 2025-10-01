@@ -10,7 +10,11 @@
     <p class="next-net-meta">
       <span class="next-net-label">When</span>
       <time datetime="{{ next.start_local_iso }}">{{ next.start_local_iso | date: "%A, %B %-d, %Y at %-I:%M %p" }}</time>
-      <span class="next-net-tz">{{ next.time_zone | replace: "America/New_York", "Eastern" }}</span>
+      <span class="next-net-tz">{{ next.time_zone
+        | replace: "America/New_York", "Eastern"
+        | replace: "America/Los_Angeles", "Pacific"
+        | replace: "America/Chicago", "Central"
+        | replace: "America/Denver", "Mountain" }}</span>
       {%- if next.duration_min -%}
       <span class="next-net-duration">· {{ next.duration_min }} min</span>
       {%- endif -%}
@@ -164,7 +168,11 @@
                   <td class="net-desc">{{ occ.description }}</td>
                   <td>
                     <time datetime="{{ occ.start_local_iso }}">{{ occ.start_local_iso | date: "%A, %B %-d at %-I:%M %p" }}</time>
-                    <span class="next-net-tz">{{ occ.time_zone | replace: "America/New_York", "Eastern" }}</span>
+                    <span class="next-net-tz">{{ occ.time_zone
+                      | replace: "America/New_York", "Eastern"
+                      | replace: "America/Los_Angeles", "Pacific"
+                      | replace: "America/Chicago", "Central"
+                      | replace: "America/Denver", "Mountain" }}</span>
                   </td>
                   <td>{%- if occ.duration_min -%}{{ occ.duration_min }} min{%- else -%}—{%- endif -%}</td>
                   {%- assign oc = occ.connections | default: nil -%}
@@ -235,7 +243,11 @@
               <p class="next-net-meta">
                 <span class="next-net-label">When</span>
                 <time datetime="{{ occ.start_local_iso }}">{{ occ.start_local_iso | date: "%A, %B %-d at %-I:%M %p" }}</time>
-                <span class="next-net-tz">{{ occ.time_zone | replace: "America/New_York", "Eastern" }}</span>
+                <span class="next-net-tz">{{ occ.time_zone
+                  | replace: "America/New_York", "Eastern"
+                  | replace: "America/Los_Angeles", "Pacific"
+                  | replace: "America/Chicago", "Central"
+                  | replace: "America/Denver", "Mountain" }}</span>
                 {%- if occ.duration_min -%}
                 <span class="next-net-duration">· {{ occ.duration_min }} min</span>
                 {%- endif -%}
