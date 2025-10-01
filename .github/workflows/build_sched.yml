@@ -37,6 +37,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - name: Checkout (full history so we can push)
         uses: actions/checkout@v4
@@ -119,4 +121,4 @@ jobs:
       name: github-pages
     steps:
       - uses: actions/deploy-pages@v4
-        if: github.event_name == 'push' || needs.build.result == 'success'
+        if: github.event_name == 'push' || needs.build.outputs.changed == 'true'
