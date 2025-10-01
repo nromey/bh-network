@@ -8,3 +8,26 @@ scripts/codex_sessions.sh
 # Editor swap files
 *.swp
 .*.swp
+
+# Other editor/OS temp files
+*.swo
+*.swx
+*~
+.#*
+#*#
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE/project settings
+.vscode/
+.idea/
+.direnv/
+.bundle/
+
+# Logs
+*.log
