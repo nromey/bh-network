@@ -126,10 +126,20 @@ nets:
     duration_min: 60
     time_zone: UTC
     rrule: "FREQ=WEEKLY;BYDAY=MO"
-    allstar: "node 56870"
+    allstar: "56870"
     dstar: "XRF299S"
     peanut: "XRF299S"
     mode: "DMR"
     dmr_system: "BrandMeister"
     dmr_tg: "53085"
     location: "Active Elements Digital System"
+
+  - id: all-nodes
+    category: "general"
+    location: "Sierra Foothills ARC Repeater System"
+    name: "All Nodes Net"
+    time_zone: America/Los_Angeles
+    start_local: "18:00"
+    description: "Every Monday at 6:00 PM PT, this net is the place for discussions related to the setup, configuration, and operation of digital nodes and the associated hardware. A great place for noobies and experienced users alike."
+    rrule: "FREQ=WEEKLY;BYDAY=MO"
+    allstar: 51018
