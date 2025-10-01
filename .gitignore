@@ -4,3 +4,4 @@ _site
 .jekyll-metadata
 vendor
 scripts/codex_sessions.sh
+.config/openai/
