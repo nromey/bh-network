@@ -5,3 +5,6 @@ _site
 vendor
 scripts/codex_sessions.sh
 .config/openai/
+# Editor swap files
+*.swp
+.*.swp
