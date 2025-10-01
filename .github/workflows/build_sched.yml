@@ -4,16 +4,8 @@ name: Generate NCO + Build & Deploy
 on:
   push:
     branches: [ main ]
-    paths:
-      - "_data/**"
-      - "scripts/**"        # 👈 if your script is under bhn/scripts/, change to "bhn/scripts/**"
-      - "_includes/**"
-      - "_layouts/**"
-      - "assets/**"
-      - "_config.yml"
-      - "Gemfile*"
-      - "**.md"
-      - "**.html"
+    # Trigger on any push to main so site config/layout changes always deploy,
+    # even if no tracked paths changed (e.g., empty commit) or commit used [skip ci].
   schedule:
     # Daily run at 21:00 UTC as requested
     - cron: "0 21 * * *"
