@@ -7,6 +7,15 @@
   - Verify banner renders on `index.md` and is dismissible; leave `site.widgets.connect_banner: true`
   - Fine-tune CSS spacing/contrast after real copy is in
 
+- Add Able Player for live audio stream
+  - Decide stream type: MP3 (Icecast/Shoutcast, audio/mpeg) or HLS (.m3u8)
+  - Ensure HTTPS + CORS headers on the stream origin
+  - Include Able Player assets (CSS/JS) gated by `page.has_audio: true`
+  - Add `<audio data-able-player>` markup with `<source>` for stream URL
+  - If HLS: include hls.js and attach to the player for non‑Safari browsers
+  - Add a visible “Live” label and an external player fallback link
+  - Optional: transcript link if available; test keyboard + screen reader flow
+
 - Interactive “Add a Net” CLI
   - Text-based menu to guide net creation and avoid YAML mistakes
   - Prompts for: id, category, name, description (launch $EDITOR for multi-line), start_local, duration_min, rrule, time_zone
