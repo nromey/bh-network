@@ -3,6 +3,10 @@ layout: default
 title: Blind Hams Digital Network Home
 ---
 
+{% if site.widgets.connect_banner %}
+{% include notice_banner.html id="connect" title="How to connect to the Blind Hams Network" md="how_to_connect.md" %}
+{% endif %}
+
 # Welcome to the Blind Hams Digital Network!
 
 The **Blind Hams Digital Network** is a community built by and for blind and visually impaired amateur radio operators. While many of our conversations highlight accessibility and tools that work well for us, **all licensed radio amateurs are welcome** to join in.  

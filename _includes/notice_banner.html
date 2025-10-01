@@ -1,0 +1,43 @@
+{%- comment -%}
+  Renders a prominent, dismissible banner with Markdown content.
+
+  Params:
+    - id: stable string used for localStorage key (required)
+    - title: short heading text (optional)
+    - md: include filename (in _includes/) with Markdown content (optional)
+    - class: extra class names (optional)
+{%- endcomment -%}
+{%- assign _id    = include.id    | default: 'notice' -%}
+{%- assign _title = include.title | default: '' -%}
+{%- assign _md    = include.md    | default: '' -%}
+{%- assign _class = include.class | default: '' -%}
+{%- assign _hid   = 'notice-' | append: _id | append: '-title' -%}
+{%- assign _cid   = 'notice-' | append: _id | append: '-content' -%}
+
+<section class="notice-banner {{ _class }}"
+         data-notice-id="{{ _id }}"
+         role="region"
+         {% if _title and _title != '' %}aria-labelledby="{{ _hid }}"{% else %}aria-label="Announcement"{% endif %}
+         hidden>
+  <div class="notice-inner">
+    <div class="notice-heading">
+      {%- if _title and _title != '' -%}
+      <h2 class="notice-title" id="{{ _hid }}">{{ _title }}</h2>
+      {%- endif -%}
+      <button type="button" class="notice-dismiss" data-notice-dismiss aria-label="Dismiss announcement">
+        ×
+      </button>
+    </div>
+    <div class="notice-content" id="{{ _cid }}">
+      {%- if _md and _md != '' -%}
+        {%- capture _md_src -%}{% include {{ _md }} %}{%- endcapture -%}
+        {{ _md_src | markdownify }}
+      {%- else -%}
+        <!-- No content provided. Supply include.md to render Markdown. -->
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+<script defer src="{{ '/assets/js/notice-banner.js' | relative_url }}"></script>
+
