@@ -10,7 +10,9 @@
   {%- if site.mastodon -%}
     {%- for m in site.mastodon -%}
       <li>
-        <a rel="me" href="https://{{ m.instance }}/@{{ m.username }}">
+        <a rel="me" href="https://{{ m.instance }}/@{{ m.username }}"
+           aria-label="Mastodon: @{{ m.username }} on {{ m.instance }}"
+           title="Mastodon: @{{ m.username }} on {{ m.instance }}">
           <svg class="svg-icon"><use xlink:href="{{ '/assets/minima-social-icons.svg#mastodon' | relative_url }}"></use></svg>
           <span class="username">{{ m.username }}</span>
         </a>
@@ -18,4 +20,3 @@
     {%- endfor -%}
   {%- endif -%}
 </ul>
-
