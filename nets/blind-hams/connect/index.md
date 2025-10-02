@@ -46,15 +46,15 @@ There are several ways to listen to the Blind Hams Network on your
 computer, smartphone, or Alexa‑enabled smart speaker.
 
 To listen inside a web browser or dedicated media player, use:
-<http://stream.borris.me:8888/blind-hams>
+<https://laca.borris.me/blind-hams>
 This also works in specialized players such as the Victor Reader Stream.
 
 Note: Some browsers block mixed content (HTTP audio on HTTPS pages). If the player does not start, open the stream URL directly or use the Alexa method below.
 
 {% include able_audio.html 
    title="Live Blind Hams Network audio stream" 
-   src="http://stream.borris.me:8888/blind-hams" 
-   fallback_url="http://stream.borris.me:8888/blind-hams" %}
+   src="https://laca.borris.me/blind-hams" 
+   fallback_url="https://laca.borris.me/blind-hams" %}
 
 To listen on Alexa, ask your device to “enable the Blind Hams Network.” Once enabled, try:
 “play the Blind Hams Network” or “listen to the Blind Hams Network.”

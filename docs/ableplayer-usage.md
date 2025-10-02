@@ -68,10 +68,10 @@ Quick copy/paste block
 <figure class="audio-player">
   <figcaption>Live Blind Hams Network audio stream</figcaption>
   <audio data-able-player preload="none" controls aria-label="Live Blind Hams Network audio stream">
-    <source src="http://stream.borris.me:8888/blind-hams" type="audio/mpeg">
+    <source src="https://laca.borris.me/blind-hams" type="audio/mpeg">
   </audio>
   <p class="audio-fallback" style="font-size:.9em;margin-top:.4rem">
     If playback fails, open the stream directly:
-    <a href="http://stream.borris.me:8888/blind-hams">http://stream.borris.me:8888/blind-hams</a>.
+    <a href="https://laca.borris.me/blind-hams">https://laca.borris.me/blind-hams</a>.
   </p>
 </figure>
