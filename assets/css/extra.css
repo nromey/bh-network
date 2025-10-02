@@ -163,3 +163,32 @@ caption { text-align:left; font-weight:600; margin-bottom:.5rem; }
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
+
+/* News pager */
+.news-section { border: 2px solid #444; padding: 1rem; margin: 2rem 0; background: #000; }
+.pager-toolbar { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin-bottom: .75rem; }
+.pager-toolbar label, .pager-label { font-weight: 600; }
+.pager-toolbar select { background:#111; color:#fff; border:2px solid #fff; padding:.25rem .5rem; }
+.pager-nav { display: inline-flex; align-items: center; gap: .25rem; }
+.pager-nav button { background:#111; color:#fff; border:2px solid #fff; padding:.25rem .5rem; cursor:pointer; }
+.pager-nav button[disabled] { opacity:.5; cursor: default; }
+.pager-nav [data-pager-pages] { display:inline-flex; gap:.25rem; margin: 0 .25rem; }
+.pager-help { margin-top: .25rem; font-size: .9rem; color:#ccc; }
+
+/* Pager size button group */
+.pager-size-buttons { display: inline-flex; gap: .25rem; }
+.pager-size-buttons button { background:#111; color:#fff; border:2px solid #fff; padding:.25rem .5rem; cursor:pointer; }
+.pager-size-buttons button[aria-pressed="true"] { background:#fff; color:#000; }
+
+/* Pager search */
+.pager-search { display:flex; gap:.5rem; align-items:center; margin:.5rem 0 1rem; flex-wrap:wrap; }
+.pager-search input[type="search"] { background:#111; color:#fff; border:2px solid #fff; padding:.25rem .5rem; min-width: 16rem; }
+.pager-search button { background:#111; color:#fff; border:2px solid #fff; padding:.25rem .5rem; cursor:pointer; }
+
+/* Category filter */
+.pager-cats { display:flex; gap:.5rem; align-items:center; margin:.25rem 0 1rem; flex-wrap:wrap; }
+.pager-cats select { background:#111; color:#fff; border:2px solid #fff; padding:.25rem .5rem; }
+.pager-cats button { background:#111; color:#fff; border:2px solid #fff; padding:.25rem .5rem; cursor:pointer; }
+.pager-cat-active { display:flex; gap:.5rem; flex-wrap:wrap; }
+.pager-cat-chip { background:#fff; color:#000; border:2px solid #fff; padding:.15rem .5rem; }
+.pager-cat-chip button { margin-left:.35rem; background:#111; color:#fff; border:2px solid #fff; padding:.1rem .35rem; cursor:pointer; }

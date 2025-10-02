@@ -28,3 +28,14 @@
   - Validates inputs (times, RRULE parts, known time zones), warns on duplicates, and writes to `_data/nets.yml` in sorted order
   - Dry-run preview + save
   - Bonus: `--edit <id>` to update an existing net; `--check` to lint the YAML
+
+- Search enhancements (CQBH and site-wide)
+  - Add the same keyword search UI to News → “CQ Blind Hams” section (currently on the CQBH page only).
+  - Highlight matched terms in filtered results using `<mark>` with high-contrast, accessible styling.
+  - Support deep-linking filters (e.g., `?q=nanovna`) and initialize the filter from URL params.
+  - Persist last search query per section (localStorage) without being disruptive to new visitors.
+  - Consider a site‑wide search index using Fuse.js or Lunr.js (no external services); ensure:
+    - Progressive enhancement (works without JS by default lists/pages).
+    - Good SR UX: labeled search, no keyboard trap, polite ARIA updates (“N results for ‘term’”).
+    - Respect privacy: no screen reader detection; offer tips for Browse/Forms Mode usage.
+  - Review shortcut interactions: when shortcuts are disabled (default), keep help text hidden; when enabled, announce keys via `aria-keyshortcuts`.

@@ -80,7 +80,7 @@
       {%- endif -%}
     </p>
     <h4>What to expect</h4>
-    <p>{{ next.description }}</p>
+    <div class="next-net-description">{{ next.description | markdownify }}</div>
   </article>
   {%- else -%}
   <p class="next-net-empty">No upcoming nets found in this category.</p>
@@ -165,7 +165,7 @@
                   <td>
                     <strong>{{ occ.name }}</strong>
                   </td>
-                  <td class="net-desc">{{ occ.description }}</td>
+                  <td class="net-desc">{{ occ.description | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip }}</td>
                   <td>
                     <time datetime="{{ occ.start_local_iso }}">{{ occ.start_local_iso | date: "%A, %B %-d at %-I:%M %p" }}</time>
                     <span class="next-net-tz">{{ occ.time_zone
@@ -311,7 +311,7 @@
                 {%- endif -%}
               </p>
               <h5>About this net</h5>
-              <p>{{ occ.description }}</p>
+              <div class="week-net-description">{{ occ.description | markdownify }}</div>
               <h5>Where</h5>
               <p>
                 {%- if net -%}

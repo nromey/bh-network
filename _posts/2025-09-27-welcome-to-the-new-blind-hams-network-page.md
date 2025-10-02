@@ -2,7 +2,7 @@
 layout: post
 title: "Welcome to the New Blind Hams Network Page"
 date: 2025-09-27 08:09:00 -0500
-categories: news
+categories: [news, bhdn]
 tags: [nets, rules, schedule]
 ---
 

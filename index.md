@@ -17,14 +17,23 @@ The **Blind Hams Digital Network** is a community built by and for blind and vis
 <section role="region" aria-labelledby="home-news">
   <h2 id="home-news">News</h2>
 
-  {% assign latest = site.posts | sort: 'date' | last %}
-  {% if latest %}
-  <h3><a href="{{ latest.url | relative_url }}">{{ latest.title }}</a></h3>
-  <p><em>{{ latest.date | date: "%B %-d, %Y" }}</em></p>
-  <p>{{ latest.excerpt | strip_html | strip_newlines | truncate: 300 }}
-  <a href="{{ latest.url | relative_url }}">Read more →</a></p>
+  {%- assign site_news = site.posts | where_exp: "post", "post.categories contains 'news' and post.categories contains 'bhdn'" -%}
+  {%- assign cqbh_news = site.posts | where_exp: "post", "post.categories contains 'news' and post.categories contains 'cqbh'" -%}
+
+  {%- assign latest_site_news = site_news | sort: 'date' | last -%}
+  {% if latest_site_news %}
+    <h3><a href="{{ latest_site_news.url | relative_url }}">{{ latest_site_news.title }}</a></h3>
+    <p><em>{{ latest_site_news.date | date: "%B %-d, %Y" }}</em></p>
+    <p>{{ latest_site_news.excerpt | strip_html | strip_newlines | truncate: 300 }}
+    <a href="{{ latest_site_news.url | relative_url }}">Read more →</a></p>
   {% else %}
-  <p><em>No news posts yet. Check back soon!</em></p>
+    <p><em>No site news yet. Check back soon!</em></p>
+  {% endif %}
+
+  {% assign latest_cqbh = cqbh_news | sort: 'date' | last %}
+  {% if latest_cqbh %}
+    <h3>Latest CQ Blind Hams Episode</h3>
+    <p><a href="{{ latest_cqbh.url | relative_url }}">{{ latest_cqbh.title }}</a> — <em>{{ latest_cqbh.date | date: "%B %-d, %Y" }}</em></p>
   {% endif %}
 </section>
 {% endif %}

@@ -31,7 +31,7 @@
         {%- endif -%}
       {%- endif -%}
     </p>
-    <p>{{ next.description }}</p>
+    <div class="next-net-description">{{ next.description | markdownify }}</div>
   {%- else -%}
     <p>No upcoming nets found.</p>
   {%- endif -%}

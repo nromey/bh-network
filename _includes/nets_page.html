@@ -177,7 +177,7 @@ This block is duplicated in both views (scoped to each n).
               <br><a href="#{{ nco_anchor }}">See NCO schedule <span aria-hidden="true">↓</span></a>
             {%- endif -%}
           </td>
-          <td class="net-desc">{{ n.description }}</td>
+          <td class="net-desc">{{ n.description | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip }}</td>
           <td>
             {%- if _schedule_phrase != "" -%}{{ _schedule_phrase }}{%- else -%}—{%- endif -%}
           </td>
@@ -406,7 +406,7 @@ This block is duplicated in both views (scoped to each n).
           , Other: {{ _other_joined }}
           {%- endif -%}
         </p>
-        <p class="net-desc">{{ n.description }}</p>
+        <div class="net-desc">{{ n.description | markdownify }}</div>
       </article>
       {% unless forloop.last %}<hr>{% endunless %}
     {% endfor %}

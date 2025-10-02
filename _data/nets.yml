@@ -72,7 +72,7 @@ nets:
   - id: handi-hams-midday
     category: "disability"
     name: "Handi Hams Net"
-    description: "Weekday net hosted by the [Courage Kenny Handi Ham System(https://handyhams.org)] discussing topics of interest to radio amateurs who have different disabilities."
+    description: "Weekday net hosted by the [Courage Kenny Handi Hams System](https://www.handihams.org) discussing topics of interest to radio amateurs who have different disabilities."
     start_local: "12:00"     # 12:00 PM ET
     duration_min: 90
     rrule: "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"
