@@ -1,0 +1,40 @@
+name: CQ Blind Hams Auto-Post
+
+on:
+  schedule:
+    - cron: '17 8 * * *' # daily at 08:17 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Fetch latest CQBH episode
+        run: |
+          python3 scripts/fetch_cqbh.py --limit 1
+
+      - name: Commit and push if changes
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add _posts
+            git commit -m "CQBH: auto-add latest episode via RSS"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+

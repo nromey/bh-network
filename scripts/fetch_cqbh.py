@@ -35,6 +35,7 @@ import urllib.error
 import xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
 from pathlib import Path
+from string import Template
 
 
 DEFAULT_FEED = "https://anchor.fm/s/123c50ac/podcast/rss"
@@ -96,24 +97,24 @@ def extract_items(feed_xml: bytes):
     return items
 
 
-POST_TEMPLATE = """---
+POST_TEMPLATE = Template("""---
 layout: post
-title: "{title}"
-date: {date_iso}
+title: "$title"
+date: $date_iso
 categories: [news, cqbh]
 tags: [podcast, CQ Blind Hams]
 ableplayer: true
-cqbh_guid: {guid}
+cqbh_guid: $guid
 ---
 
-{intro}
+$intro
 
-{% include able_audio.html title="{player_title}" src="{mp3_url}" fallback_url="{mp3_url}" %}
+{% include able_audio.html title="$player_title" src="$mp3_url" fallback_url="$mp3_url" %}
 
 Description (from CQ Blind Hams):
 
-{desc_html}
-"""
+$desc_html
+""")
 
 
 def write_post(item: dict, out_dir: Path, dry_run: bool = False) -> Path | None:
@@ -161,9 +162,10 @@ def write_post(item: dict, out_dir: Path, dry_run: bool = False) -> Path | None:
     ) % (html.escape(title),)
     player_title = html.escape(title)
     desc_html = item["desc_html"].strip() or ""
+    # Keep HTML as-is; Template handles braces fine
 
-    content = POST_TEMPLATE.format(
-        title=site_title.replace('"', '\\"'),
+    content = POST_TEMPLATE.safe_substitute(
+        title=site_title,
         date_iso=date_iso,
         guid=guid,
         intro=intro,
