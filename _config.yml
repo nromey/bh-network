@@ -23,6 +23,7 @@ mastodon:
     instance: "mastodon.hams.social"
 
 header_pages:
+  - nets/blind-hams/etiquette.md
   - index.md
   - nets/blind-hams/index.md
   - nets/disabilities/index.md

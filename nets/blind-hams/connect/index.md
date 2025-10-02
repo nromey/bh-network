@@ -7,7 +7,7 @@ ableplayer: true
 
 # How to Connect to the Blind Hams Network
 
-This page collects detailed connection options and tips (Alexa, audio streams, EchoLink, and more) for connecting to the Blind Hams Digital Network. For a short list of AllStar nodes, see the banner on the home page.
+This page covers connection options (AllStar, EchoLink, DMR, D‑STAR, YSF, Alexa, and the live stream). For on‑air behavior and expectations, see our <a href="/nets/blind-hams/etiquette/">Tips and Etiquette</a> page.
 
 ## AllStar
 
@@ -68,11 +68,6 @@ To listen on Alexa, ask your device to “enable the Blind Hams Network.” Once
 You can also find the Blind Hams Network on Broadcastify (lower quality and more delay). Broadcastify Premium subscribers can get a year of rolling archives:
 <https://www.broadcastify.com/listen/feed/31624>
 
-## Tips and Etiquette {#etiquette}
+## Tips and Etiquette
 
-- Identify with your callsign, following the rules of your country’s amateur radio service.
-- Leave a short pause between transmissions. This lets linked systems catch up and gives others a chance to break in. Not all systems are full‑duplex end‑to‑end.
-- Be welcoming. All licensed operators are invited to use the network.
-- A wide range of topics is allowed (including politics and religion). Keep it civil and focus on ideas, not people.
-- No personal attacks, harassment, or deliberate jamming.
-- We’re an international, mixed‑audience community (youth and adults). Think before you key: if a discussion becomes sensitive, runs long, or could be better elsewhere, please move it to AllStar 506318 or another appropriate node (e.g., NE5L node 507295). Standard amateur rules always apply.
+See the dedicated page for current guidelines: <a href="/nets/blind-hams/etiquette/">Tips and Etiquette</a>.
