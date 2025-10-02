@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 """
-Create a news post for the latest CQ Blind Hams episode.
+Create news posts for CQ Blind Hams episodes using their RSS feed.
 
 Usage:
-  python3 scripts/fetch_cqbh.py [--feed URL] [--output DIR] [--limit N] [--dry-run]
+  python3 scripts/fetch_cqbh.py [--feed URL] [--output DIR]
+                                [--limit N | --all] [--since YYYY-MM-DD]
+                                [--dry-run]
 
 Defaults:
   --feed   https://anchor.fm/s/123c50ac/podcast/rss
   --output _posts
-  --limit  1
+  --limit  1 (unless --all is set)
 
 Behavior:
-  - Reads the RSS feed, selects up to N most-recent items.
-  - For each unseen episode (based on GUID/enclosure URL or post filename),
-    writes a Jekyll post with Able Player inline and description content.
+  - Reads the RSS feed and sorts items by pubDate (newest first).
+  - Selects up to N most-recent items, or all with --all.
+  - Optionally filters to items on/after --since (YYYY-MM-DD).
+  - For each unseen episode (based on GUID/title), writes a Jekyll post
+    whose filename date and front matter date match the RSS pubDate.
+  - Embeds an Able Player with the MP3 enclosure.
 
 This script uses only the Python standard library for portability.
 """
@@ -126,6 +131,7 @@ def write_post(item: dict, out_dir: Path, dry_run: bool = False) -> Path | None:
         pub_dt = datetime.now(timezone.utc)
 
     date_part = pub_dt.strftime("%Y-%m-%d")
+    # Normalize to local-naive time if tzinfo missing; keep ISO for clarity
     date_iso = pub_dt.strftime("%Y-%m-%d %H:%M:%S %z") or f"{date_part} 00:00:00 +0000"
 
     slug = make_slug(title)
@@ -179,7 +185,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--feed", default=DEFAULT_FEED)
     ap.add_argument("--output", default="_posts")
-    ap.add_argument("--limit", type=int, default=1)
+    group = ap.add_mutually_exclusive_group()
+    group.add_argument("--limit", type=int, default=1, help="number of newest episodes to post")
+    group.add_argument("--all", action="store_true", help="create posts for all episodes in the feed")
+    ap.add_argument("--since", help="only include episodes on/after this date (YYYY-MM-DD)")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -193,8 +202,22 @@ def main():
         return 2
 
     items = extract_items(data)
+
+    # Optional date filter
+    if args.since:
+        try:
+            from datetime import datetime
+            since_dt = datetime.strptime(args.since, "%Y-%m-%d")
+        except Exception:
+            print("Error: --since must be YYYY-MM-DD", file=sys.stderr)
+            return 2
+        items = [it for it in items if it["pub_dt"] and it["pub_dt"].date().isoformat() >= args.since]
+
+    # Selection: all or limit N
+    selected = items if args.all else items[: max(1, args.limit) ]
+
     created = []
-    for i, item in enumerate(items[: max(0, args.limit) or 1]):
+    for item in selected:
         path = write_post(item, out_dir, dry_run=args.dry_run)
         if path:
             created.append(path)
