@@ -6,6 +6,7 @@
   <audio
     id="{{ audio_id }}"
     data-able-player
+    data-features="playpause,stop,rewind,forward,volume,progress,help,preferences"
     preload="{{ include.preload | default: 'none' }}"
     controls
     aria-label="{{ include.title | default: 'Audio player' }}">
@@ -23,5 +24,7 @@
     <a href="{{ include.fallback_url }}">{{ include.fallback_url }}</a>.
   </p>
   {%- endif -%}
+  <p class="audio-tip" style="font-size:.9em;margin-top:.25rem">
+    Tip: Tab to the Play button and press Space or Enter. For letter shortcuts (e.g., Left/Right to seek; Home/End; Mute with M), exit Browse/Virtual mode in your screen reader.
+  </p>
 </figure>
-
