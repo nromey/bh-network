@@ -13,17 +13,20 @@ The **Blind Hams Digital Network** is a community built by and for blind and vis
 
 {% include home_next_nets.html %}
 
-## News
+{% if site.widgets.news_preview %}
+<section role="region" aria-labelledby="home-news">
+  <h2 id="home-news">News</h2>
 
-{% assign latest = site.posts | sort: 'date' | last %}
-{% if latest %}
-### [{{ latest.title }}]({{ latest.url | relative_url }})
-*{{ latest.date | date: "%B %-d, %Y" }}*
-
-{{ latest.excerpt | strip_html | strip_newlines | truncate: 300 }}
-[Read more →]({{ latest.url | relative_url }})
-{% else %}
-_No news posts yet. Check back soon!_
+  {% assign latest = site.posts | sort: 'date' | last %}
+  {% if latest %}
+  <h3><a href="{{ latest.url | relative_url }}">{{ latest.title }}</a></h3>
+  <p><em>{{ latest.date | date: "%B %-d, %Y" }}</em></p>
+  <p>{{ latest.excerpt | strip_html | strip_newlines | truncate: 300 }}
+  <a href="{{ latest.url | relative_url }}">Read more →</a></p>
+  {% else %}
+  <p><em>No news posts yet. Check back soon!</em></p>
+  {% endif %}
+</section>
 {% endif %}
 
 

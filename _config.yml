@@ -33,4 +33,5 @@ header_pages:
 # Feature toggles / widgets
 widgets:
   connect_banner: true
+  news_preview: true
   
