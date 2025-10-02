@@ -64,7 +64,7 @@ permalink: /news/
     {%- endfor -%}
     {%- assign cats_attr = extra_cats | join: ',' -%}
     <li data-cats="{{ cats_attr }}">
-      <p><a href="{{ post.url | relative_url }}">{{ post.title }}</a></p>
+      <h3 class="news-item-title"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
       <p><em>{{ post.date | date: "%B %-d, %Y" }}</em></p>
       <p>{{ post.excerpt | strip_html | strip_newlines | truncate: 300 }}
       {%- if post.excerpt != post.content -%} <a href="{{ post.url | relative_url }}">Read more →</a>{%- endif -%}</p>
@@ -132,7 +132,7 @@ permalink: /news/
     {%- endfor -%}
     {%- assign cats_attr = extra_cats | join: ',' -%}
     <li data-cats="{{ cats_attr }}">
-      <p><a href="{{ post.url | relative_url }}">{{ post.title }}</a></p>
+      <h3 class="news-item-title"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
       <p><em>{{ post.date | date: "%B %-d, %Y" }}</em></p>
       <p>{{ post.excerpt | strip_html | strip_newlines | truncate: 300 }}
       {%- if post.excerpt != post.content -%} <a href="{{ post.url | relative_url }}">Read more →</a>{%- endif -%}</p>

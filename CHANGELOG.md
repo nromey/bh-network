@@ -2,6 +2,43 @@
 
 All notable changes to this project are documented here.
 
+## 2025-10-02
+
+- Nets data rendering
+  - Markdown links inside `_data/nets.yml` descriptions now render correctly by piping through `markdownify` in `_includes/nets_page.html` (both table and headings views).
+  - Fixed Handi Hams link syntax and URL in `_data/nets.yml`.
+- “Next Net” widgets
+  - Markdown-enabled descriptions in `_includes/next_net.html` and the home weekly card (`_includes/home_next_nets.html`).
+- News information architecture
+  - Split “News” into two clearly separated, screen‑reader friendly sections on `news.md`:
+    - “Site News” (posts with `categories: [news, bhdn]`).
+    - “CQ Blind Hams” (posts with `categories: [news, cqbh]`).
+  - Home page News preview now shows latest Site News and, when present, a succinct “Latest CQ Blind Hams Episode” link.
+  - Retagged welcome post as `categories: [news, bhdn]` so it appears under Site News.
+- Accessible pagination system (no plugins)
+  - Introduced a reusable client‑side pager (`assets/js/pager.js`) used on `news.md` and `cq-blind-hams/index.md`.
+  - Features:
+    - Page size buttons (5/10/20/All) with pressed state; persists per section.
+    - First/Prev/numbered/Next/Last controls; compact page number set with ellipses.
+    - ARIA live updates (polite) and visible status (“Page X of Y”).
+    - Skip links to jump to the pager or the list.
+    - Keyboard shortcuts (ArrowLeft/Right, PageUp/Down, Home/End) — opt‑in via a toggle; default OFF. When enabled, `aria-keyshortcuts` is announced and a short help tip is shown.
+    - Section focus behavior after paging is configurable (`data-pager-focus`), defaulting to the section heading for predictable SR navigation.
+    - Deep‑linking: size/page and optional search/categories encode into per‑section URL params.
+- Search + category filtering
+  - CQ Blind Hams page (`/cq-blind-hams/`): added labeled keyword search and AND‑ed category filtering with removable chips; integrates with pagination and announces filtered counts.
+  - News → “CQ Blind Hams”: same search + category filters for consistency.
+  - News → “Site News”: same search + category filters for consistency (categories exclude the base labels `news`/`bhdn`).
+- Heading structure for lists
+  - Article titles in CQBH and News lists are rendered as `<h3>` under each section `<h2>`, enabling fast “jump by heading” navigation (e.g., H/3 in SRs).
+- CQ Blind Hams backfill
+  - Used `scripts/fetch_cqbh.py` to import all CQBH episodes from the RSS feed (2020→present), writing Jekyll posts with Able Player embeds and `categories: [news, cqbh]`.
+  - The importer de‑duplicates via `cqbh_guid`/title and sets file date from RSS `pubDate`.
+- Dev ergonomics
+  - Added `scripts/status.sh` to summarize repo state, recent commits, changed files, posts counts, and key pages; includes common serve/build commands and a terminal clear recipe.
+- TODO updates
+  - Documented follow‑ups for search UX: adding search to other sections, match highlighting, deep‑linking defaults, and (optionally) a site‑wide Fuse.js/Lunr.js index with accessible behavior.
+
 ## 2025-09-29
 
 - Added GitHub Actions workflow `Generate NCO + Build & Deploy` to auto-generate data, build, and deploy Pages.
@@ -63,5 +100,4 @@ educational.
 - Cleaned up and compacted other files i.e. this changelog.
 - What's more fun than removing staples using a staple remover called your thumbnail--which you just chomped off earlier today due to stress? You guessed it, debugging code written by an over-zealous AI coding companion that comments in way more places than necessary, and does absolutely nothing in the places where you need comments.
 - Lots more planned, and we're getting there. If I could see the light at the end of the preverbial tunnel, I'd be seeing that bitch but it's so far ahead that it doesn't look like the white light you absolutely shouldn't walk into at the end unless yo're ready. It was a productive dayu in the BHDN web sweat shop.
-
 
