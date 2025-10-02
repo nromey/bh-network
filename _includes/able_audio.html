@@ -1,0 +1,27 @@
+{%- assign audio_id = include.id | default: 'audio-' | append: include.src | replace: '/','-' | replace: ':','-' | replace: '.','-' | replace: '?','-' -%}
+<figure class="audio-player">
+  {%- if include.title -%}
+  <figcaption>{{ include.title }}</figcaption>
+  {%- endif -%}
+  <audio
+    id="{{ audio_id }}"
+    data-able-player
+    preload="{{ include.preload | default: 'none' }}"
+    controls
+    aria-label="{{ include.title | default: 'Audio player' }}">
+    <source src="{{ include.src }}" type="{{ include.type | default: 'audio/mpeg' }}">
+    {%- if include.src_alt and include.type_alt -%}
+    <source src="{{ include.src_alt }}" type="{{ include.type_alt }}">
+    {%- endif -%}
+    {%- if include.captions -%}
+    <track kind="captions" src="{{ include.captions }}" srclang="{{ include.captions_lang | default: 'en' }}" label="{{ include.captions_label | default: 'English' }}">
+    {%- endif -%}
+  </audio>
+  {%- if include.fallback_url -%}
+  <p class="audio-fallback" style="font-size:.9em;margin-top:.4rem">
+    If playback fails, open the audio directly:
+    <a href="{{ include.fallback_url }}">{{ include.fallback_url }}</a>.
+  </p>
+  {%- endif -%}
+</figure>
+

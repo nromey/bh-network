@@ -53,7 +53,7 @@ Note: Some browsers block mixed content (HTTP audio on HTTPS pages). If the play
 
 <figure class="audio-player">
   <figcaption>Live Blind Hams Network audio stream</figcaption>
-  <audio id="bhn-stream" data-able-player preload="none">
+  <audio id="bhn-stream" data-able-player preload="none" controls aria-label="Live Blind Hams Network audio stream">
     <source src="http://stream.borris.me:8888/blind-hams" type="audio/mpeg">
   </audio>
   <p style="font-size: 0.9em; margin-top: .4rem">

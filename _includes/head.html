@@ -27,9 +27,9 @@
 
 {%- if page.ableplayer -%}
   <!-- Able Player assets (loaded only on pages that set page.ableplayer: true) -->
-  <link rel="stylesheet" href="https://ableplayer.github.io/ableplayer/ableplayer.min.css">
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://ableplayer.github.io/ableplayer/ableplayer.min.js"></script>
+  <link rel="stylesheet" href="{{ '/assets/vendor/ableplayer/ableplayer.min.css' | relative_url }}?v={{ bust }}">
+  <script src="{{ '/assets/vendor/jquery/jquery-3.7.1.min.js' | relative_url }}?v={{ bust }}"></script>
+  <script src="{{ '/assets/vendor/ableplayer/ableplayer.min.js' | relative_url }}?v={{ bust }}"></script>
 {%- endif -%}
 
 {%- if site.favicon -%}

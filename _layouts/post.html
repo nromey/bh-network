@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: site.lang | default: "en" }}">
+
+<head>
+  {% include head.html %}
+  <meta name="robots" content="index,follow">
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+  {%- include header.html -%}
+
+  <main id="main" class="page-content" aria-label="Content">
+    <div class="wrapper">
+      <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+        <header class="post-header">
+          <h1 class="post-title p-name" itemprop="headline">{{ page.title }}</h1>
+          <p class="post-meta">
+            {%- if page.date -%}
+            <time class="dt-published" datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">{{ page.date | date: "%B %-d, %Y" }}</time>
+            {%- endif -%}
+          </p>
+        </header>
+        <div class="post-content e-content" itemprop="articleBody">
+          {{ content }}
+        </div>
+      </article>
+    </div>
+  </main>
+
+  {%- include footer.html -%}
+  
+</body>
+
+</html>
+
