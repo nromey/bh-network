@@ -68,7 +68,7 @@ To listen on Alexa, ask your device to “enable the Blind Hams Network.” Once
 You can also find the Blind Hams Network on Broadcastify (lower quality and more delay). Broadcastify Premium subscribers can get a year of rolling archives:
 <https://www.broadcastify.com/listen/feed/31624>
 
-## Tips and Etiquette
+## Tips and Etiquette {#etiquette}
 
 - Identify with your callsign, following the rules of your country’s amateur radio service.
 - Leave a short pause between transmissions. This lets linked systems catch up and gives others a chance to break in. Not all systems are full‑duplex end‑to‑end.

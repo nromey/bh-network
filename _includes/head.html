@@ -2,12 +2,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-{%- if site.title and page.title -%}
-  <title>{{ page.title }} | {{ site.title }}</title>
-{%- elsif site.title -%}
-  <title>{{ site.title }}</title>
+{%- assign __title_base = page.title | default: site.title -%}
+{%- assign __suffix = '' -%}
+{%- if page.layout == 'post' -%}
+  {%- assign __suffix = ' — News' -%}
+{%- endif -%}
+{%- if page.categories and page.categories contains 'cqbh' -%}
+  {%- assign __suffix = __suffix | append: ' — CQ Blind Hams' -%}
+{%- endif -%}
+{%- if site.title -%}
+  <title>{{ __title_base }}{{ __suffix }} | {{ site.title }}</title>
 {%- else -%}
-  <title>{{ page.title }}</title>
+  <title>{{ __title_base }}{{ __suffix }}</title>
+{%- endif -%}
+
+{%- assign __desc = page.excerpt | default: page.description | default: site.description -%}
+{%- if __desc -%}
+  <meta name="description" content="{{ __desc | strip_html | strip_newlines | truncate: 300 }}">
 {%- endif -%}
 
 {%- if site.plugins contains "jekyll-seo-tag" -%}

@@ -16,6 +16,11 @@
   - Add a visible “Live” label and an external player fallback link
   - Optional: transcript link if available; test keyboard + screen reader flow
 
+- Connect page anchors
+  - Add stable IDs to key sections in `nets/blind-hams/connect/index.md` for jump links
+    - Example: `## Tips and Etiquette {#etiquette}` (already added)
+    - Consider: `{#allstar}`, `{#dmr}`, `{#d-star}`, `{#ysf}`, `{#alexa-audio}`
+
 - Interactive “Add a Net” CLI
   - Text-based menu to guide net creation and avoid YAML mistakes
   - Prompts for: id, category, name, description (launch $EDITOR for multi-line), start_local, duration_min, rrule, time_zone
