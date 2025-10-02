@@ -29,11 +29,8 @@ _No news posts yet. Check back soon!_
 
 ## What’s coming, the to-do list
 - Up-to-the-minute solar data and a calculated MUF based on your location, presented in a clean, accessible format.
-- A quick “Up next” list of upcoming nets on the system.
 - Organized, filterable info on accessible radios and accessibility tips for various rigs.
 - A files area where you can download (and submit) useful ham-radio software and data.
-- Community guidelines: clear, short, and friendly.
-- A page listing all nodes and ways to access the system.
 
 ## What you can do today
 - Browse current nets on our network (and a few partner nets). If we’re missing one, let us know! The new system makes it super easy to add them so don't be shy, the sky's the limit!
