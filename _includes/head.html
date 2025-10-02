@@ -37,15 +37,41 @@
 {%- endif -%}
 
 {%- if page.ableplayer -%}
-  <!-- Able Player assets (loaded only on pages that set page.ableplayer: true) -->
-  <link rel="stylesheet" href="{{ '/assets/vendor/ableplayer/ableplayer.min.css' | relative_url }}?v={{ bust }}">
-  <!-- CSS fallback (CDN) in case local path 404s -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ableplayer/ableplayer@v4.7.0/build/ableplayer.min.css" media="print" onload="this.media='all'">
-  <script src="{{ '/assets/vendor/jquery/jquery-3.7.1.min.js' | relative_url }}?v={{ bust }}"
-          onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js';"></script>
-  <script src="{{ '/assets/vendor/ableplayer/ableplayer.min.js' | relative_url }}?v={{ bust }}"
-          onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/gh/ableplayer/ableplayer@v4.7.0/build/ableplayer.min.js';"></script>
+  <!-- Able Player assets (only when page.ableplayer: true). CDN-first with local fallback. -->
+  <!-- CSS: CDN-first -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ableplayer/ableplayer@v4.7.0/build/ableplayer.min.css">
+  <!-- Local CSS fallback (non-blocking) -->
+  <link rel="stylesheet" href="{{ '/assets/vendor/ableplayer/ableplayer.min.css' | relative_url }}?v={{ bust }}" media="print" onload="this.media='all'">
+
+  <!-- JS dependencies: js-cookie, jQuery, AblePlayer (CDN-first with local fallback) -->
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
+          onerror="this.onerror=null; this.src='{{ '/assets/vendor/jquery/jquery-3.7.1.min.js' | relative_url }}?v={{ bust }}';"></script>
+  <script src="https://cdn.jsdelivr.net/gh/ableplayer/ableplayer@v4.7.0/build/ableplayer.min.js"
+          onerror="this.onerror=null; this.src='{{ '/assets/vendor/ableplayer/ableplayer.min.js' | relative_url }}?v={{ bust }}';"></script>
+
+  <!-- Defensive init + diagnostics -->
   <script src="{{ '/assets/js/able-init.js' | relative_url }}?v={{ bust }}"></script>
+  <script>
+    // Minimal diagnostics: if Able Player doesn't initialize, emit a console warning once.
+    (function(){
+      function diag(){
+        try {
+          var anyMedia = document.querySelector('audio[data-able-player],video[data-able-player]');
+          var anyAble = document.querySelector('.able-wrapper');
+          if (anyMedia && !anyAble) {
+            if (typeof AblePlayer === 'undefined') {
+              console.warn('[AblePlayer] Scripts present but AblePlayer is undefined. Check CSP or blocked CDN.');
+            } else {
+              console.warn('[AblePlayer] Found media with data-able-player but no upgraded player.');
+            }
+          }
+        } catch(e) {}
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', diag);
+      else diag();
+    })();
+  </script>
 {%- endif -%}
 
 {%- if site.favicon -%}

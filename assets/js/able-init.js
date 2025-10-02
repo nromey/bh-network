@@ -61,6 +61,14 @@
         if ($media.closest('.able-wrapper').length) return; // already initialized
         try { new AblePlayer($media); } catch (e) { /* no-op */ }
       });
+      // Simple diagnostics: log once if media exists but no player wrapper after a short delay
+      setTimeout(function(){
+        try {
+          var anyMedia = document.querySelector('audio[data-able-player],video[data-able-player]');
+          var anyAble = document.querySelector('.able-wrapper');
+          if (anyMedia && !anyAble) console.warn('[AblePlayer] Upgrade did not attach to media.');
+        } catch(e){}
+      }, 300);
     } catch(e) { /* no-op */ }
   }
 
