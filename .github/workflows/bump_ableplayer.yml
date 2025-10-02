@@ -1,0 +1,59 @@
+name: Bump Able Player
+
+on:
+  schedule:
+    - cron: "0 6 1 * *"   # Monthly, 06:00 UTC on the 1st
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest Able Player release
+        id: get_latest
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const resp = await github.rest.repos.getLatestRelease({ owner: 'ableplayer', repo: 'ableplayer' });
+            core.setOutput('latest', resp.data.tag_name); // e.g., v4.7.1
+
+      - name: Update version in head include if newer
+        id: bump
+        run: |
+          set -e
+          latest='${{ steps.get_latest.outputs.latest }}'    # e.g., v4.7.1
+          if [ -z "$latest" ]; then echo "No latest tag returned"; echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          current=$(grep -o "ableplayer@v[0-9]*\.[0-9]*\.[0-9]*" -h _includes/head.html | head -n1 | sed 's/.*@v//')
+          latest_num=$(echo "$latest" | sed 's/^v//')
+          echo "Current: $current, Latest: $latest_num"
+          if [ "$latest_num" = "$current" ]; then echo "Already up to date"; echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          # Replace all occurrences of ableplayer@vX.Y.Z with the latest tag
+          sed -i.bak -E "s#ableplayer@v[0-9]+\.[0-9]+\.[0-9]+#ableplayer@${latest}#g" _includes/head.html
+          rm -f _includes/head.html.bak
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "latest_tag=$latest" >> "$GITHUB_OUTPUT"
+
+      - name: Create pull request
+        if: steps.bump.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: bump Able Player to ${{ steps.bump.outputs.latest_tag }}"
+          title: "chore: bump Able Player to ${{ steps.bump.outputs.latest_tag }}"
+          body: |
+            Automated monthly bump of Able Player to ${{ steps.bump.outputs.latest_tag }}.
+
+            Changes:
+            - Update CDN references in `_includes/head.html` to ${{ steps.bump.outputs.latest_tag }}.
+
+            Please test on a CQ Blind Hams post to verify the player initializes and controls behave as expected.
+          branch: chore/ableplayer-${{ steps.bump.outputs.latest_tag }}
+          labels: dependencies, ableplayer
