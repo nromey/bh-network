@@ -9,7 +9,7 @@ ableplayer: true
 
 This page covers connection options (AllStar, EchoLink, DMR, D‑STAR, YSF, Alexa, and the live stream). For on‑air behavior and expectations, see our <a href="/nets/blind-hams/etiquette/">Tips and Etiquette</a> page.
 
-## AllStar
+## AllStar {#allstar}
 
 Use the regional nodes closest to you for best latency and less packet loss.
 
@@ -19,7 +19,7 @@ Notes on using AllStar on the network
 - If you are using app-based “web transceiver” tools like RepeaterPhone or DVSwitch, connect to node 506317. The other AllStar nodes may refuse web-transceiver connections unless you are using your own [AllStarLink](https://www.allstarlink.org) node. Once connected appropriately, you are welcome to link to nodes 506310–506315 and 506318.
 - Use node 506318 for longer QSOs and free‑form conversation. Standard amateur radio rules still apply everywhere, but for topics that may run long or get spirited, please move to 506318 or other nodes that are set up for that purpose.
 - Want to listen only (no transmit)? Use the live audio stream below.
-## DMR
+## DMR {#dmr}
 
 You can connect to the Blind Hams Network via:
 - [Amcomm](https://www.amcomm.network) TG31679
@@ -28,19 +28,19 @@ You can connect to the Blind Hams Network via:
 
 Note: We do not link to BrandMeister due to their current cross‑network linking policies.
  
- ## D-STAR
+ ## D-STAR {#d-star}
 
 Connect to XLX679A to link directly to the network.
 
-## YSF
+## YSF {#ysf}
 
 Connect to YSF 76138. WIRES‑X is no longer used on the network.
 
-## EchoLink
+## EchoLink {#echolink}
 
 Connect to the \*BLIND\* conference if you would like to use [EchoLink](https://www.echolink.org).
 
-## Alexa and Audio Streams
+## Alexa and Audio Streams {#alexa-audio}
 
 There are several ways to listen to the Blind Hams Network on your
 computer, smartphone, or Alexa‑enabled smart speaker.

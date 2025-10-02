@@ -11,6 +11,12 @@ All notable changes to this project are documented here.
 - Initial home “Up Next” widget and weekly accordion wired to `_data/next_net.yml`.
 - Initial nets views and data model: `_includes/nets_page.html` and `_data/nets.yml`.
 
+- Accessibility/UI polish:
+  - Added narration when switching between table/headings views on nets pages; refined with toggle buttons for predictable NVDA/JAWS output.
+  - Hid decorative down-arrow next to the “See NCO schedule” link from assistive tech.
+  - Added `docs/TODO.md` to track future accessibility enhancements (e.g., keyboard shortcuts for the view toggle).
+  - Added `scripts/oai_lkoginmethod` helper to switch between ChatGPT subscription tokens and encrypted OpenAI API key usage for the Codex CLI.
+
 ## 2025-09-27
 
 - Initial Jekyll site scaffold (Minima, feed plugin), basic pages and navigation.
