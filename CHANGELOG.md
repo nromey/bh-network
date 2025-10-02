@@ -47,3 +47,21 @@ All notable changes to this project are documented here.
 
 ## Notes
 - Sass deprecation warnings are from the theme; builds are otherwise clean.
+## 2025-10-01
+
+- A rediculous amount of tiny yet crucial changes that both future proof and make the site *that* much better.
+- Completed writing connecting information  on how to connect to the Blind Hams Network
+- Added the new information to the main home page in a now less obtrusive banner which
+  * The banner shows Allstar node numbers and where they are
+ * Also explain that you can connect to BHN by other means but that you should jump over to another page where we'll ggive you the deets.
+  * The index page describes each connection method, I may explain further if I'm bored and want to be 
+educational.
+  * Included info from [N2DYI(https://www.qrz.com/db/N2DYI)] with details on connecting to Amazon skill that plays the live audio for the network
+-  Added link for the icecast stream with a uRL that is https to match shared page, and also include the audio in an AblePlayer widget, a player that is super accessible and also looks awesome (Request from [N6RXT(www.qrz.com/db/N6RXT)], Started import of CQ Blind Hams from Apple Podcast summary pages to allow us to create news pages retroactively and to allow for display of easy to use CQBH pages. On blindhams.com there is no way to link directly to CQBH so that link is now out there. Right now it lists last 6 of the episodes. Plan is to drag the rest of them down for display and processiong.
+  * Each episode page  gives a description, supplied by producers and Joel, [W0CAS(https://www.qrz.com/db/W0CAS)], as well as tthe audio, streamed within a spiffy AblePlayer container in case you want to jack up the speed of these  doohickeys, yep I said doohickeys.
+  * Plan to add a paginator for these content, a way for users to filter/display an ascending or descending date order. Basically, it's wway more than you need but why not?
+- Cleaned up and compacted other files i.e. this changelog.
+- What's more fun than removing staples using a staple remover called your thumbnail--which you just chomped off earlier today due to stress? You guessed it, debugging code written by an over-zealous AI coding companion that comments in way more places than necessary, and does absolutely nothing in the places where you need comments.
+- Lots more planned, and we're getting there. If I could see the light at the end of the preverbial tunnel, I'd be seeing that bitch but it's so far ahead that it doesn't look like the white light you absolutely shouldn't walk into at the end unless yo're ready. It was a productive dayu in the BHDN web sweat shop.
+
+
