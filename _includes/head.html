@@ -39,8 +39,12 @@
 {%- if page.ableplayer -%}
   <!-- Able Player assets (loaded only on pages that set page.ableplayer: true) -->
   <link rel="stylesheet" href="{{ '/assets/vendor/ableplayer/ableplayer.min.css' | relative_url }}?v={{ bust }}">
-  <script src="{{ '/assets/vendor/jquery/jquery-3.7.1.min.js' | relative_url }}?v={{ bust }}"></script>
-  <script src="{{ '/assets/vendor/ableplayer/ableplayer.min.js' | relative_url }}?v={{ bust }}"></script>
+  <!-- CSS fallback (CDN) in case local path 404s -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ableplayer/ableplayer@v4.7.0/build/ableplayer.min.css" media="print" onload="this.media='all'">
+  <script src="{{ '/assets/vendor/jquery/jquery-3.7.1.min.js' | relative_url }}?v={{ bust }}"
+          onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js';"></script>
+  <script src="{{ '/assets/vendor/ableplayer/ableplayer.min.js' | relative_url }}?v={{ bust }}"
+          onerror="this.onerror=null; this.src='https://cdn.jsdelivr.net/gh/ableplayer/ableplayer@v4.7.0/build/ableplayer.min.js';"></script>
   <script src="{{ '/assets/js/able-init.js' | relative_url }}?v={{ bust }}"></script>
 {%- endif -%}
 
