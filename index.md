@@ -15,7 +15,7 @@ The **Blind Hams Digital Network** is a community built by and for blind and vis
 
 ## News
 
-{% assign latest = site.posts.first %}
+{% assign latest = site.posts | sort: 'date' | last %}
 {% if latest %}
 ### [{{ latest.title }}]({{ latest.url | relative_url }})
 *{{ latest.date | date: "%B %-d, %Y" }}*
