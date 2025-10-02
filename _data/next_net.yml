@@ -25,55 +25,6 @@ next_net:
     location: null
     website: null
 week:
-- id: sfarc-coffee-break
-  name: Sierra Foothills ARC Coffee Break Net
-  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
-  category: general
-  start_local_iso: '2025-10-02T10:30:00-04:00'
-  duration_min: 150
-  time_zone: America/New_York
-  connections:
-    allstar: null
-    echolink: null
-    frequency: null
-    mode: null
-    dmr: null
-    dmr_system: null
-    dmr_tg: null
-    talkgroup: null
-    peanut: null
-    dstar: null
-    ysf: null
-    wiresx: null
-    p25: null
-    nxdn: null
-    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
-    website: null
-- id: handi-hams-midday
-  name: Handi Hams Net
-  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
-    discussing topics of interest to radio amateurs who have different disabilities.
-  category: disability
-  start_local_iso: '2025-10-02T12:00:00-04:00'
-  duration_min: 90
-  time_zone: America/New_York
-  connections:
-    allstar: 473760 (backup 473761)
-    echolink: N0BVE-L
-    frequency: null
-    mode: null
-    dmr: null
-    dmr_system: null
-    dmr_tg: null
-    talkgroup: null
-    peanut: null
-    dstar: null
-    ysf: null
-    wiresx: null
-    p25: null
-    nxdn: null
-    location: null
-    website: null
 - id: blind-hams-tech
   name: Blind Hams Tech Net
   description: Monthly technical deep-dive net.
@@ -124,7 +75,7 @@ week:
     website: null
 - id: handi-hams-midday
   name: Handi Hams Net
-  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
+  description: Weekday net hosted by the [Courage Kenny Handi Ham System(https://handyhams.org)]
     discussing topics of interest to radio amateurs who have different disabilities.
   category: disability
   start_local_iso: '2025-10-03T12:00:00-04:00'
@@ -351,7 +302,7 @@ week:
     website: null
 - id: handi-hams-midday
   name: Handi Hams Net
-  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
+  description: Weekday net hosted by the [Courage Kenny Handi Ham System(https://handyhams.org)]
     discussing topics of interest to radio amateurs who have different disabilities.
   category: disability
   start_local_iso: '2025-10-06T12:00:00-04:00'
@@ -475,7 +426,7 @@ week:
     website: null
 - id: handi-hams-midday
   name: Handi Hams Net
-  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
+  description: Weekday net hosted by the [Courage Kenny Handi Ham System(https://handyhams.org)]
     discussing topics of interest to radio amateurs who have different disabilities.
   category: disability
   start_local_iso: '2025-10-07T12:00:00-04:00'
@@ -549,7 +500,7 @@ week:
     website: null
 - id: handi-hams-midday
   name: Handi Hams Net
-  description: Weekday net hosted by the [Courage Kenny Handi Ham system](https://handyhams.org)
+  description: Weekday net hosted by the [Courage Kenny Handi Ham System(https://handyhams.org)]
     discussing topics of interest to radio amateurs who have different disabilities.
   category: disability
   start_local_iso: '2025-10-08T12:00:00-04:00'
@@ -602,6 +553,55 @@ week:
   description: Weekly trivia net hosted by Handi Hams.
   category: disability
   start_local_iso: '2025-10-08T20:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+  connections:
+    allstar: 473760 (backup 473761)
+    echolink: N0BVE-L
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
+- id: sfarc-coffee-break
+  name: Sierra Foothills ARC Coffee Break Net
+  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
+  category: general
+  start_local_iso: '2025-10-09T10:30:00-04:00'
+  duration_min: 150
+  time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
+    website: null
+- id: handi-hams-midday
+  name: Handi Hams Net
+  description: Weekday net hosted by the [Courage Kenny Handi Ham System(https://handyhams.org)]
+    discussing topics of interest to radio amateurs who have different disabilities.
+  category: disability
+  start_local_iso: '2025-10-09T12:00:00-04:00'
   duration_min: 90
   time_zone: America/New_York
   connections:
