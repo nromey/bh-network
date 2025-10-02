@@ -2,14 +2,12 @@
 layout: post
 title: "New CQ Blind Hams Podcast: Xiegu G90 from a blindness perspective (CQBH 146)"
 date: 2025-10-01 12:00:00 -0500
-categories: news
+categories: [news, cqbh]
 tags: [podcast, CQ Blind Hams, accessibility, radios]
 ableplayer: true
 ---
 
-A new episode of the CQ Blind Hams podcast is out: “CQBH 146 Xiegu G90 from a blindness perspective with Simon K6DXN.”
-
-- Listen on Apple Podcasts: https://podcasts.apple.com/us/podcast/cqbh-146-xiegu-g90-from-a-blindness-perspective/id1493982137?i=1000725271454
+A new episode of the CQ Blind Hams podcast is out: “CQBH 146 Xiegu G90 from a blindness perspective with Simon K6DXN.” You can listen on Apple Podcasts, Spotify, and YouTube; we’ve embedded the episode below for easy playback.
 
 You can also play the episode here on our site:
 
