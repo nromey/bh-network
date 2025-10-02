@@ -38,6 +38,11 @@ All notable changes to this project are documented here.
   - Added `scripts/status.sh` to summarize repo state, recent commits, changed files, posts counts, and key pages; includes common serve/build commands and a terminal clear recipe.
 - TODO updates
   - Documented follow‑ups for search UX: adding search to other sections, match highlighting, deep‑linking defaults, and (optionally) a site‑wide Fuse.js/Lunr.js index with accessible behavior.
+ - Able Player hardening
+   - CDN‑first loading for js‑cookie, jQuery, and Able Player CSS/JS with local fallbacks.
+   - Defensive initializer `assets/js/able-init.js` that dynamically loads missing deps and upgrades players; adds a minimal js‑cookie shim and simple diagnostics.
+   - Switched the Connect page stream to HTTPS (`https://laca.borris.me/blind-hams`) to avoid mixed content.
+   - Added a monthly workflow to auto‑bump Able Player CDN version via PR: `.github/workflows/bump_ableplayer.yml`.
 
 ## 2025-09-29
 
@@ -100,4 +105,3 @@ educational.
 - Cleaned up and compacted other files i.e. this changelog.
 - What's more fun than removing staples using a staple remover called your thumbnail--which you just chomped off earlier today due to stress? You guessed it, debugging code written by an over-zealous AI coding companion that comments in way more places than necessary, and does absolutely nothing in the places where you need comments.
 - Lots more planned, and we're getting there. If I could see the light at the end of the preverbial tunnel, I'd be seeing that bitch but it's so far ahead that it doesn't look like the white light you absolutely shouldn't walk into at the end unless yo're ready. It was a productive dayu in the BHDN web sweat shop.
-
