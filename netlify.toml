@@ -1,0 +1,11 @@
+[build]
+  # Netlify will run this to build your site
+  command = "bundle exec jekyll build"
+  # Jekyll outputs to _site by default
+  publish = "_site"
+
+[build.environment]
+  # Ensure production optimizations in Jekyll
+  JEKYLL_ENV = "production"
+  # Use the same Ruby as .ruby-version for consistent builds
+  RUBY_VERSION = "3.3"
