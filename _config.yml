@@ -38,3 +38,5 @@ widgets:
   
 include:
   - _redirects
+  - _headers
+
