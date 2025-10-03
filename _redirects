@@ -1,0 +1,7 @@
+# Force apex to canonical www on HTTPS
+https://blindhams.network/*  https://www.blindhams.network/:splat  301!
+
+# If someone hits plain HTTP, send to HTTPS on www
+http://blindhams.network/*   https://www.blindhams.network/:splat  301!
+http://www.blindhams.network/*  https://www.blindhams.network/:splat  301!
+

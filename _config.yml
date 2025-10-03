@@ -36,3 +36,5 @@ widgets:
   connect_banner: true
   news_preview: true
   
+include:
+  - _redirects
