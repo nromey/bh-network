@@ -1,8 +1,4 @@
 items:
-- date: '2025-10-04'
-  nco: N2DYI
-  notes: ''
-  unassigned: false
 - date: '2025-10-11'
   nco: VE3RWJ
   notes: Covering for Noel who is traveling this week.
@@ -45,5 +41,9 @@ items:
   unassigned: false
 - date: '2025-12-20'
   nco: W5MRR
+  notes: ''
+  unassigned: false
+- date: '2025-12-27'
+  nco: VE3RWJ
   notes: ''
   unassigned: false

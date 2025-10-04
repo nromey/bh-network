@@ -1,11 +1,11 @@
 time_zone: America/New_York
 next_net:
-  id: bh-digital
-  name: Blind Hams Digital Net
-  description: Weekly net for blind and sighted amateur radio operators to gather
-    and share timely info for the ham community.
+  id: visually-inconvenienced
+  name: Visually Inconvenienced Hams Net
+  description: "Topical net for all hams from a visually \u2018inconvenienced\u2019\
+    \ angle. Final net of the month highlights weather talk and Q&A."
   category: bhn
-  start_local_iso: '2025-10-04T10:00:00-04:00'
+  start_local_iso: '2025-10-04T20:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
   connections:
@@ -26,31 +26,6 @@ next_net:
     location: null
     website: null
 week:
-- id: bh-digital
-  name: Blind Hams Digital Net
-  description: Weekly net for blind and sighted amateur radio operators to gather
-    and share timely info for the ham community.
-  category: bhn
-  start_local_iso: '2025-10-04T10:00:00-04:00'
-  duration_min: 60
-  time_zone: America/New_York
-  connections:
-    allstar: null
-    echolink: null
-    frequency: null
-    mode: null
-    dmr: null
-    dmr_system: null
-    dmr_tg: null
-    talkgroup: null
-    peanut: null
-    dstar: null
-    ysf: null
-    wiresx: null
-    p25: null
-    nxdn: null
-    location: null
-    website: null
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
   description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
@@ -622,6 +597,30 @@ week:
     p25: null
     nxdn: null
     location: null
+    website: null
+- id: sfarc-coffee-break
+  name: Sierra Foothills ARC Coffee Break Net
+  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
+  category: general
+  start_local_iso: '2025-10-11T10:30:00-04:00'
+  duration_min: 150
+  time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
     website: null
 categories:
 - bhn
