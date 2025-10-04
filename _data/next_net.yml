@@ -598,6 +598,31 @@ week:
     nxdn: null
     location: null
     website: null
+- id: bh-digital
+  name: Blind Hams Digital Net
+  description: Weekly net for blind and sighted amateur radio operators to gather
+    and share timely info for the ham community.
+  category: bhn
+  start_local_iso: '2025-10-11T10:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 categories:
 - bhn
 - disability
