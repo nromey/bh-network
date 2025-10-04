@@ -1,17 +1,16 @@
 time_zone: America/New_York
 next_net:
-  id: friday-night-net
-  name: The Friday Night Blind Hams Allstar and Echolink Net
-  description: Join [KY2D, Jim,  from Maine as he leads an informal check-in / comments
-    net to give Blind and Visually Impaired amateur radio operators a place to hang
-    out on Allstar and Echolink each Friday night.
+  id: bh-digital
+  name: Blind Hams Digital Net
+  description: Weekly net for blind and sighted amateur radio operators to gather
+    and share timely info for the ham community.
   category: bhn
-  start_local_iso: '2025-10-03T20:00:00-04:00'
+  start_local_iso: '2025-10-04T10:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
   connections:
-    allstar: blind hams allstar or the KY2D allstar node 2396
-    echolink: '*blind* conference or ky2d-r'
+    allstar: null
+    echolink: null
     frequency: null
     mode: null
     dmr: null
@@ -27,32 +26,6 @@ next_net:
     location: null
     website: null
 week:
-- id: friday-night-net
-  name: The Friday Night Blind Hams Allstar and Echolink Net
-  description: Join [KY2D, Jim,  from Maine as he leads an informal check-in / comments
-    net to give Blind and Visually Impaired amateur radio operators a place to hang
-    out on Allstar and Echolink each Friday night.
-  category: bhn
-  start_local_iso: '2025-10-03T20:00:00-04:00'
-  duration_min: 60
-  time_zone: America/New_York
-  connections:
-    allstar: blind hams allstar or the KY2D allstar node 2396
-    echolink: '*blind* conference or ky2d-r'
-    frequency: null
-    mode: null
-    dmr: null
-    dmr_system: null
-    dmr_tg: null
-    talkgroup: null
-    peanut: null
-    dstar: null
-    ysf: null
-    wiresx: null
-    p25: null
-    nxdn: null
-    location: null
-    website: null
 - id: bh-digital
   name: Blind Hams Digital Net
   description: Weekly net for blind and sighted amateur radio operators to gather
