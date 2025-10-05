@@ -1,22 +1,18 @@
 time_zone: America/New_York
 next_net:
-  id: newsline
-  name: Amateur Radio Newsline
-  description: "Amateur Radio Newsline\u2122 is a free service to the amateur radio\
-    \ community. \_[Amateur Radio Newsline](https://www.arnewsline.org)   produces\
-    \ a weekly audio news bulletin called a \u201CQST\u201D or \u201Cbulletin of interest\
-    \ to radio amateurs\u201D that can be heard on the blind hams digital network,\
-    \ or via a podcast download."
+  id: bh-cross-country-hf
+  name: Blind Hams Cross Country Net
+  description: HF net for the Blind Hams community. Check your propagation and talk
+    to other blind hams and friends of the network on HF.
   category: bhn
-  start_local_iso: '2025-10-05T15:00:00-04:00'
+  start_local_iso: '2025-10-05T16:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
   connections:
-    allstar: See the [Blind Hams Digital Network](www.blindhamsnetwork) homepage to
-      get the correct AllStar node number for your international region
-    echolink: '*blind* conference'
-    frequency: null
-    mode: null
+    allstar: null
+    echolink: null
+    frequency: 14.303 MHz
+    mode: USB
     dmr: null
     dmr_system: null
     dmr_tg: null
@@ -27,38 +23,9 @@ next_net:
     wiresx: null
     p25: null
     nxdn: null
-    location: null
+    location: 20 meters band on HF
     website: null
 week:
-- id: newsline
-  name: Amateur Radio Newsline
-  description: "Amateur Radio Newsline\u2122 is a free service to the amateur radio\
-    \ community. \_[Amateur Radio Newsline](https://www.arnewsline.org)   produces\
-    \ a weekly audio news bulletin called a \u201CQST\u201D or \u201Cbulletin of interest\
-    \ to radio amateurs\u201D that can be heard on the blind hams digital network,\
-    \ or via a podcast download."
-  category: bhn
-  start_local_iso: '2025-10-05T15:00:00-04:00'
-  duration_min: 60
-  time_zone: America/New_York
-  connections:
-    allstar: See the [Blind Hams Digital Network](www.blindhamsnetwork) homepage to
-      get the correct AllStar node number for your international region
-    echolink: '*blind* conference'
-    frequency: null
-    mode: null
-    dmr: null
-    dmr_system: null
-    dmr_tg: null
-    talkgroup: null
-    peanut: null
-    dstar: null
-    ysf: null
-    wiresx: null
-    p25: null
-    nxdn: null
-    location: null
-    website: null
 - id: bh-cross-country-hf
   name: Blind Hams Cross Country Net
   description: HF net for the Blind Hams community. Check your propagation and talk
@@ -630,6 +597,31 @@ week:
     p25: null
     nxdn: null
     location: null
+    website: null
+- id: bh-cross-country-hf
+  name: Blind Hams Cross Country Net
+  description: HF net for the Blind Hams community. Check your propagation and talk
+    to other blind hams and friends of the network on HF.
+  category: bhn
+  start_local_iso: '2025-10-12T16:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: 14.303 MHz
+    mode: USB
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: 20 meters band on HF
     website: null
 categories:
 - bhn
