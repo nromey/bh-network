@@ -88,7 +88,9 @@ jobs:
           tail -n 30 _data/bhn_ncos_schedule.yml || true
 
       - name: Commit & push updated schedule
-        if: github.ref == 'refs/heads/main'
+        # Allow pushes on whichever branch triggered the workflow. Scheduled runs
+        # execute on the repository's default branch, which may not be "main".
+        if: startsWith(github.ref, 'refs/heads/')
         id: commit
         run: |
           set -e
