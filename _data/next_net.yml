@@ -1,18 +1,18 @@
 time_zone: America/New_York
 next_net:
-  id: bh-cross-country-hf
-  name: Blind Hams Cross Country Net
-  description: HF net for the Blind Hams community. Check your propagation and talk
-    to other blind hams and friends of the network on HF.
+  id: sounds-good
+  name: The Sounds Good Net
+  description: "For music fans and musicians, audio nerds and pros \u2014 anything\
+    \ to do with music and sound."
   category: bhn
-  start_local_iso: '2025-10-05T16:00:00-04:00'
-  duration_min: 60
+  start_local_iso: '2025-10-06T20:00:00-04:00'
+  duration_min: 90
   time_zone: America/New_York
   connections:
     allstar: null
     echolink: null
-    frequency: 14.303 MHz
-    mode: USB
+    frequency: null
+    mode: null
     dmr: null
     dmr_system: null
     dmr_tg: null
@@ -23,34 +23,9 @@ next_net:
     wiresx: null
     p25: null
     nxdn: null
-    location: 20 meters band on HF
+    location: null
     website: null
 week:
-- id: bh-cross-country-hf
-  name: Blind Hams Cross Country Net
-  description: HF net for the Blind Hams community. Check your propagation and talk
-    to other blind hams and friends of the network on HF.
-  category: bhn
-  start_local_iso: '2025-10-05T16:00:00-04:00'
-  duration_min: 60
-  time_zone: America/New_York
-  connections:
-    allstar: null
-    echolink: null
-    frequency: 14.303 MHz
-    mode: USB
-    dmr: null
-    dmr_system: null
-    dmr_tg: null
-    talkgroup: null
-    peanut: null
-    dstar: null
-    ysf: null
-    wiresx: null
-    p25: null
-    nxdn: null
-    location: 20 meters band on HF
-    website: null
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
   description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
