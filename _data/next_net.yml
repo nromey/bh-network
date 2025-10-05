@@ -598,6 +598,31 @@ week:
     nxdn: null
     location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
     website: null
+- id: visually-inconvenienced
+  name: Visually Inconvenienced Hams Net
+  description: "Topical net for all hams from a visually \u2018inconvenienced\u2019\
+    \ angle. Final net of the month highlights weather talk and Q&A."
+  category: bhn
+  start_local_iso: '2025-10-11T20:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 categories:
 - bhn
 - disability
