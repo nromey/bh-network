@@ -602,6 +602,35 @@ week:
     nxdn: null
     location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
     website: null
+- id: newsline
+  name: Amateur Radio Newsline
+  description: "Amateur Radio Newsline\u2122 is a free service to the amateur radio\
+    \ community. \_[Amateur Radio Newsline](https://www.arnewsline.org)   produces\
+    \ a weekly audio news bulletin called a \u201CQST\u201D or \u201Cbulletin of interest\
+    \ to radio amateurs\u201D that can be heard on the blind hams digital network,\
+    \ or via a podcast download."
+  category: bhn
+  start_local_iso: '2025-10-12T15:00:00-04:00'
+  duration_min: 60
+  time_zone: America/New_York
+  connections:
+    allstar: See the [Blind Hams Digital Network](www.blindhamsnetwork) homepage to
+      get the correct AllStar node number for your international region
+    echolink: '*blind* conference'
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 categories:
 - bhn
 - disability
