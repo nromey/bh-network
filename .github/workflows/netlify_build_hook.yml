@@ -9,6 +9,13 @@ on:
       - '_data/bhn_ncos_schedule.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: netlify-hook
+  cancel-in-progress: true
+
 jobs:
   trigger:
     runs-on: ubuntu-latest
