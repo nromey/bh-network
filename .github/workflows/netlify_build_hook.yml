@@ -1,5 +1,5 @@
 # .github/workflows/netlify_build_hook.yml
-name: Trigger Netlify (Build Hook)
+name: Trigger Netlify (Build Hook, push-only + debug)
 
 on:
   push:
@@ -7,23 +7,58 @@ on:
     paths:
       - '_data/next_net.yml'
       - '_data/bhn_ncos_schedule.yml'
-  schedule:
-    # Safety rebuild in case data rolled but no push occurred
-    - cron: '7 * * * *'   # every hour at minute 7
   workflow_dispatch:
 
 jobs:
   trigger:
+    # Skip cleanly if the secret isn't present; allow push or manual runs
+    if: ${{ secrets.NETLIFY_BUILD_HOOK_URL != '' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Show event context
+        run: |
+          echo "event: $GITHUB_EVENT_NAME"
+          echo "ref:   $GITHUB_REF"
+          echo "sha:   $GITHUB_SHA"
+          echo "before: ${{ github.event.before }}"
+      
+      - name: Decide if we should trigger
+        id: decide
+        run: |
+          set -e
+          BASE="${{ github.event.before }}"
+          if [ -n "$BASE" ]; then
+            git diff --name-only "$BASE" "$GITHUB_SHA" > changed.txt || true
+          else
+            git diff --name-only "$GITHUB_SHA^" "$GITHUB_SHA" > changed.txt || true
+          fi
+          echo "--- changed files ---"
+          cat changed.txt || true
+
+          if grep -E '^_data/(next_net|bhn_ncos_schedule)\.yml$' changed.txt >/dev/null 2>&1; then
+            echo "should_trigger=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_trigger=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          {
+            echo "### Netlify Hook Decision"
+            echo "- should_trigger: ${SHOULD_TRIGGER:-${{ steps.decide.outputs.should_trigger }}}"
+            echo "- changed files:"
+            sed 's/^/  - /' changed.txt || true
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Trigger Netlify Build Hook
+        if: steps.decide.outputs.should_trigger == 'true'
         env:
           NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
         run: |
-          if [ -z "$NETLIFY_BUILD_HOOK_URL" ]; then
-            echo "::error ::NETLIFY_BUILD_HOOK_URL secret is not set"
-            exit 1
-          fi
-          echo "Calling Netlify build hook..."
-          curl -sS -X POST -d '{}' "$NETLIFY_BUILD_HOOK_URL"
+          echo "Calling Netlify build hook…"
+          curl -sS -X POST -d '{}' -w "\nHTTP %{http_code}\n" "$NETLIFY_BUILD_HOOK_URL"
           echo "Done."

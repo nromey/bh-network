@@ -7,9 +7,13 @@
 [build.environment]
   # Ensure production optimizations in Jekyll
   JEKYLL_ENV = "production"
-  # Use the same Ruby as .ruby-version for consistent builds
+  # Use the same Ruby version as .ruby-version for consistent builds
   RUBY_VERSION = "3.3"
+  # Node version used for any post-processing scripts
+  NODE_VERSION = "18"
   # Persist gems between builds to speed up Bundler
   BUNDLE_PATH = "vendor/bundle"
   # Don’t install dev/test groups on Netlify
   BUNDLE_WITHOUT = "development:test"
+  # Set timezone for schedule generation and logs
+  TZ = "America/New_York"
