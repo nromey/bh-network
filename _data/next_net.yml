@@ -598,6 +598,30 @@ week:
     nxdn: null
     location: null
     website: null
+- id: active-elements
+  name: Active Elements Digital Net
+  description: Weekly UK digital net.
+  category: disability
+  start_local_iso: '2025-10-13T20:00:00+00:00'
+  duration_min: 60
+  time_zone: UTC
+  connections:
+    allstar: '56870'
+    echolink: null
+    frequency: null
+    mode: DMR
+    dmr: null
+    dmr_system: BrandMeister
+    dmr_tg: '53085'
+    talkgroup: null
+    peanut: XRF299S
+    dstar: XRF299S
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: Active Elements Digital System
+    website: null
 categories:
 - bhn
 - disability
