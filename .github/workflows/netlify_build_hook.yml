@@ -11,15 +11,25 @@ on:
 
 jobs:
   trigger:
-    # Skip if secret missing; allow manual or push runs
-    if: ${{ secrets.NETLIFY_BUILD_HOOK_URL != '' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
     timeout-minutes: 2
+    env:
+      NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Check secret presence
+        run: |
+          if [ -z "${NETLIFY_BUILD_HOOK_URL}" ]; then
+            echo "NETLIFY_BUILD_HOOK_URL not set; skipping trigger."
+            {
+              echo "### Netlify Hook Decision"
+              echo "- should_trigger: false (missing secret)"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Show event context
         run: |
@@ -30,6 +40,7 @@ jobs:
       
       - name: Decide if we should trigger
         id: decide
+        if: env.NETLIFY_BUILD_HOOK_URL != ''
         run: |
           set -e
           BASE="${{ github.event.before }}"
@@ -55,9 +66,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Trigger Netlify Build Hook
-        if: steps.decide.outputs.should_trigger == 'true'
-        env:
-          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+        if: env.NETLIFY_BUILD_HOOK_URL != '' && steps.decide.outputs.should_trigger == 'true'
         run: |
           echo "Calling Netlify build hook…"
           curl -sS -X POST -d '{}' -w "\nHTTP %{http_code}\n" "$NETLIFY_BUILD_HOOK_URL"
