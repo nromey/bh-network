@@ -26,30 +26,6 @@ next_net:
     location: null
     website: null
 week:
-- id: active-elements
-  name: Active Elements Digital Net
-  description: Weekly UK digital net.
-  category: disability
-  start_local_iso: '2025-10-06T20:00:00+00:00'
-  duration_min: 60
-  time_zone: UTC
-  connections:
-    allstar: '56870'
-    echolink: null
-    frequency: null
-    mode: DMR
-    dmr: null
-    dmr_system: BrandMeister
-    dmr_tg: '53085'
-    talkgroup: null
-    peanut: XRF299S
-    dstar: XRF299S
-    ysf: null
-    wiresx: null
-    p25: null
-    nxdn: null
-    location: Active Elements Digital System
-    website: null
 - id: sounds-good
   name: The Sounds Good Net
   description: "For music fans and musicians, audio nerds and pros \u2014 anything\
