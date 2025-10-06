@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Tips and Etiquette — Blind Hams Network
+title: Tips, Etiquette, and Code Of Conduct on the Blind Hams Digital Network
 permalink: /nets/blind-hams/etiquette/
 ---
 
