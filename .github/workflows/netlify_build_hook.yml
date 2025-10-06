@@ -11,7 +11,7 @@ on:
 
 jobs:
   trigger:
-    # Skip cleanly if the secret isn't present; allow push or manual runs
+    # Skip if secret missing; allow manual or push runs
     if: ${{ secrets.NETLIFY_BUILD_HOOK_URL != '' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     runs-on: ubuntu-latest
     timeout-minutes: 2
