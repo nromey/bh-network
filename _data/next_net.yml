@@ -598,6 +598,31 @@ week:
     nxdn: null
     location: null
     website: null
+- id: absolute-tech
+  name: $Absolute Tech Net
+  description: A net to discuss technical amateur radio topics and troubleshoot issues
+    faced by hams around the world.
+  category: bhn
+  start_local_iso: '2025-10-14T19:00:00-04:00'
+  duration_min: 120
+  time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 categories:
 - bhn
 - disability
