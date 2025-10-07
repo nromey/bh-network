@@ -28,6 +28,7 @@ header_pages:
   - nets/blind-hams/index.md
   - nets/disabilities/index.md
   - nets/general/index.md
+  - contact.md
   - news.md
   - cq-blind-hams/index.md
   
@@ -39,4 +40,3 @@ widgets:
 include:
   - _redirects
   - _headers
-
