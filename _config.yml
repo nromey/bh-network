@@ -28,7 +28,8 @@ header_pages:
   - nets/blind-hams/index.md
   - nets/disabilities/index.md
   - nets/general/index.md
-  - news.md
+  - contact.md
+    - news.md
   - cq-blind-hams/index.md
   
 # Feature toggles / widgets
