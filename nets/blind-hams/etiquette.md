@@ -34,13 +34,15 @@ permalink: /nets/blind-hams/etiquette/
 ## During Scheduled Nets
 
 ### If You’re a Participant
-- **Check in once**. Wait to be recognized by the **Net Control Operator (NCO)**.
-- Keep your traffic tight: *“K5NER, no traffic”* or *“K5NER with one item”*.
-- When called, give your traffic, then **return control**: *“Back to net.”*
-- No side QSOs on the net channel.
-
-### If You’re Net Control (NCO)
-- Open with a general QST, the net name, purpose, time, ) and instructions that are relevant to your net.
+- **Check in once**,  Please wait to be recognized by the **Net Control Operator (NCO)**.
+- Keep your traffic tight: as an example, *“K5NER, no traffic”* or *“K5NER with one item”*.
+- When called, give your traffic, then **return control back to the NCO**: *“Back to net.”*
+- Please do not have side QSOs on the net channel while a net is in progress. Try to wrap up your QSOs before net so that others can disconnect their repeaters or nodes if they do not wish to participate in an upcoming net.
+- PJlease don't connect the net node to other systems or nets without coordinating with the Net Manager of the Blind Hams Network.
+### If You’re a Net Control (NCO)
+- Contact the net manager if you're interested in being net control for the Saturday morning Blind Hams Digital Net or if you'd like to hold a net on the network.
+- NCOS should open with a general QST, net name, the purpose of the net, and instructions that are relevant to your net.
+- Ask the net manager for any guidance if you are unsure of how nets should be followed. Generally folr Blind Hamd Digital Network nets, you may conduct your net the way you would like with a general request to follow the previous bullet and give a net preamble and instructions.
 - Set expectations (round-table, one item, time limit).
 - Keep a steady pace; rotate fairly; summarize outcomes when helpful.
 - Close with thanks, next-net info, and any follow-ups.
@@ -49,31 +51,31 @@ permalink: /nets/blind-hams/etiquette/
 
 ## What’s Out of Bounds
 
-- **Personal attacks, harassment, or slurs.** Zero tolerance.
+- **Personal attacks, harassment, or slurs.** Sorry guys, there's zero tolerance on this one.
 - **Interference on purpose** (jamming, kerchunking, tuning up on top of people).
-- **Publishing private info** without consent.
-- **Content that breaks law or license terms.** 
-an admin or NCO may warn, mute, or remove to keep the space safe.
+  * Don't create intentional QRM on the frequency. Remember, the network consists of lots of stations, nodes, and even repeaters which are connected together, especially for some of our nets.
+  * If you're using Repeater Phone or other software that acts as an Allstar node, be careful not to **lock** your PTT unintentionally. Though it may be difficult for some, enable the hold to push to talk feature on your application. This will force you to hold down the PTT button on your smart device, much like ayou would on a radio.
+- Please do not **Publish   private info** of anyone without their consent.
+- **Content that breaks law or license terms.** is not permitted 
+If there are repeated attempts to resolve the issue, an admin or NCO may warn, mute, or remove an individual to keep the space safe or usable for all hams. **This will never be the first or only way that administrators will enforce the code of conduct on the network. Sometimes, actions are unintentional or can be handled calmly by asking the individual to stop.
 
-## When There’s Disagreement
+## What Do We Do When There’s Disagreement On The Network
 
 - Assume good intent; ask clarifying questions.
 - State your point once, clearly. If it’s not landing, **agree to disagree** and move on.
 - Take deep dives to a different channel or time.
-- Need help? Ping a moderator privately with a short summary.
+- Need help? Ping a moderator privately with a short summary 
 
 ---
 
-## Practical Audio Tips (Accessibility-First)
+## Practical Audio Tips
 
-- **Mic placement:** 2–3 fingers from mouth, off-axis slightly.
-- **Equipment tests:** Do quick checks off-net; use a test channel or audio monitor.
+- **Mic placement:** It's always best to try to place your mic at least 2 to 3 finger-widths from your mouth. It also helps to speak a bit off axis to your mic. In other words, don't speak directly into the mic gril. This helps to prevent popping p's and excessive essssses. It can also help to reduce clipping.
+  * If you're curious as to how your oaudio sounds, use your network's echo test or parrot feature
+    * On Allstar, connect to node 55553 for a guided audio check experience or cto check for equipment issues
+    - **Equipment tests:** Do quick checks off-net or during quiet times on the network. There's often hams out there on frequency or on the network who would love to help you with radio or equipment checks. If you can't find a friendly ham to ask, use a test channel, audio monitor, parrot, or guided audio (See the Allstar parrot above)..
 
 ---
-
-## Updates & Contact
-
-This page will evolve as our community grows. Suggestions? Corrections? Please contact the site maintainers.
 
 ## Listeners and Live Stream {#listeners}
 - Listeners are welcome. To listen without transmitting, use the live stream linked on the Connect page.
@@ -81,5 +83,12 @@ This page will evolve as our community grows. Suggestions? Corrections? Please c
 ## Getting Connected {#connect}
 - For full connection instructions (AllStar, EchoLink, DMR, D‑STAR, YSF, Alexa), see the
   <a href="/nets/blind-hams/connect/">How to Connect</a> page.
+
+---
+
+## Updates & Contact
+## Updates & Contact
+
+If you have questions, don’t hesitate to ask. See the [Contact](/contact) page for up-to-date contacts for nets, web, or infrastructure questions. Keep in mind that this page is a living document. If you have suggestions or concerns, please let us know.
 
 **73 and thank you for being a considerate operator.** Welcome to the network!!
