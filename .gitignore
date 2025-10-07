@@ -32,3 +32,5 @@ __pycache__/
 
 # Logs
 *.log
+# Windows Zone.Identifier sidecars (if a tool creates them)
+*.Zone.Identifier
