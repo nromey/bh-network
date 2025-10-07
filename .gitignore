@@ -32,5 +32,7 @@ __pycache__/
 
 # Logs
 *.log
-# Windows Zone.Identifier sidecars (if a tool creates them)
+# Windows Mark-of-the-Web/Zone.Identifier sidecars
+# Some tools create either `file.Zone.Identifier` or `file:Zone.Identifier`
 *.Zone.Identifier
+*:[Zz]one.Identifier
