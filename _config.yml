@@ -29,7 +29,7 @@ header_pages:
   - nets/disabilities/index.md
   - nets/general/index.md
   - contact.md
-    - news.md
+  - news.md
   - cq-blind-hams/index.md
   
 # Feature toggles / widgets
@@ -40,4 +40,3 @@ widgets:
 include:
   - _redirects
   - _headers
-
