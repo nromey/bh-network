@@ -26,30 +26,6 @@ next_net:
     location: null
     website: null
 week:
-- id: sfarc-coffee-break
-  name: Sierra Foothills ARC Coffee Break Net
-  description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
-  category: general
-  start_local_iso: '2025-10-07T10:30:00-04:00'
-  duration_min: 150
-  time_zone: America/New_York
-  connections:
-    allstar: null
-    echolink: null
-    frequency: null
-    mode: null
-    dmr: null
-    dmr_system: null
-    dmr_tg: null
-    talkgroup: null
-    peanut: null
-    dstar: null
-    ysf: null
-    wiresx: null
-    p25: null
-    nxdn: null
-    location: '[SFARC repeater system](https://www.w6ek.org) or allstar 51018'
-    website: null
 - id: handi-hams-midday
   name: Handi Hams Net
   description: Weekday net hosted by the [Courage Kenny Handi Hams System](https://www.handihams.org)
