@@ -598,6 +598,31 @@ week:
     nxdn: null
     location: Active Elements Digital System
     website: null
+- id: sounds-good
+  name: The Sounds Good Net
+  description: "For music fans and musicians, audio nerds and pros \u2014 anything\
+    \ to do with music and sound."
+  category: bhn
+  start_local_iso: '2025-10-13T20:00:00-04:00'
+  duration_min: 90
+  time_zone: America/New_York
+  connections:
+    allstar: null
+    echolink: null
+    frequency: null
+    mode: null
+    dmr: null
+    dmr_system: null
+    dmr_tg: null
+    talkgroup: null
+    peanut: null
+    dstar: null
+    ysf: null
+    wiresx: null
+    p25: null
+    nxdn: null
+    location: null
+    website: null
 categories:
 - bhn
 - disability
