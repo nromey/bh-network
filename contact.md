@@ -33,7 +33,7 @@ _Last updated: 2025-10-07_
 ### Prefer a directory view?
 See the **[Contacts directory](/contacts/)** for additional roles as they come online.
 
-<script defer src="{ '/assets/js/email-safe.js' | relative_url }"></script>
+<script defer src="{{ '/assets/js/email-safe.js' | relative_url }}"></script>
 <noscript>
   Email addresses are hidden unless JavaScript is enabled. You can reach Noel at: k5ner [at] eml [dot] cc.
 </noscript>

@@ -16,7 +16,7 @@ This page will grow as we add more role-based contacts. If you don’t see a spe
 
 _Last updated: 2025-10-07_
 
-<script defer src="{ '/assets/js/email-safe.js' | relative_url }"></script>
+<script defer src="{{ '/assets/js/email-safe.js' | relative_url }}"></script>
 <noscript>
   Email addresses are hidden unless JavaScript is enabled. You can reach Noel at: k5ner [at] eml [dot] cc.
 </noscript>
