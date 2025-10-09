@@ -431,10 +431,11 @@
         strong.textContent = occ.name || '';
         tdNet.appendChild(strong);
         if (isInProgress(occ)) {
-          const sr = document.createElement('span');
-          sr.className = 'sr-only';
-          sr.textContent = ' — Live now';
-          tdNet.appendChild(sr);
+          tdNet.appendChild(document.createTextNode(' '));
+          const vis = document.createElement('span');
+          vis.className = 'next-net-live';
+          vis.textContent = '(Live now!)';
+          tdNet.appendChild(vis);
         }
         tr.appendChild(tdNet);
 
