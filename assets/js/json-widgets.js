@@ -47,6 +47,38 @@
     }
   }
 
+  function tzFromISO(iso) {
+    try {
+      const d = new Date(iso);
+      const mins = -d.getTimezoneOffset(); // local offset, but cannot infer source zone
+      // Fallback: derive from ISO string offset when present
+      const m = String(iso || '').match(/([+-])(\d{2}):(\d{2})$/);
+      if (m) {
+        const sign = m[1] === '-' ? -1 : 1;
+        const off = sign * (parseInt(m[2], 10) * 60 + parseInt(m[3], 10));
+        switch (off) {
+          case -300: case -240: return 'Eastern';
+          case -360: case -300: return 'Central';
+          case -420: case -360: return 'Mountain';
+          case -480: case -420: return 'Pacific';
+          default: return `UTC${m[1]}${m[2]}:${m[3]}`;
+        }
+      }
+    } catch (_) {}
+    return '';
+  }
+
+  function getStartISO(obj) {
+    return (obj && (obj.start_local_iso || obj.start_iso)) || '';
+  }
+
+  function getWeekArray(data) {
+    if (!data || typeof data !== 'object') return [];
+    if (Array.isArray(data.week)) return data.week;
+    if (Array.isArray(data.items)) return data.items;
+    return [];
+  }
+
   function normalizeCategory(raw) {
     const s = String(raw || '').trim().toLowerCase();
     if (!s) return '';
@@ -111,7 +143,7 @@
       // Determine the best "next" occurrence: always prefer earliest upcoming BHN.
       // If no BHN entries exist in the future window, fall back to earliest of any category.
       const now = new Date();
-      const week = Array.isArray(data.week) ? data.week.slice() : [];
+      const week = getWeekArray(data).slice();
       const containerWeek = section.querySelector('#home-week-nets');
       const primaryCat = 'bhn'; // Force BHN as the "Next Net" category
 
@@ -120,13 +152,13 @@
       }
 
       // Build future pools
-      const futureWeek = week.filter((o) => o && o.start_local_iso && isFuture(o.start_local_iso));
-      const futureNext = (data.next_net && data.next_net.start_local_iso && isFuture(data.next_net.start_local_iso)) ? [data.next_net] : [];
+      const futureWeek = week.filter((o) => o && getStartISO(o) && isFuture(getStartISO(o)));
+      const futureNext = (data.next_net && getStartISO(data.next_net) && isFuture(getStartISO(data.next_net))) ? [data.next_net] : [];
 
       function earliest(arr) {
         return arr
-          .filter((o) => o && o.start_local_iso)
-          .sort((a, b) => new Date(a.start_local_iso) - new Date(b.start_local_iso))[0] || null;
+          .filter((o) => o && getStartISO(o))
+          .sort((a, b) => new Date(getStartISO(a)) - new Date(getStartISO(b)))[0] || null;
       }
 
       let next = null;
@@ -148,12 +180,13 @@
 
       const timeEl = card.querySelector('time');
       if (timeEl) {
-        timeEl.setAttribute('datetime', next.start_local_iso || '');
-        timeEl.textContent = formatDateAt(next.start_local_iso || '');
+        const start = getStartISO(next);
+        timeEl.setAttribute('datetime', start || '');
+        timeEl.textContent = formatDateAt(start || '');
       }
 
       const tzEl = card.querySelector('.next-net-tz');
-      if (tzEl) tzEl.textContent = tzDisplay(next.time_zone || '');
+      if (tzEl) tzEl.textContent = tzDisplay(next.time_zone || '') || tzFromISO(getStartISO(next));
 
       const dur = card.querySelector('.next-net-duration');
       if (next.duration_min) {
@@ -338,17 +371,22 @@
       const url = container.getAttribute('data-next-net-json');
       if (!url) return;
       const data = await fetchJSON(url);
-      if (!data || !Array.isArray(data.week)) {
+      if (!data) {
         if (DIAG) appendDiag(container, 'Live data fetch failed for weekly list.');
+        return;
+      }
+      const arr = getWeekArray(data);
+      if (!Array.isArray(arr)) {
+        if (DIAG) appendDiag(container, 'Live data loaded but no weekly array found.');
         return;
       }
 
       const now = new Date();
-      const week = data.week
+      const week = arr
         .filter((o) => {
-          try { return new Date(o.start_local_iso) >= now; } catch (_) { return true; }
+          try { return new Date(getStartISO(o)) >= now; } catch (_) { return true; }
         })
-        .sort((a, b) => new Date(a.start_local_iso) - new Date(b.start_local_iso));
+        .sort((a, b) => new Date(getStartISO(a)) - new Date(getStartISO(b)));
       const weekBlock = container.querySelector('#home-week-nets');
       if (!weekBlock) return;
 
@@ -381,11 +419,12 @@
         // When
         const tdWhen = document.createElement('td');
         const time = document.createElement('time');
-        if (occ.start_local_iso) time.setAttribute('datetime', occ.start_local_iso);
-        time.textContent = fmtWeekWhen(occ.start_local_iso || '');
+        const start = getStartISO(occ);
+        if (start) time.setAttribute('datetime', start);
+        time.textContent = fmtWeekWhen(start || '');
         const tzSpan = document.createElement('span');
         tzSpan.className = 'next-net-tz';
-        tzSpan.textContent = tzDisplay(occ.time_zone || '');
+        tzSpan.textContent = tzDisplay(occ.time_zone || '') || tzFromISO(getStartISO(occ));
         tdWhen.appendChild(time);
         tdWhen.appendChild(document.createTextNode(' '));
         tdWhen.appendChild(tzSpan);
@@ -434,13 +473,14 @@
         label.textContent = 'When';
         pMeta.appendChild(label);
         const time = document.createElement('time');
-        if (occ.start_local_iso) time.setAttribute('datetime', occ.start_local_iso);
-        time.textContent = fmtWeekWhen(occ.start_local_iso || '');
+        const start2 = getStartISO(occ);
+        if (start2) time.setAttribute('datetime', start2);
+        time.textContent = fmtWeekWhen(start2 || '');
         pMeta.appendChild(document.createTextNode(' '));
         pMeta.appendChild(time);
         const tz = document.createElement('span');
         tz.className = 'next-net-tz';
-        tz.textContent = tzDisplay(occ.time_zone || '');
+        tz.textContent = tzDisplay(occ.time_zone || '') || tzFromISO(getStartISO(occ));
         pMeta.appendChild(document.createTextNode(' '));
         pMeta.appendChild(tz);
         if (occ.duration_min) {
