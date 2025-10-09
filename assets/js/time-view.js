@@ -23,18 +23,16 @@
     if (!status) return;
     const showUTC = loadUTC();
     if (view === 'my') {
-      status.textContent = showUTC ? 'Showing local time (UTC also shown).' : 'Showing times in your timezone.';
-    } else {
-      const tzName = section.dataset.tzName || '';
-      const tzAbbr = section.dataset.tzAbbr || '';
-      if (tzName && tzAbbr) {
-        status.textContent = showUTC ? `Showing event times: ${tzName} (${tzAbbr}); UTC also shown.` : `Showing event times: ${tzName} (${tzAbbr}).`;
-      } else if (tzName) {
-        status.textContent = showUTC ? `Showing event times: ${tzName}; UTC also shown.` : `Showing event times: ${tzName}.`;
-      } else {
-        status.textContent = showUTC ? 'Showing times in net timezone; UTC also shown.' : 'Showing times in net timezone.';
-      }
+      status.textContent = showUTC ? 'Local time and UTC shown.' : 'Local time.';
+      return;
     }
+    // Net time
+    const tzName = section.dataset.tzName || '';
+    const tzAbbr = section.dataset.tzAbbr || '';
+    let base = 'Net time';
+    if (tzName && tzAbbr) base = `Net time (${tzName}, ${tzAbbr})`;
+    else if (tzName) base = `Net time (${tzName})`;
+    status.textContent = showUTC ? `${base} and UTC shown.` : `${base}.`;
   }
 
   function renderButtonLabels(section, view) {
