@@ -103,6 +103,17 @@ This behavior matches the desired “always show BHN next if available, else som
   - Prefer `time_zone` if provided (e.g., `America/New_York` → “Eastern”).
   - Else derive from ISO offset (−04:00 → “Eastern”, etc.); otherwise display `UTC±HH:MM`.
 
+### Global Time View + UTC Option
+
+- Global toggle persists in `localStorage` under `timeView:global` with values `net` (default) or `my`.
+  - Net time: show time “as written” in the event’s configured zone; label uses a friendly name and DST-aware abbreviation (e.g., “Eastern (EDT)” or “Eastern (EST)”).
+  - My time: convert to the viewer’s local timezone and label as “Local”.
+- A global “Show UTC” checkbox is available on time-related sections and persists as `timeView:showUTC` (`'1'` to enable).
+  - When enabled, appends a concise UTC suffix to hydrated times: `· UTC HH:MM` (24‑hour).
+  - Applied consistently to: the Next Net card, the weekly list (both table and headings views), and category pages’ “— Next: …” lines.
+  - The checkbox state is synchronized across sections and pages and announced via the existing aria-live status.
+  - CSS hook: appended UTC chip uses `span.next-net-utc` if you need to restyle.
+
 ### In-Progress Detection
 
 - If `end_iso` is present, compare `now` within `[start, end)`.
@@ -188,4 +199,3 @@ Tip: If you need to test against a local JSON file, you can temporarily point `d
 - Live status (‘Live now!’) appears as visible text in the Net column for reliable table navigation.
 - Announcements for view toggles, filters, and hydration status use `aria-live` and `role=status`.
 - Table headings and structure are preserved in hydration to maintain predictable SR reading order.
-
