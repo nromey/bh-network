@@ -55,7 +55,8 @@
     // No change to My time label for now; it's concise and clear
     return { netBtn, myBtn };
   }
-  function apply(view) {
+  function apply(view, options = {}) {
+    const { silent = false } = options;
     document.querySelectorAll('.home-next-nets, .nets-section').forEach((section) => {
       const btns = section.querySelectorAll('[data-time-button]');
       btns.forEach((b) => b.setAttribute('aria-pressed', b.dataset.timeButton === view ? 'true' : 'false'));
@@ -67,8 +68,10 @@
       renderButtonLabels(section, view);
       announce(section, view);
     });
-    const ev = new CustomEvent('bhn:timeview-change', { detail: { view } });
-    document.dispatchEvent(ev);
+    if (!silent) {
+      const ev = new CustomEvent('bhn:timeview-change', { detail: { view } });
+      document.dispatchEvent(ev);
+    }
   }
 
   const initView = load();
@@ -101,13 +104,14 @@
     if (!input) return;
     e.preventDefault();
     input.checked = !input.checked;
-    saveUTC(!!input.checked);
-    apply(load());
+    // Dispatch a change event so the central handler persists + applies
+    input.dispatchEvent(new Event('change', { bubbles: true }));
   });
 
   // Update labels when tz context becomes available from hydration
   document.addEventListener('bhn:tzcontext-change', () => {
     const v = load();
-    apply(v);
+    // Refresh labels/status without rebroadcasting the timeview-change event
+    apply(v, { silent: true });
   });
 })();
