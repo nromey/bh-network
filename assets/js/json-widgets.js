@@ -601,10 +601,58 @@
     });
   }
 
+  // Enhance category nets pages by appending a "Next:" time per net using the JSON feed
+  async function enhanceCategoryNets() {
+    const sections = document.querySelectorAll('.nets-section[data-next-net-json]');
+    if (!sections.length) return;
+    for (const section of sections) {
+      const url = section.getAttribute('data-next-net-json');
+      if (!url) continue;
+      const data = await fetchJSON(url);
+      if (!data) {
+        if (DIAG) appendDiag(section, 'Live data fetch failed for category nets.');
+        continue;
+      }
+      const arr = getWeekArray(data);
+      if (!Array.isArray(arr)) {
+        if (DIAG) appendDiag(section, 'Live data loaded but no weekly array found (category nets).');
+        continue;
+      }
+      const now = new Date();
+      const byId = new Map();
+      arr.forEach((occ) => {
+        const sid = (occ && occ.id) || null;
+        const siso = getStartISO(occ);
+        if (!sid || !siso) return;
+        try { if (new Date(siso) < now) return; } catch (_) { return; }
+        const prev = byId.get(sid);
+        if (!prev || new Date(getStartISO(occ)) < new Date(getStartISO(prev))) byId.set(sid, occ);
+      });
+      section.querySelectorAll('.net-next-when[data-net-id]').forEach((slot) => {
+        const id = slot.getAttribute('data-net-id');
+        if (!id) return;
+        const occ = byId.get(id);
+        if (!occ) { slot.textContent = ''; return; }
+        const start = getStartISO(occ);
+        const label = (TIME_VIEW === 'my') ? 'Local' : (tzDisplay(occ.time_zone || '') || tzFromISO(start));
+        const whenText = (TIME_VIEW === 'my') ? fmtWeekWhen(start || '') : formatISOAsWritten(start || '');
+        // Write " — Next: ... <tz>"
+        slot.textContent = ` — Next: ${whenText} `;
+        const tz = document.createElement('span');
+        tz.className = 'next-net-tz';
+        tz.textContent = label;
+        slot.appendChild(tz);
+      });
+      if (DIAG) appendDiag(section, 'Live data loaded. Category nets updated.');
+    }
+  }
+
   function init() {
     enhanceNextNet();
     enhanceWeekList();
     enhanceNcoTable();
+    // Category nets (BHN/Disability/General pages)
+    enhanceCategoryNets();
 
     // Re-render on time view change
     document.addEventListener('bhn:timeview-change', () => {
@@ -615,6 +663,7 @@
       // Re-run hydration for sections on page; cache prevents extra network
       enhanceNextNet();
       enhanceWeekList();
+      enhanceCategoryNets();
     });
   }
 
