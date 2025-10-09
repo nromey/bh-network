@@ -2,6 +2,7 @@
 // Global time view toggle: 'net' (event-local) or 'my' (viewer-local)
 (function () {
   const KEY = 'timeView:global';
+  const UTC_KEY = 'timeView:showUTC';
   function load() {
     try {
       const v = localStorage.getItem(KEY);
@@ -11,20 +12,27 @@
   function save(v) {
     try { localStorage.setItem(KEY, v); } catch (_) {}
   }
+  function loadUTC() {
+    try { return localStorage.getItem(UTC_KEY) === '1'; } catch (_) { return false; }
+  }
+  function saveUTC(on) {
+    try { localStorage.setItem(UTC_KEY, on ? '1' : '0'); } catch (_) {}
+  }
   function announce(section, view) {
     const status = section.querySelector('[data-time-view-status]');
     if (!status) return;
+    const showUTC = loadUTC();
     if (view === 'my') {
-      status.textContent = 'Showing times in your timezone.';
+      status.textContent = showUTC ? 'Showing local time (UTC also shown).' : 'Showing times in your timezone.';
     } else {
       const tzName = section.dataset.tzName || '';
       const tzAbbr = section.dataset.tzAbbr || '';
       if (tzName && tzAbbr) {
-        status.textContent = `Showing event times: ${tzName} (${tzAbbr}).`;
+        status.textContent = showUTC ? `Showing event times: ${tzName} (${tzAbbr}); UTC also shown.` : `Showing event times: ${tzName} (${tzAbbr}).`;
       } else if (tzName) {
-        status.textContent = `Showing event times: ${tzName}.`;
+        status.textContent = showUTC ? `Showing event times: ${tzName}; UTC also shown.` : `Showing event times: ${tzName}.`;
       } else {
-        status.textContent = 'Showing times in net timezone.';
+        status.textContent = showUTC ? 'Showing times in net timezone; UTC also shown.' : 'Showing times in net timezone.';
       }
     }
   }
@@ -51,6 +59,11 @@
     document.querySelectorAll('.home-next-nets, .nets-section').forEach((section) => {
       const btns = section.querySelectorAll('[data-time-button]');
       btns.forEach((b) => b.setAttribute('aria-pressed', b.dataset.timeButton === view ? 'true' : 'false'));
+      // Sync UTC checkbox
+      const utcToggle = section.querySelector('[data-time-utc-toggle]');
+      if (utcToggle) {
+        try { utcToggle.checked = !!loadUTC(); } catch (_) {}
+      }
       renderButtonLabels(section, view);
       announce(section, view);
     });
@@ -69,6 +82,15 @@
     if (btn.getAttribute('aria-pressed') === 'true') return;
     save(view);
     apply(view);
+  });
+
+  // Listen for UTC checkbox toggles (global preference)
+  document.addEventListener('change', (e) => {
+    const chk = e.target.closest('[data-time-utc-toggle]');
+    if (!chk) return;
+    saveUTC(!!chk.checked);
+    // Re-apply current view to update status text and hydrate additions
+    apply(load());
   });
 
   // Update labels when tz context becomes available from hydration

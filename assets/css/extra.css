@@ -198,6 +198,10 @@ caption { text-align:left; font-weight:600; margin-bottom:.5rem; }
 .pager-cats button { background:#111; color:#fff; border:2px solid #fff; padding:.25rem .5rem; cursor:pointer; }
 .pager-cat-active { display:flex; gap:.5rem; flex-wrap:wrap; }
 .pager-cat-chip { background:#fff; color:#000; border:2px solid #fff; padding:.15rem .5rem; }
+
+/* UTC add-on chip and toggle label */
+.next-net-utc { color:#aaa; }
+.time-utc-toggle { margin-left:.75rem; }
 .pager-cat-chip button { margin-left:.35rem; background:#111; color:#fff; border:2px solid #fff; padding:.1rem .35rem; cursor:pointer; }
 
 /* Subtle timestamp for data freshness */

@@ -11,9 +11,11 @@
 
   // Global time view: 'net' (event-local) or 'my' (viewer-local)
   let TIME_VIEW = 'net';
+  let SHOW_UTC = false;
   try {
     const v = localStorage.getItem('timeView:global');
     if (v === 'my') TIME_VIEW = 'my';
+    SHOW_UTC = localStorage.getItem('timeView:showUTC') === '1';
   } catch (_) {}
 
   function appendDiag(container, text, live = 'polite') {
@@ -86,6 +88,14 @@
       }
     } catch (_) {}
     return '';
+  }
+
+  function fmtUTC(iso) {
+    try {
+      const d = new Date(iso);
+      const t = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
+      return `UTC ${t}`;
+    } catch (_) { return ''; }
   }
 
   function getStartISO(obj) {
@@ -244,6 +254,23 @@
 
       const tzEl = card.querySelector('.next-net-tz');
       if (tzEl) tzEl.textContent = (TIME_VIEW === 'my') ? 'Local' : (tzDisplay(next.time_zone || '') || tzFromISO(getStartISO(next)));
+
+      // Append UTC display when enabled
+      try {
+        const meta = card.querySelector('.next-net-meta');
+        let utcSpan = card.querySelector('.next-net-utc');
+        if (SHOW_UTC) {
+          if (!utcSpan) {
+            utcSpan = document.createElement('span');
+            utcSpan.className = 'next-net-utc';
+            if (meta) meta.appendChild(document.createTextNode(' '));
+            if (meta) meta.appendChild(utcSpan);
+          }
+          utcSpan.textContent = `· ${fmtUTC(getStartISO(next))}`;
+        } else if (utcSpan) {
+          utcSpan.remove();
+        }
+      } catch (_) {}
 
       const dur = card.querySelector('.next-net-duration');
       if (next.duration_min) {
@@ -500,6 +527,12 @@
         tdWhen.appendChild(time);
         tdWhen.appendChild(document.createTextNode(' '));
         tdWhen.appendChild(tzSpan);
+        if (SHOW_UTC) {
+          const utc = document.createElement('span');
+          utc.className = 'next-net-utc';
+          utc.textContent = ` · ${fmtUTC(start)}`;
+          tdWhen.appendChild(utc);
+        }
         if (isInProgress(occ)) {
           const live = document.createElement('span');
           live.className = 'next-net-live';
@@ -562,6 +595,12 @@
         tz.textContent = (TIME_VIEW === 'my') ? 'Local' : (tzDisplay(occ.time_zone || '') || tzFromISO(getStartISO(occ)));
         pMeta.appendChild(document.createTextNode(' '));
         pMeta.appendChild(tz);
+        if (SHOW_UTC) {
+          const utc = document.createElement('span');
+          utc.className = 'next-net-utc';
+          utc.textContent = ` · ${fmtUTC(start2)}`;
+          pMeta.appendChild(utc);
+        }
         if (occ.duration_min) {
           const spanDur = document.createElement('span');
           spanDur.className = 'next-net-duration';
@@ -684,6 +723,12 @@
         tz.className = 'next-net-tz';
         tz.textContent = label;
         slot.appendChild(tz);
+        if (SHOW_UTC) {
+          const utc = document.createElement('span');
+          utc.className = 'next-net-utc';
+          utc.textContent = ` · ${fmtUTC(start)}`;
+          slot.appendChild(utc);
+        }
       });
       if (DIAG) appendDiag(section, 'Live data loaded. Category nets updated.');
 
@@ -721,17 +766,18 @@
     // Category nets (BHN/Disability/General pages)
     enhanceCategoryNets();
 
-    // Re-render on time view change
-    document.addEventListener('bhn:timeview-change', () => {
-      try {
-        const v = localStorage.getItem('timeView:global');
-        TIME_VIEW = (v === 'my') ? 'my' : 'net';
-      } catch (_) { TIME_VIEW = 'net'; }
-      // Re-run hydration for sections on page; cache prevents extra network
-      enhanceNextNet();
-      enhanceWeekList();
-      enhanceCategoryNets();
-    });
+  // Re-render on time view change
+  document.addEventListener('bhn:timeview-change', () => {
+    try {
+      const v = localStorage.getItem('timeView:global');
+      TIME_VIEW = (v === 'my') ? 'my' : 'net';
+      SHOW_UTC = localStorage.getItem('timeView:showUTC') === '1';
+    } catch (_) { TIME_VIEW = 'net'; }
+    // Re-run hydration for sections on page; cache prevents extra network
+    enhanceNextNet();
+    enhanceWeekList();
+    enhanceCategoryNets();
+  });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
