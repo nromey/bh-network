@@ -78,8 +78,37 @@
       const url = section.getAttribute('data-next-net-json');
       if (!url) return;
       const data = await fetchJSON(url);
-      if (!data || !data.next_net) return;
-      const next = data.next_net;
+      if (!data) return;
+
+      // Determine the best "next" occurrence.
+      const now = new Date();
+      const week = Array.isArray(data.week) ? data.week.slice() : [];
+      const containerWeek = section.querySelector('#home-week-nets');
+      const primaryCat = (containerWeek && containerWeek.dataset.primaryCategory) || data.primary_category || '';
+
+      function isFuture(iso) {
+        try { return new Date(iso) > now; } catch (_) { return false; }
+      }
+
+      let next = null;
+      // Prefer server-provided next_net if it’s in the future and matches the primary category when provided.
+      if (data.next_net && data.next_net.start_local_iso && isFuture(data.next_net.start_local_iso)) {
+        if (!primaryCat || (data.next_net.category && data.next_net.category === primaryCat)) {
+          next = data.next_net;
+        }
+      }
+      // Otherwise, choose the earliest upcoming, preferring the primary category if available.
+      if (!next && week.length) {
+        const future = week.filter((o) => o && o.start_local_iso && isFuture(o.start_local_iso));
+        let pool = future;
+        if (primaryCat) {
+          const byPrimary = future.filter((o) => o.category === primaryCat);
+          if (byPrimary.length) pool = byPrimary;
+        }
+        pool.sort((a, b) => new Date(a.start_local_iso) - new Date(b.start_local_iso));
+        next = pool[0] || null;
+      }
+      if (!next) return;
 
       const card = section.querySelector('.next-net-card');
       if (!card) return;
@@ -276,7 +305,12 @@
       const data = await fetchJSON(url);
       if (!data || !Array.isArray(data.week)) return;
 
-      const week = data.week.slice().sort((a, b) => String(a.start_local_iso).localeCompare(String(b.start_local_iso)));
+      const now = new Date();
+      const week = data.week
+        .filter((o) => {
+          try { return new Date(o.start_local_iso) >= now; } catch (_) { return true; }
+        })
+        .sort((a, b) => new Date(a.start_local_iso) - new Date(b.start_local_iso));
       const weekBlock = container.querySelector('#home-week-nets');
       if (!weekBlock) return;
 
