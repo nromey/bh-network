@@ -54,6 +54,19 @@
     }
   }
 
+  function tzAbbr(iana, isoLike) {
+    try {
+      if (!iana) return '';
+      const d = isoLike ? new Date(isoLike) : new Date();
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: iana, timeZoneName: 'short' }).formatToParts(d);
+      const part = parts.find(p => p.type === 'timeZoneName');
+      if (!part) return '';
+      // Typically returns 'EST', 'EDT', 'CST', etc. For some zones may be 'GMT-5'.
+      // Normalize 'GMT' forms to uppercase as-is.
+      return String(part.value).toUpperCase();
+    } catch (_) { return ''; }
+  }
+
   function tzFromISO(iso) {
     try {
       const d = new Date(iso);
@@ -268,6 +281,14 @@
 
       appendUpdatedAt(section, data);
       if (DIAG) appendDiag(section, `Live data loaded. Picked Next Net: ${next.name || ''} (${next.category || ''}) at ${next.start_local_iso || ''}.`);
+
+      // Expose tz context for this section (for toggle labeling)
+      const tzIana = next.time_zone || '';
+      const tzName = tzDisplay(tzIana) || '';
+      const abbr = tzAbbr(tzIana, getStartISO(next));
+      if (tzName) section.dataset.tzName = tzName;
+      if (abbr) section.dataset.tzAbbr = abbr;
+      document.dispatchEvent(new CustomEvent('bhn:tzcontext-change'));
     });
   }
 
@@ -598,6 +619,27 @@
 
       appendUpdatedAt(container, data);
       if (DIAG) appendDiag(container, `Live data loaded. Weekly items: ${week.length}.`);
+
+      // Determine a representative tz for this container (if unified)
+      try {
+        const uniq = new Set();
+        let sample = null;
+        week.forEach((o) => {
+          const tz = (o && o.time_zone) || '';
+          if (tz) {
+            uniq.add(tz);
+            if (!sample) sample = o;
+          }
+        });
+        if (uniq.size === 1 && sample) {
+          const tzIana = sample.time_zone;
+          const tzName = tzDisplay(tzIana) || '';
+          const abbr = tzAbbr(tzIana, getStartISO(sample));
+          if (tzName) container.dataset.tzName = tzName;
+          if (abbr) container.dataset.tzAbbr = abbr;
+          document.dispatchEvent(new CustomEvent('bhn:tzcontext-change'));
+        }
+      } catch (_) {}
     });
   }
 
@@ -644,6 +686,31 @@
         slot.appendChild(tz);
       });
       if (DIAG) appendDiag(section, 'Live data loaded. Category nets updated.');
+
+      // Compute a unified tz (if any) across the next occurrences by id
+      try {
+        const uniq = new Set();
+        let sample = null;
+        byId.forEach((occ) => {
+          const tz = (occ && occ.time_zone) || '';
+          if (tz) {
+            uniq.add(tz);
+            if (!sample) sample = occ;
+          }
+        });
+        if (uniq.size === 1 && sample) {
+          const tzIana = sample.time_zone;
+          const tzName = tzDisplay(tzIana) || '';
+          const abbr = tzAbbr(tzIana, getStartISO(sample));
+          if (tzName) section.dataset.tzName = tzName;
+          if (abbr) section.dataset.tzAbbr = abbr;
+        } else {
+          // No single tz; clear any previous context
+          delete section.dataset.tzName;
+          delete section.dataset.tzAbbr;
+        }
+        document.dispatchEvent(new CustomEvent('bhn:tzcontext-change'));
+      } catch (_) {}
     }
   }
 
