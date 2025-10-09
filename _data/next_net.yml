@@ -1,16 +1,17 @@
 time_zone: America/New_York
 next_net:
-  id: look-at-this
-  name: Look At This Net
-  description: Smart glasses and assistive wearables from a blind/VI perspective,
-    for amateur radio and daily life.
+  id: friday-night-net
+  name: The Friday Night Blind Hams Allstar and Echolink Net
+  description: Join [KY2D, Jim,  from Maine as he leads an informal check-in / comments
+    net to give Blind and Visually Impaired amateur radio operators a place to hang
+    out on Allstar and Echolink each Friday night.
   category: bhn
-  start_local_iso: '2025-10-08T20:00:00-04:00'
+  start_local_iso: '2025-10-10T20:00:00-04:00'
   duration_min: 60
   time_zone: America/New_York
   connections:
-    allstar: null
-    echolink: null
+    allstar: blind hams allstar or the KY2D allstar node 2396
+    echolink: '*blind* conference or ky2d-r'
     frequency: null
     mode: null
     dmr: null
@@ -26,55 +27,6 @@ next_net:
     location: null
     website: null
 week:
-- id: look-at-this
-  name: Look At This Net
-  description: Smart glasses and assistive wearables from a blind/VI perspective,
-    for amateur radio and daily life.
-  category: bhn
-  start_local_iso: '2025-10-08T20:00:00-04:00'
-  duration_min: 60
-  time_zone: America/New_York
-  connections:
-    allstar: null
-    echolink: null
-    frequency: null
-    mode: null
-    dmr: null
-    dmr_system: null
-    dmr_tg: null
-    talkgroup: null
-    peanut: null
-    dstar: null
-    ysf: null
-    wiresx: null
-    p25: null
-    nxdn: null
-    location: null
-    website: null
-- id: handi-hams-trivia
-  name: Handi Hams Trivia Net
-  description: Weekly trivia net hosted by Handi Hams.
-  category: disability
-  start_local_iso: '2025-10-08T20:00:00-04:00'
-  duration_min: 90
-  time_zone: America/New_York
-  connections:
-    allstar: 473760 (backup 473761)
-    echolink: N0BVE-L
-    frequency: null
-    mode: null
-    dmr: null
-    dmr_system: null
-    dmr_tg: null
-    talkgroup: null
-    peanut: null
-    dstar: null
-    ysf: null
-    wiresx: null
-    p25: null
-    nxdn: null
-    location: null
-    website: null
 - id: sfarc-coffee-break
   name: Sierra Foothills ARC Coffee Break Net
   description: Daily ragchew hosted by the Sierra Foothills Amateur Radio Club.
