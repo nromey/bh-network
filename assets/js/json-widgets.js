@@ -430,6 +430,12 @@
         const strong = document.createElement('strong');
         strong.textContent = occ.name || '';
         tdNet.appendChild(strong);
+        if (isInProgress(occ)) {
+          const sr = document.createElement('span');
+          sr.className = 'sr-only';
+          sr.textContent = ' — Live now';
+          tdNet.appendChild(sr);
+        }
         tr.appendChild(tdNet);
 
         // Description
