@@ -93,6 +93,18 @@
     apply(load());
   });
 
+  // Also handle clicks on the label to guarantee toggling in all browsers/layouts
+  document.addEventListener('click', (e) => {
+    const label = e.target.closest('label.time-utc-toggle');
+    if (!label) return;
+    const input = label.querySelector('[data-time-utc-toggle]');
+    if (!input) return;
+    e.preventDefault();
+    input.checked = !input.checked;
+    saveUTC(!!input.checked);
+    apply(load());
+  });
+
   // Update labels when tz context becomes available from hydration
   document.addEventListener('bhn:tzcontext-change', () => {
     const v = load();

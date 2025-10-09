@@ -40,6 +40,15 @@
   outline-offset: 2px;
 }
 
+/* Make UTC toggle easier to interact with */
+.view-toggle .time-utc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  user-select: none;
+}
+
 .net-block {
   margin: 1rem 0;
 }
