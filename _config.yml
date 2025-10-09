@@ -11,6 +11,9 @@ plugins:
   # - jekyll-seo-tag      # optional, useful
   # - jekyll-sitemap      # optional, useful
 
+# Favicon (linked in head include when set)
+favicon: /assets/favicon.svg
+
 # Minima theme settings (note: this key must be top-level, not under `plugins`)
 minima:
   custom_css:
