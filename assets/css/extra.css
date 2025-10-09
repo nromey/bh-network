@@ -112,6 +112,13 @@ caption { text-align:left; font-weight:600; margin-bottom:.5rem; }
   background: #000;
 }
 
+/* Live indicator for in-progress nets */
+.next-net-live {
+  color: #26ff26; /* high-contrast green */
+  font-weight: 700;
+  margin-left: .35rem;
+}
+
 .week-empty-message {
   margin: 0 0 1rem;
   font-style: italic;

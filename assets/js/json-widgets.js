@@ -72,6 +72,28 @@
     return (obj && (obj.start_local_iso || obj.start_iso)) || '';
   }
 
+  function getEndISO(obj) {
+    const end = (obj && (obj.end_local_iso || obj.end_iso)) || '';
+    if (end) return end;
+    const start = getStartISO(obj);
+    const dur = (obj && obj.duration_min) ? parseInt(obj.duration_min, 10) : NaN;
+    if (!start || !Number.isFinite(dur)) return '';
+    try {
+      const d = new Date(start);
+      d.setMinutes(d.getMinutes() + dur);
+      return d.toISOString();
+    } catch (_) { return ''; }
+  }
+
+  function isInProgress(obj, now = new Date()) {
+    try {
+      const s = new Date(getStartISO(obj));
+      const eiso = getEndISO(obj);
+      const e = eiso ? new Date(eiso) : new Date(s.getTime() + 60*60000);
+      return now >= s && now < e;
+    } catch (_) { return false; }
+  }
+
   function getWeekArray(data) {
     if (!data || typeof data !== 'object') return [];
     if (Array.isArray(data.week)) return data.week;
@@ -428,6 +450,13 @@
         tdWhen.appendChild(time);
         tdWhen.appendChild(document.createTextNode(' '));
         tdWhen.appendChild(tzSpan);
+        if (isInProgress(occ)) {
+          const live = document.createElement('span');
+          live.className = 'next-net-live';
+          live.textContent = '· Live now';
+          tdWhen.appendChild(document.createTextNode(' '));
+          tdWhen.appendChild(live);
+        }
         tr.appendChild(tdWhen);
 
         // Duration
@@ -489,6 +518,13 @@
           spanDur.textContent = `· ${occ.duration_min} min`;
           pMeta.appendChild(document.createTextNode(' '));
           pMeta.appendChild(spanDur);
+        }
+        if (isInProgress(occ)) {
+          const live = document.createElement('span');
+          live.className = 'next-net-live';
+          live.textContent = '· Live now';
+          pMeta.appendChild(document.createTextNode(' '));
+          pMeta.appendChild(live);
         }
         art.appendChild(pMeta);
 
