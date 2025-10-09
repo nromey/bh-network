@@ -64,20 +64,19 @@
   function appendUpdatedAt(container, data) {
     if (!container || !data) return;
     const ts = detectUpdatedAt(data);
-    if (!ts) return;
-    let when;
-    try {
-      const d = new Date(ts);
-      when = d.toLocaleString();
-    } catch (_) {
-      when = String(ts);
+    let label = '';
+    if (ts) {
+      try { label = `Data updated ${new Date(ts).toLocaleString()}`; }
+      catch (_) { label = `Data updated ${String(ts)}`; }
+    } else {
+      label = 'Live data loaded';
     }
     const prev = container.querySelector('.data-updated');
     if (prev) prev.remove();
     const p = document.createElement('p');
     p.className = 'data-updated';
     p.setAttribute('aria-live', 'polite');
-    p.textContent = `Data updated ${when}`;
+    p.textContent = label;
     container.appendChild(p);
   }
 
