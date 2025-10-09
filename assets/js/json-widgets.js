@@ -31,6 +31,16 @@
     }
   }
 
+  function normalizeCategory(raw) {
+    const s = String(raw || '').trim().toLowerCase();
+    if (!s) return '';
+    // Common normalizations
+    if (s === 'bhn' || s === 'blind hams' || s === 'blind-hams' || s === 'blind hams network' || s === 'blind-hams-network') return 'bhn';
+    if (s === 'disability' || s === 'disabilities') return 'disability';
+    if (s === 'general' || s === 'general interest' || s === 'gen') return 'general';
+    return s; // pass through for any future categories
+  }
+
   function formatDateAt(iso) {
     try {
       const d = new Date(iso);
@@ -80,12 +90,12 @@
       const data = await fetchJSON(url);
       if (!data) return;
 
-      // Determine the best "next" occurrence by taking the earliest upcoming
-      // among week[] and next_net, preferring primary category when possible.
+      // Determine the best "next" occurrence: always prefer earliest upcoming BHN.
+      // If no BHN entries exist in the future window, fall back to earliest of any category.
       const now = new Date();
       const week = Array.isArray(data.week) ? data.week.slice() : [];
       const containerWeek = section.querySelector('#home-week-nets');
-      const primaryCat = (containerWeek && containerWeek.dataset.primaryCategory) || data.primary_category || '';
+      const primaryCat = 'bhn'; // Force BHN as the "Next Net" category
 
       function isFuture(iso) {
         try { return new Date(iso) > now; } catch (_) { return false; }
@@ -102,15 +112,11 @@
       }
 
       let next = null;
-      if (primaryCat) {
-        const primaryPool = futureWeek.filter((o) => o.category === primaryCat)
-          .concat(futureNext.filter((o) => o.category === primaryCat));
-        next = earliest(primaryPool);
-      }
-      if (!next) {
-        const anyPool = futureWeek.concat(futureNext);
-        next = earliest(anyPool);
-      }
+      const isCat = (o, cat) => (normalizeCategory(o && o.category) === normalizeCategory(cat));
+      const primaryPool = futureWeek.filter((o) => isCat(o, primaryCat))
+        .concat(futureNext.filter((o) => isCat(o, primaryCat)));
+      next = earliest(primaryPool);
+      if (!next) next = earliest(futureWeek.concat(futureNext));
       if (!next) return;
 
       const card = section.querySelector('.next-net-card');
@@ -328,7 +334,7 @@
       week.forEach((occ) => {
         const tr = document.createElement('tr');
         tr.setAttribute('data-category-item', '');
-        tr.dataset.category = occ.category || '';
+        tr.dataset.category = normalizeCategory(occ.category || '');
 
         // Net
         const tdNet = document.createElement('td');
@@ -385,7 +391,7 @@
         art.className = 'next-net-item';
         art.setAttribute('aria-labelledby', `week-net-${idx+1}`);
         art.setAttribute('data-category-item', '');
-        art.dataset.category = occ.category || '';
+        art.dataset.category = normalizeCategory(occ.category || '');
 
         const h4 = document.createElement('h4');
         h4.id = `week-net-${idx+1}`;
