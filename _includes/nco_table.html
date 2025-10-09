@@ -177,5 +177,17 @@ FALLBACK (generator mode if items missing):
     </tbody>
   </table>
 {%- else -%}
-  <p><em>No NCOs scheduled yet.</em></p>
+  <table class="nco-table">
+    <caption class="sr-only">{{ _caption }}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Date</th>
+        <th scope="col">NCO</th>
+        {%- if _show_loc -%}<th scope="col">Location</th>{%- endif -%}
+        <th scope="col">Time ({{ _tz_full }})</th>
+        <th scope="col">Notes</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 {%- endif -%}

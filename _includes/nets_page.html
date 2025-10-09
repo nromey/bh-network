@@ -25,7 +25,14 @@ Helper snippet: given n, compute:
 This block is duplicated in both views (scoped to each n).
 {%- endcomment -%}
 
-<section class="nets-section" data-view="table" id="{{ section_id }}">
+{%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
+<section class="nets-section" data-view="table" id="{{ section_id }}" data-next-net-json="{{ json_src }}"
+  data-tz-show-abbr="{%- if site.time_labels.show_abbr == false or site.time_labels.show_abbr == 'false' -%}false{%- elsif site.time_labels.show_abbr == true or site.time_labels.show_abbr == 'true' -%}true{%- else -%}true{%- endif -%}"
+  data-tz-show-label="{%- if site.time_labels.show_label == false or site.time_labels.show_label == 'false' -%}false{%- elsif site.time_labels.show_label == true or site.time_labels.show_label == 'true' -%}true{%- else -%}true{%- endif -%}"
+  {%- if include.force_tz_iana and include.force_tz_iana != '' -%}
+  data-tz-force-iana="{{ include.force_tz_iana }}"
+  {%- endif -%}
+>
   <header class="nets-header">
     <h2>{{ title }}</h2>
 
@@ -34,6 +41,14 @@ This block is duplicated in both views (scoped to each n).
       <button type="button" data-view-button="table" aria-pressed="true">Table view</button>
       <button type="button" data-view-button="headings" aria-pressed="false">Headings view</button>
       <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-net-view-status></span>
+    </fieldset>
+
+    <fieldset class="view-toggle" aria-label="Time display">
+      <legend class="sr-only">Time display</legend>
+      <button type="button" data-time-button="net" aria-pressed="true">Net time <span class="time-tz-label" data-time-tz-label></span></button>
+      <button type="button" data-time-button="my" aria-pressed="false">My time <span class="time-tz-label" data-time-my-tz-label></span></button>
+      <label class="time-utc-toggle"><input type="checkbox" data-time-utc-toggle> Show UTC</label>
+      <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-time-view-status></span>
     </fieldset>
   </header>
 
@@ -180,6 +195,7 @@ This block is duplicated in both views (scoped to each n).
           <td class="net-desc">{{ n.description | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip }}</td>
           <td>
             {%- if _schedule_phrase != "" -%}{{ _schedule_phrase }}{%- else -%}—{%- endif -%}
+            <div class="net-next-when" data-net-id="{{ n.id }}"></div>
           </td>
           <td>{%- if n.duration_min -%}{{ n.duration_min }} min{%- else -%}—{%- endif -%}</td>
           <td>{%- if n.allstar and n.allstar != "" -%}{{ n.allstar }}{%- else -%}—{%- endif -%}</td>
@@ -361,6 +377,7 @@ This block is duplicated in both views (scoped to each n).
           <strong>When:</strong>
           {%- if _schedule_phrase != "" -%}{{ _schedule_phrase }}{%- else -%}—{%- endif -%}
           {%- if n.duration_min %} ({{ n.duration_min }} min){% endif -%}
+          <span class="net-next-when" data-net-id="{{ n.id }}"></span>
         </p>
         {%- if n.id == "bh-digital" -%}
           <p><a href="#{{ nco_anchor }}">See NCO schedule <span aria-hidden="true">↓</span></a></p>
@@ -413,4 +430,6 @@ This block is duplicated in both views (scoped to each n).
   </div>
 </section>
 
+<script defer src="/assets/js/time-view.js?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>
+<script defer src="/assets/js/json-widgets.js?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>
 <script defer src="/assets/js/net-view.js"></script>

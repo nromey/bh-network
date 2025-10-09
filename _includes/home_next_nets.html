@@ -1,7 +1,15 @@
 {%- assign payload = site.data.next_net -%}
-{%- assign all_nets = site.data.nets.nets | default: empty -%}
-{%- if payload -%}
-<section class="home-next-nets" aria-labelledby="next-net-heading">
+{%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
+<section class="home-next-nets" aria-labelledby="next-net-heading" data-next-net-json="{{ json_src }}"
+  data-tz-show-abbr="{%- if site.time_labels.show_abbr == false or site.time_labels.show_abbr == 'false' -%}false{%- elsif site.time_labels.show_abbr == true or site.time_labels.show_abbr == 'true' -%}true{%- else -%}true{%- endif -%}"
+  data-tz-show-label="{%- if site.time_labels.show_label == false or site.time_labels.show_label == 'false' -%}false{%- elsif site.time_labels.show_label == true or site.time_labels.show_label == 'true' -%}true{%- else -%}true{%- endif -%}">
+  <fieldset class="view-toggle" aria-label="Time display">
+    <legend class="sr-only">Time display</legend>
+    <button type="button" data-time-button="net" aria-pressed="true">Net time <span class="time-tz-label" data-time-tz-label></span></button>
+    <button type="button" data-time-button="my" aria-pressed="false">My time <span class="time-tz-label" data-time-my-tz-label></span></button>
+    <label class="time-utc-toggle"><input type="checkbox" data-time-utc-toggle> Show UTC</label>
+    <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-time-view-status></span>
+  </fieldset>
   <h2 id="next-net-heading">Up Next on the Blind Hams Bridge</h2>
   {%- assign next = payload.next_net -%}
   {%- if next -%}
@@ -83,12 +91,19 @@
     <div class="next-net-description">{{ next.description | markdownify }}</div>
   </article>
   {%- else -%}
-  <p class="next-net-empty">No upcoming nets found in this category.</p>
+  <article class="next-net-card" aria-labelledby="next-net-title">
+    <h3 id="next-net-title">Loading next net…</h3>
+    <p class="next-net-meta">
+      <span class="next-net-label">When</span>
+      <time>Fetching…</time>
+      <span class="next-net-tz">—</span>
+    </p>
+    <h4>What to expect</h4>
+    <div class="next-net-description">We’ll load details momentarily.</div>
+  </article>
   {%- endif -%}
 
   {%- assign week = payload.week -%}
-  {%- if week and week != empty -%}
-  {%- assign week_sorted = week | sort: "start_local_iso" -%}
   {%- assign available_categories = payload.categories | default: empty -%}
   {%- assign default_categories = payload.default_categories | default: nil -%}
   {%- if default_categories == nil or default_categories == empty -%}
@@ -158,6 +173,8 @@
               </tr>
             </thead>
             <tbody>
+              {%- if week and week != empty -%}
+              {%- assign week_sorted = week | sort: "start_local_iso" -%}
               {%- for occ in week_sorted -%}
                 {%- assign net = all_nets | where: "id", occ.id | first -%}
                 {%- assign is_default = default_categories contains occ.category -%}
@@ -228,8 +245,9 @@
                     {%- endif -%}
                     {%- if _other_joined != "" -%}{{ _other_joined }}{%- else -%}—{%- endif -%}
                   </td>
-                </tr>
+              </tr>
               {%- endfor -%}
+              {%- endif -%}
             </tbody>
           </table>
         </div>
@@ -326,7 +344,8 @@
       </section>
     </div>
   </details>
-  {%- endif -%}
 </section>
-{%- endif -%}
-<script defer src="{{ '/assets/js/home-week-filter.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/time-view.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>
+<script defer src="{{ '/assets/js/json-widgets.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>
+<script defer src="{{ '/assets/js/net-view.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>
+<script defer src="{{ '/assets/js/home-week-filter.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>
