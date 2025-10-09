@@ -43,3 +43,16 @@ widgets:
 include:
   - _redirects
   - _headers
+
+# Site-wide time label preferences
+# When true, show time zone abbreviations (e.g., EDT, CDT) alongside long names.
+# When false, show only long names.
+time_labels:
+  show_abbr: false
+  # When false, hide time zone labels entirely (buttons and "When" lines)
+  show_label: true
+
+# Sass (dart-sass via jekyll-sass-converter v3)
+# Silence deprecation warnings from theme/dependencies while keeping ours visible.
+sass:
+  quiet_deps: true

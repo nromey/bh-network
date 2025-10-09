@@ -3,6 +3,7 @@
 // If fetch fails, the server-rendered Liquid output remains visible.
 
 (function () {
+  const DEFAULT_TZ_IANA = 'America/New_York'; // BHN standard net time
   const cache = new Map();
   const DIAG = (() => {
     try { return new URLSearchParams(location.search).get('diag') === '1'; }
@@ -48,10 +49,10 @@
   function tzDisplay(tz) {
     if (!tz) return '';
     switch (tz) {
-      case 'America/New_York': return 'Eastern';
-      case 'America/Chicago': return 'Central';
-      case 'America/Denver': return 'Mountain';
-      case 'America/Los_Angeles': return 'Pacific';
+      case 'America/New_York': return 'Eastern Time';
+      case 'America/Chicago': return 'Central Time';
+      case 'America/Denver': return 'Mountain Time';
+      case 'America/Los_Angeles': return 'Pacific Time';
       default: return tz;
     }
   }
@@ -66,6 +67,22 @@
       // Typically returns 'EST', 'EDT', 'CST', etc. For some zones may be 'GMT-5'.
       // Normalize 'GMT' forms to uppercase as-is.
       return String(part.value).toUpperCase();
+    } catch (_) { return ''; }
+  }
+
+  function tzLongName(iana, isoLike) {
+    try {
+      if (!iana) return '';
+      const d = isoLike ? new Date(isoLike) : new Date();
+      // Prefer longGeneric (e.g., "Australian Eastern Time"); fallback to long (e.g., "Australian Eastern Daylight Time")
+      const make = (opt) => new Intl.DateTimeFormat('en-US', { timeZone: iana, timeZoneName: opt }).formatToParts(d);
+      let part = null;
+      try { part = make('longGeneric').find(p => p.type === 'timeZoneName'); } catch (_) { /* older engines */ }
+      if (!part) {
+        try { part = make('long').find(p => p.type === 'timeZoneName'); } catch (_) { part = null; }
+      }
+      if (!part) return '';
+      return String(part.value);
     } catch (_) { return ''; }
   }
 
@@ -88,6 +105,32 @@
       }
     } catch (_) {}
     return '';
+  }
+
+  function localAbbr() {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(new Date());
+      const part = parts.find(p => p.type === 'timeZoneName');
+      return part ? String(part.value).toUpperCase() : '';
+    } catch (_) { return ''; }
+  }
+
+  function localLong() {
+    try {
+      const d = new Date();
+      let part = null;
+      try {
+        const partsGen = new Intl.DateTimeFormat('en-US', { timeZoneName: 'longGeneric' }).formatToParts(d);
+        part = partsGen.find(p => p.type === 'timeZoneName');
+      } catch (_) { /* ignore */ }
+      if (!part) {
+        try {
+          const parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'long' }).formatToParts(d);
+          part = parts.find(p => p.type === 'timeZoneName');
+        } catch (_) { part = null; }
+      }
+      return part ? String(part.value) : '';
+    } catch (_) { return ''; }
   }
 
   function fmtUTC(iso) {
@@ -199,6 +242,9 @@
     const sections = document.querySelectorAll('[data-next-net-json]');
     if (!sections.length) return;
     sections.forEach(async (section) => {
+      const SHOW_ABBR = String(section.dataset.tzShowAbbr || 'true') !== 'false';
+      const SHOW_LABEL = String(section.dataset.tzShowLabel || 'true') !== 'false';
+      if (DIAG) appendDiag(section, `Time-label config: label=${SHOW_LABEL ? 'on' : 'off'} abbr=${SHOW_ABBR ? 'on' : 'off'} · view=${TIME_VIEW} · utc=${SHOW_UTC ? 'on' : 'off'}`);
       const url = section.getAttribute('data-next-net-json');
       if (!url) return;
       const data = await fetchJSON(url);
@@ -233,9 +279,23 @@
       const primaryPool = futureWeek.filter((o) => isCat(o, primaryCat))
         .concat(futureNext.filter((o) => isCat(o, primaryCat)));
       next = earliest(primaryPool);
-      if (!next) next = earliest(futureWeek.concat(futureNext));
       if (!next) {
-        if (DIAG) appendDiag(section, 'Live data loaded but no upcoming Next Net found.');
+        // Only BHN nets should appear on the Next Net card; do not fallback to other categories.
+        if (DIAG) appendDiag(section, 'Live data loaded. No upcoming BHN Next Net found.');
+        // Update card to a neutral message
+        const card = section.querySelector('.next-net-card');
+        if (card) {
+          const title = card.querySelector('h3');
+          if (title) title.textContent = 'No upcoming Blind Hams net found';
+          const timeEl = card.querySelector('time');
+          if (timeEl) { timeEl.removeAttribute('datetime'); timeEl.textContent = '—'; }
+          const tzEl = card.querySelector('.next-net-tz');
+          if (tzEl) tzEl.textContent = '';
+          const dur = card.querySelector('.next-net-duration');
+          if (dur) dur.remove();
+          const desc = card.querySelector('.next-net-description') || card.querySelector('h4 ~ p');
+          if (desc) desc.textContent = '';
+        }
         return;
       }
 
@@ -254,13 +314,20 @@
 
       const tzEl = card.querySelector('.next-net-tz');
       if (tzEl) {
-        if (TIME_VIEW === 'my') {
-          tzEl.textContent = 'Local';
+        const SHOW_LABEL = String(section.dataset.tzShowLabel || 'true') !== 'false';
+        if (!SHOW_LABEL) {
+          tzEl.textContent = '';
+        } else if (TIME_VIEW === 'my') {
+          const ll = localLong();
+          const la = localAbbr();
+          tzEl.textContent = SHOW_ABBR
+            ? ((ll && la) ? `Local (${ll} (${la}))` : (la ? `Local (${la})` : (ll ? `Local (${ll})` : 'Local')))
+            : (ll ? `Local (${ll})` : 'Local');
         } else {
-          const tzIana = next.time_zone || '';
-          const name = tzDisplay(tzIana) || tzFromISO(getStartISO(next));
+          const tzIana = next.time_zone || DEFAULT_TZ_IANA;
+          const name = tzLongName(tzIana, getStartISO(next)) || tzDisplay(tzIana) || tzFromISO(getStartISO(next));
           const ab = tzAbbr(tzIana, getStartISO(next));
-          tzEl.textContent = (name && ab) ? `${name} (${ab})` : name;
+          tzEl.textContent = (SHOW_ABBR && name && ab) ? `${name} (${ab})` : name;
         }
       }
 
@@ -319,8 +386,8 @@
       if (DIAG) appendDiag(section, `Live data loaded. Picked Next Net: ${next.name || ''} (${next.category || ''}) at ${next.start_local_iso || ''}.`);
 
       // Expose tz context for this section (for toggle labeling)
-      const tzIana = next.time_zone || '';
-      const tzName = tzDisplay(tzIana) || '';
+      const tzIana = next.time_zone || DEFAULT_TZ_IANA;
+      const tzName = tzLongName(tzIana, getStartISO(next)) || tzDisplay(tzIana) || '';
       const abbr = tzAbbr(tzIana, getStartISO(next));
       if (tzName) section.dataset.tzName = tzName;
       if (abbr) section.dataset.tzAbbr = abbr;
@@ -494,6 +561,9 @@
       const tbody = weekBlock.querySelector('.view-table tbody');
       const headingsView = weekBlock.querySelector('.view-headings');
       if (!tbody || !headingsView) return;
+      const SHOW_ABBR = String(container.dataset.tzShowAbbr || 'true') !== 'false';
+      const SHOW_LABEL = String(container.dataset.tzShowLabel || 'true') !== 'false';
+      if (DIAG) appendDiag(container, `Time-label config (weekly): label=${SHOW_LABEL ? 'on' : 'off'} abbr=${SHOW_ABBR ? 'on' : 'off'} · view=${TIME_VIEW} · utc=${SHOW_UTC ? 'on' : 'off'}`);
 
       const primary = weekBlock.dataset.primaryCategory || (data.primary_category || '');
 
@@ -532,13 +602,19 @@
         time.textContent = (TIME_VIEW === 'my') ? fmtWeekWhen(start || '') : formatISOAsWritten(start || '');
         const tzSpan = document.createElement('span');
         tzSpan.className = 'next-net-tz';
-        if (TIME_VIEW === 'my') {
-          tzSpan.textContent = 'Local';
+        if (!SHOW_LABEL) {
+          tzSpan.textContent = '';
+        } else if (TIME_VIEW === 'my') {
+          const ll2 = localLong();
+          const la2 = localAbbr();
+          tzSpan.textContent = SHOW_ABBR
+            ? ((ll2 && la2) ? `Local (${ll2} (${la2}))` : (la2 ? `Local (${la2})` : (ll2 ? `Local (${ll2})` : 'Local')))
+            : (ll2 ? `Local (${ll2})` : 'Local');
         } else {
           const tzIana2 = occ.time_zone || '';
-          const name2 = tzDisplay(tzIana2) || tzFromISO(getStartISO(occ));
+          const name2 = tzLongName(tzIana2, getStartISO(occ)) || tzDisplay(tzIana2) || tzFromISO(getStartISO(occ));
           const ab2 = tzAbbr(tzIana2, getStartISO(occ));
-          tzSpan.textContent = (name2 && ab2) ? `${name2} (${ab2})` : name2;
+          tzSpan.textContent = (SHOW_ABBR && name2 && ab2) ? `${name2} (${ab2})` : name2;
         }
         tdWhen.appendChild(time);
         tdWhen.appendChild(document.createTextNode(' '));
@@ -608,13 +684,19 @@
         pMeta.appendChild(time);
         const tz = document.createElement('span');
         tz.className = 'next-net-tz';
-        if (TIME_VIEW === 'my') {
-          tz.textContent = 'Local';
+        if (!SHOW_LABEL) {
+          tz.textContent = '';
+        } else if (TIME_VIEW === 'my') {
+          const ll3 = localLong();
+          const la3 = localAbbr();
+          tz.textContent = SHOW_ABBR
+            ? ((ll3 && la3) ? `Local (${ll3} (${la3}))` : (la3 ? `Local (${la3})` : (ll3 ? `Local (${ll3})` : 'Local')))
+            : (ll3 ? `Local (${ll3})` : 'Local');
         } else {
           const tzIana3 = occ.time_zone || '';
-          const name3 = tzDisplay(tzIana3) || tzFromISO(getStartISO(occ));
+          const name3 = tzLongName(tzIana3, getStartISO(occ)) || tzDisplay(tzIana3) || tzFromISO(getStartISO(occ));
           const ab3 = tzAbbr(tzIana3, getStartISO(occ));
-          tz.textContent = (name3 && ab3) ? `${name3} (${ab3})` : name3;
+          tz.textContent = (SHOW_ABBR && name3 && ab3) ? `${name3} (${ab3})` : name3;
         }
         pMeta.appendChild(document.createTextNode(' '));
         pMeta.appendChild(tz);
@@ -682,8 +764,17 @@
       appendUpdatedAt(container, data);
       if (DIAG) appendDiag(container, `Live data loaded. Weekly items: ${week.length}.`);
 
-      // Determine a representative tz for this container (if unified)
+      // Determine a representative tz for this container (if unified), or respect forced tz
       try {
+        const forceIana = container.dataset.tzForceIana || '';
+        if (forceIana) {
+          const tzName = tzLongName(forceIana) || tzDisplay(forceIana) || '';
+          const abbr = tzAbbr(forceIana);
+          if (tzName) container.dataset.tzName = tzName;
+          if (abbr) container.dataset.tzAbbr = abbr;
+          document.dispatchEvent(new CustomEvent('bhn:tzcontext-change'));
+          return;
+        }
         const uniq = new Set();
         let sample = null;
         week.forEach((o) => {
@@ -695,7 +786,7 @@
         });
         if (uniq.size === 1 && sample) {
           const tzIana = sample.time_zone;
-          const tzName = tzDisplay(tzIana) || '';
+          const tzName = tzLongName(tzIana, getStartISO(sample)) || tzDisplay(tzIana) || '';
           const abbr = tzAbbr(tzIana, getStartISO(sample));
           if (tzName) container.dataset.tzName = tzName;
           if (abbr) container.dataset.tzAbbr = abbr;
@@ -710,6 +801,9 @@
     const sections = document.querySelectorAll('.nets-section[data-next-net-json]');
     if (!sections.length) return;
     for (const section of sections) {
+      const SHOW_ABBR = String(section.dataset.tzShowAbbr || 'true') !== 'false';
+      const SHOW_LABEL = String(section.dataset.tzShowLabel || 'true') !== 'false';
+      if (DIAG) appendDiag(section, `Time-label config (category): label=${SHOW_LABEL ? 'on' : 'off'} abbr=${SHOW_ABBR ? 'on' : 'off'} · view=${TIME_VIEW} · utc=${SHOW_UTC ? 'on' : 'off'} · force=${section.dataset.tzForceIana ? section.dataset.tzForceIana : '—'}`);
       const url = section.getAttribute('data-next-net-json');
       if (!url) continue;
       const data = await fetchJSON(url);
@@ -732,18 +826,29 @@
         const prev = byId.get(sid);
         if (!prev || new Date(getStartISO(occ)) < new Date(getStartISO(prev))) byId.set(sid, occ);
       });
+      const SHOW_ABBR_CAT = String(section.dataset.tzShowAbbr || 'true') !== 'false';
+      const SHOW_LABEL_CAT = String(section.dataset.tzShowLabel || 'true') !== 'false';
+      const usedIds = new Set();
       section.querySelectorAll('.net-next-when[data-net-id]').forEach((slot) => {
         const id = slot.getAttribute('data-net-id');
         if (!id) return;
+        usedIds.add(id);
         const occ = byId.get(id);
         if (!occ) { slot.textContent = ''; return; }
         const start = getStartISO(occ);
         const label = (() => {
-          if (TIME_VIEW === 'my') return 'Local';
+          if (!SHOW_LABEL_CAT) return '';
+          if (TIME_VIEW === 'my') {
+            const ll4 = localLong();
+            const la4 = localAbbr();
+            return SHOW_ABBR_CAT
+              ? ((ll4 && la4) ? `Local (${ll4} (${la4}))` : (la4 ? `Local (${la4})` : (ll4 ? `Local (${ll4})` : 'Local')))
+              : (ll4 ? `Local (${ll4})` : 'Local');
+          }
           const tzIana4 = occ.time_zone || '';
-          const name4 = tzDisplay(tzIana4) || tzFromISO(start);
+          const name4 = tzLongName(tzIana4, start) || tzDisplay(tzIana4) || tzFromISO(start);
           const ab4 = tzAbbr(tzIana4, start);
-          return (name4 && ab4) ? `${name4} (${ab4})` : name4;
+          return (SHOW_ABBR_CAT && name4 && ab4) ? `${name4} (${ab4})` : name4;
         })();
         const whenText = (TIME_VIEW === 'my') ? fmtWeekWhen(start || '') : formatISOAsWritten(start || '');
         // Write " — Next: ... <tz>"
@@ -761,11 +866,21 @@
       });
       if (DIAG) appendDiag(section, 'Live data loaded. Category nets updated.');
 
-      // Compute a unified tz (if any) across the next occurrences by id
+      // Compute a unified tz (if any) across ONLY the ids present in this section, or respect forced tz
       try {
+        const forceIana = section.dataset.tzForceIana || '';
+        if (forceIana) {
+          const tzName = tzLongName(forceIana) || tzDisplay(forceIana) || '';
+          const abbr = tzAbbr(forceIana);
+          if (tzName) section.dataset.tzName = tzName;
+          if (abbr) section.dataset.tzAbbr = abbr;
+          document.dispatchEvent(new CustomEvent('bhn:tzcontext-change'));
+          continue;
+        }
         const uniq = new Set();
         let sample = null;
-        byId.forEach((occ) => {
+        usedIds.forEach((id) => {
+          const occ = byId.get(id);
           const tz = (occ && occ.time_zone) || '';
           if (tz) {
             uniq.add(tz);
@@ -774,7 +889,7 @@
         });
         if (uniq.size === 1 && sample) {
           const tzIana = sample.time_zone;
-          const tzName = tzDisplay(tzIana) || '';
+          const tzName = tzLongName(tzIana, getStartISO(sample)) || tzDisplay(tzIana) || '';
           const abbr = tzAbbr(tzIana, getStartISO(sample));
           if (tzName) section.dataset.tzName = tzName;
           if (abbr) section.dataset.tzAbbr = abbr;

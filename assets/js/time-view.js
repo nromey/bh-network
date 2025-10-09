@@ -1,8 +1,54 @@
 // assets/js/time-view.js
 // Global time view toggle: 'net' (event-local) or 'my' (viewer-local)
 (function () {
+  const DEFAULT_TZ_IANA = 'America/New_York'; // BHN standard net time
   const KEY = 'timeView:global';
   const UTC_KEY = 'timeView:showUTC';
+  function localAbbr() {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(new Date());
+      const part = parts.find(p => p.type === 'timeZoneName');
+      return part ? String(part.value).toUpperCase() : '';
+    } catch (_) { return ''; }
+  }
+  function localLong() {
+    try {
+      const partsGeneric = (() => {
+        try { return new Intl.DateTimeFormat('en-US', { timeZoneName: 'longGeneric' }).formatToParts(new Date()); }
+        catch (_) { return null; }
+      })();
+      let part = partsGeneric ? partsGeneric.find(p => p.type === 'timeZoneName') : null;
+      if (!part) {
+        try {
+          const parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'long' }).formatToParts(new Date());
+          part = parts.find(p => p.type === 'timeZoneName');
+        } catch (_) { part = null; }
+      }
+      return part ? String(part.value) : '';
+    } catch (_) { return ''; }
+  }
+  function tzAbbrFor(iana) {
+    try {
+      if (!iana) return '';
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: iana, timeZoneName: 'short' }).formatToParts(new Date());
+      const part = parts.find(p => p.type === 'timeZoneName');
+      return part ? String(part.value).toUpperCase() : '';
+    } catch (_) { return ''; }
+  }
+  function tzLongFor(iana) {
+    try {
+      if (!iana) return '';
+      const d = new Date();
+      let part = null;
+      try { part = new Intl.DateTimeFormat('en-US', { timeZone: iana, timeZoneName: 'longGeneric' }).formatToParts(d).find(p => p.type === 'timeZoneName'); }
+      catch (_) { /* ignore */ }
+      if (!part) {
+        try { part = new Intl.DateTimeFormat('en-US', { timeZone: iana, timeZoneName: 'long' }).formatToParts(d).find(p => p.type === 'timeZoneName'); }
+        catch (_) { part = null; }
+      }
+      return part ? String(part.value) : '';
+    } catch (_) { return ''; }
+  }
   function load() {
     try {
       const v = localStorage.getItem(KEY);
@@ -22,35 +68,99 @@
     const status = section.querySelector('[data-time-view-status]');
     if (!status) return;
     const showUTC = loadUTC();
+    const showAbbr = String(section.dataset.tzShowAbbr || 'true') !== 'false';
+    const showLabel = String(section.dataset.tzShowLabel || 'true') !== 'false';
+    if (!showLabel) {
+      const base = view === 'my' ? 'My time' : 'Net time';
+      status.textContent = loadUTC() ? `${base} and UTC shown.` : `${base}.`;
+      return;
+    }
     if (view === 'my') {
-      status.textContent = showUTC ? 'Local time and UTC shown.' : 'Local time.';
+      const long = localLong();
+      const abbr = localAbbr();
+      const base = showAbbr
+        ? ((long && abbr) ? `My time (${long} (${abbr}))` : (abbr ? `My time (${abbr})` : (long ? `My time (${long})` : 'My time')))
+        : (long ? `My time (${long})` : 'My time');
+      status.textContent = showUTC ? `${base} and UTC shown.` : `${base}.`;
       return;
     }
     // Net time
-    const tzName = section.dataset.tzName || '';
-    const tzAbbr = section.dataset.tzAbbr || '';
+    let tzName = section.dataset.tzName || '';
+    let tzAbbr = section.dataset.tzAbbr || '';
+    const forceIanaAnn = section.dataset.tzForceIana || '';
+    if (forceIanaAnn) {
+      tzName = tzLongFor(forceIanaAnn) || tzName;
+      tzAbbr = tzAbbrFor(forceIanaAnn) || tzAbbr;
+    }
     let base = 'Net time';
-    if (tzName && tzAbbr) base = `Net time (${tzName}, ${tzAbbr})`;
-    else if (tzName) base = `Net time (${tzName})`;
+    if (!tzName && !tzAbbr && section.classList.contains('home-next-nets')) {
+      // Fallback to BHN standard net time on Next Net block
+      const fallbackLong = tzLongFor(DEFAULT_TZ_IANA);
+      const fallbackAbbr = tzAbbrFor(DEFAULT_TZ_IANA);
+      tzName = fallbackLong || tzName;
+      tzAbbr = fallbackAbbr || tzAbbr;
+    }
+    let labeled = false;
+    if (showAbbr) {
+      if (tzName && tzAbbr) { base = `Net time (${tzName} (${tzAbbr}))`; labeled = true; }
+      else if (tzAbbr) { base = `Net time (${tzAbbr})`; labeled = true; }
+      else if (tzName) { base = `Net time (${tzName})`; labeled = true; }
+    } else {
+      if (tzName) { base = `Net time (${tzName})`; labeled = true; }
+    }
+    if (!labeled) base = 'Net time (varies)';
     status.textContent = showUTC ? `${base} and UTC shown.` : `${base}.`;
   }
 
   function renderButtonLabels(section, view) {
     const netBtn = section.querySelector('[data-time-button="net"]');
     const myBtn = section.querySelector('[data-time-button="my"]');
+    const showAbbr = String(section.dataset.tzShowAbbr || 'true') !== 'false';
+    const showLabel = String(section.dataset.tzShowLabel || 'true') !== 'false';
     const tzSpan = netBtn ? netBtn.querySelector('[data-time-tz-label]') : null;
     if (tzSpan) {
-      if (view === 'net') {
-        const tzName = section.dataset.tzName || '';
-        const tzAbbr = section.dataset.tzAbbr || '';
-        if (tzName && tzAbbr) tzSpan.textContent = ` (${tzName}, ${tzAbbr})`;
+      if (!showLabel) { tzSpan.textContent = ''; }
+      else {
+      let tzName = section.dataset.tzName || '';
+      let tzAbbr = section.dataset.tzAbbr || '';
+      const forceIanaLbl = section.dataset.tzForceIana || '';
+      if (forceIanaLbl) {
+        tzName = tzLongFor(forceIanaLbl) || tzName;
+        tzAbbr = tzAbbrFor(forceIanaLbl) || tzAbbr;
+      }
+      if (!tzName && !tzAbbr && section.classList.contains('home-next-nets')) {
+        const fallbackLong = tzLongFor(DEFAULT_TZ_IANA);
+        const fallbackAbbr = tzAbbrFor(DEFAULT_TZ_IANA);
+        tzName = fallbackLong || tzName;
+        tzAbbr = fallbackAbbr || tzAbbr;
+      }
+      if (showAbbr) {
+        if (tzName && tzAbbr) tzSpan.textContent = ` (${tzName} (${tzAbbr}))`;
+        else if (tzAbbr) tzSpan.textContent = ` (${tzAbbr})`;
         else if (tzName) tzSpan.textContent = ` (${tzName})`;
-        else tzSpan.textContent = '';
+        else tzSpan.textContent = ' (varies)';
       } else {
-        tzSpan.textContent = '';
+        if (tzName) tzSpan.textContent = ` (${tzName})`;
+        else tzSpan.textContent = ' (varies)';
+      }
       }
     }
-    // No change to My time label for now; it's concise and clear
+    const myTzSpan = myBtn ? myBtn.querySelector('[data-time-my-tz-label]') : null;
+    if (myTzSpan) {
+      if (!showLabel) { myTzSpan.textContent = ''; }
+      else {
+        const long = localLong();
+        const ab = localAbbr();
+        if (showAbbr) {
+          if (long && ab) myTzSpan.textContent = ` (${long} (${ab}))`;
+          else if (ab) myTzSpan.textContent = ` (${ab})`;
+          else if (long) myTzSpan.textContent = ` (${long})`;
+          else myTzSpan.textContent = '';
+        } else {
+          myTzSpan.textContent = long ? ` (${long})` : '';
+        }
+      }
+    }
     return { netBtn, myBtn };
   }
   function apply(view, options = {}) {

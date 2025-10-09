@@ -2,7 +2,9 @@
 {%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
 {%- assign heading_id = include.heading_id | default: "next-net-heading" -%}
 {%- assign title = include.title | default: "Up Next on the Blind Hams Bridge" -%}
-<section class="next-net-card-block" aria-labelledby="{{ heading_id }}" data-next-net-json="{{ json_src }}">
+<section class="next-net-card-block" aria-labelledby="{{ heading_id }}" data-next-net-json="{{ json_src }}"
+  data-tz-show-abbr="{%- if site.time_labels.show_abbr == false or site.time_labels.show_abbr == 'false' -%}false{%- elsif site.time_labels.show_abbr == true or site.time_labels.show_abbr == 'true' -%}true{%- else -%}true{%- endif -%}"
+  data-tz-show-label="{%- if site.time_labels.show_label == false or site.time_labels.show_label == 'false' -%}false{%- elsif site.time_labels.show_label == true or site.time_labels.show_label == 'true' -%}true{%- else -%}true{%- endif -%}">
   <h2 id="{{ heading_id }}">{{ title }}</h2>
   <article class="next-net-card" aria-labelledby="{{ heading_id }}-title">
     <h3 id="{{ heading_id }}-title">{%- if payload and payload.next_net -%}{{ payload.next_net.name }}{%- else -%}Loading next net…{%- endif -%}</h3>

@@ -26,7 +26,13 @@ This block is duplicated in both views (scoped to each n).
 {%- endcomment -%}
 
 {%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
-<section class="nets-section" data-view="table" id="{{ section_id }}" data-next-net-json="{{ json_src }}">
+<section class="nets-section" data-view="table" id="{{ section_id }}" data-next-net-json="{{ json_src }}"
+  data-tz-show-abbr="{%- if site.time_labels.show_abbr == false or site.time_labels.show_abbr == 'false' -%}false{%- elsif site.time_labels.show_abbr == true or site.time_labels.show_abbr == 'true' -%}true{%- else -%}true{%- endif -%}"
+  data-tz-show-label="{%- if site.time_labels.show_label == false or site.time_labels.show_label == 'false' -%}false{%- elsif site.time_labels.show_label == true or site.time_labels.show_label == 'true' -%}true{%- else -%}true{%- endif -%}"
+  {%- if include.force_tz_iana and include.force_tz_iana != '' -%}
+  data-tz-force-iana="{{ include.force_tz_iana }}"
+  {%- endif -%}
+>
   <header class="nets-header">
     <h2>{{ title }}</h2>
 
@@ -40,7 +46,7 @@ This block is duplicated in both views (scoped to each n).
     <fieldset class="view-toggle" aria-label="Time display">
       <legend class="sr-only">Time display</legend>
       <button type="button" data-time-button="net" aria-pressed="true">Net time <span class="time-tz-label" data-time-tz-label></span></button>
-      <button type="button" data-time-button="my" aria-pressed="false">My time</button>
+      <button type="button" data-time-button="my" aria-pressed="false">My time <span class="time-tz-label" data-time-my-tz-label></span></button>
       <label class="time-utc-toggle"><input type="checkbox" data-time-utc-toggle> Show UTC</label>
       <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-time-view-status></span>
     </fieldset>
