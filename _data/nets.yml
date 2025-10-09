@@ -20,7 +20,7 @@ nets:
 
   - id: absolute-tech
     category: "bhn"
-    name: "$Absolute Tech Net"
+    name: "Absolute Tech Net"
     description: "A net to discuss technical amateur radio topics and troubleshoot issues faced by hams around the world."
     start_local: "19:00"     # 7:00 PM ET
     duration_min: 120
