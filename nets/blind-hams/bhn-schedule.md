@@ -8,4 +8,4 @@ permalink: /nets/blind-hams/nco-schedule/
 {% include nco_table.html schedule=site.data.bhn_ncos_schedule items_key="items" title="Blind Hams Digital Net — NCO Schedule" caption="Table that displays upcoming net operators for the Blind Hams Digital net" show_location=true %}
 </div>
 
-<script defer src="{{ '/assets/js/json-widgets.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/json-widgets.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>
