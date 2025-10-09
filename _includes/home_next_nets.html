@@ -3,6 +3,12 @@
 {%- assign all_nets = site.data.nets.nets | default: empty -%}
 {%- if payload -%}
 <section class="home-next-nets" aria-labelledby="next-net-heading" data-next-net-json="{{ json_src }}">
+  <fieldset class="view-toggle" aria-label="Time display">
+    <legend class="sr-only">Time display</legend>
+    <button type="button" data-time-button="net" aria-pressed="true">Net time</button>
+    <button type="button" data-time-button="my" aria-pressed="false">My time</button>
+    <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-time-view-status></span>
+  </fieldset>
   <h2 id="next-net-heading">Up Next on the Blind Hams Bridge</h2>
   {%- assign next = payload.next_net -%}
   {%- if next -%}
@@ -330,6 +336,7 @@
   {%- endif -%}
 </section>
 {%- endif -%}
+<script defer src="{{ '/assets/js/time-view.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>
 <script defer src="{{ '/assets/js/json-widgets.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>
 <script defer src="{{ '/assets/js/net-view.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>
 <script defer src="{{ '/assets/js/home-week-filter.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>

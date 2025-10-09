@@ -9,6 +9,13 @@
     catch (_) { return false; }
   })();
 
+  // Global time view: 'net' (event-local) or 'my' (viewer-local)
+  let TIME_VIEW = 'net';
+  try {
+    const v = localStorage.getItem('timeView:global');
+    if (v === 'my') TIME_VIEW = 'my';
+  } catch (_) {}
+
   function appendDiag(container, text, live = 'polite') {
     try {
       if (!container || !text) return;
@@ -122,6 +129,21 @@
     } catch (_) { return iso; }
   }
 
+  // Format using the date/time written in the ISO string (no zone conversion)
+  function formatISOAsWritten(iso) {
+    try {
+      const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+      if (!m) return iso || '';
+      const y = parseInt(m[1], 10), mo = parseInt(m[2], 10), d = parseInt(m[3], 10);
+      const h = parseInt(m[4], 10), mi = parseInt(m[5], 10);
+      const dd = new Date(y, mo - 1, d);
+      const weekday = dd.toLocaleDateString(undefined, { weekday: 'long' });
+      const month = dd.toLocaleDateString(undefined, { month: 'long' });
+      const ampm = (h % 12 || 12) + ':' + String(mi).padStart(2, '0') + ' ' + (h >= 12 ? 'PM' : 'AM');
+      return `${weekday}, ${month} ${d}, ${y} at ${ampm}`;
+    } catch (_) { return iso || ''; }
+  }
+
   function detectUpdatedAt(obj) {
     if (!obj || typeof obj !== 'object') return null;
     const keys = ['updated_at', 'generated_at', 'timestamp', 'updated', 'last_updated', 'lastModified'];
@@ -204,11 +226,11 @@
       if (timeEl) {
         const start = getStartISO(next);
         timeEl.setAttribute('datetime', start || '');
-        timeEl.textContent = formatDateAt(start || '');
+        timeEl.textContent = (TIME_VIEW === 'my') ? formatDateAt(start || '') : formatISOAsWritten(start || '');
       }
 
       const tzEl = card.querySelector('.next-net-tz');
-      if (tzEl) tzEl.textContent = tzDisplay(next.time_zone || '') || tzFromISO(getStartISO(next));
+      if (tzEl) tzEl.textContent = (TIME_VIEW === 'my') ? 'Local' : (tzDisplay(next.time_zone || '') || tzFromISO(getStartISO(next)));
 
       const dur = card.querySelector('.next-net-duration');
       if (next.duration_min) {
@@ -450,10 +472,10 @@
         const time = document.createElement('time');
         const start = getStartISO(occ);
         if (start) time.setAttribute('datetime', start);
-        time.textContent = fmtWeekWhen(start || '');
+        time.textContent = (TIME_VIEW === 'my') ? fmtWeekWhen(start || '') : formatISOAsWritten(start || '');
         const tzSpan = document.createElement('span');
         tzSpan.className = 'next-net-tz';
-        tzSpan.textContent = tzDisplay(occ.time_zone || '') || tzFromISO(getStartISO(occ));
+        tzSpan.textContent = (TIME_VIEW === 'my') ? 'Local' : (tzDisplay(occ.time_zone || '') || tzFromISO(getStartISO(occ)));
         tdWhen.appendChild(time);
         tdWhen.appendChild(document.createTextNode(' '));
         tdWhen.appendChild(tzSpan);
@@ -511,12 +533,12 @@
         const time = document.createElement('time');
         const start2 = getStartISO(occ);
         if (start2) time.setAttribute('datetime', start2);
-        time.textContent = fmtWeekWhen(start2 || '');
+        time.textContent = (TIME_VIEW === 'my') ? fmtWeekWhen(start2 || '') : formatISOAsWritten(start2 || '');
         pMeta.appendChild(document.createTextNode(' '));
         pMeta.appendChild(time);
         const tz = document.createElement('span');
         tz.className = 'next-net-tz';
-        tz.textContent = tzDisplay(occ.time_zone || '') || tzFromISO(getStartISO(occ));
+        tz.textContent = (TIME_VIEW === 'my') ? 'Local' : (tzDisplay(occ.time_zone || '') || tzFromISO(getStartISO(occ)));
         pMeta.appendChild(document.createTextNode(' '));
         pMeta.appendChild(tz);
         if (occ.duration_min) {
@@ -583,6 +605,17 @@
     enhanceNextNet();
     enhanceWeekList();
     enhanceNcoTable();
+
+    // Re-render on time view change
+    document.addEventListener('bhn:timeview-change', () => {
+      try {
+        const v = localStorage.getItem('timeView:global');
+        TIME_VIEW = (v === 'my') ? 'my' : 'net';
+      } catch (_) { TIME_VIEW = 'net'; }
+      // Re-run hydration for sections on page; cache prevents extra network
+      enhanceNextNet();
+      enhanceWeekList();
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
