@@ -1,26 +1,25 @@
 {%- assign payload = site.data.next_net -%}
-{%- if payload and payload.next_net -%}
-  {%- assign next = payload.next_net -%}
-  {%- assign heading_id = include.heading_id | default: "next-net-heading" -%}
-  {%- assign title = include.title | default: "Up Next on the Blind Hams Bridge" -%}
-<section class="next-net-card-block" aria-labelledby="{{ heading_id }}">
+{%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
+{%- assign heading_id = include.heading_id | default: "next-net-heading" -%}
+{%- assign title = include.title | default: "Up Next on the Blind Hams Bridge" -%}
+<section class="next-net-card-block" aria-labelledby="{{ heading_id }}" data-next-net-json="{{ json_src }}">
   <h2 id="{{ heading_id }}">{{ title }}</h2>
   <article class="next-net-card" aria-labelledby="{{ heading_id }}-title">
-    <h3 id="{{ heading_id }}-title">{{ next.name }}</h3>
+    <h3 id="{{ heading_id }}-title">{%- if payload and payload.next_net -%}{{ payload.next_net.name }}{%- else -%}Loading next net…{%- endif -%}</h3>
     <p class="next-net-meta">
       <span class="next-net-label">When</span>
-      <time datetime="{{ next.start_local_iso }}">{{ next.start_local_iso | date: "%A, %B %-d, %Y at %-I:%M %p" }}</time>
-      <span class="next-net-tz">{{ next.time_zone
+      <time datetime="{%- if payload and payload.next_net -%}{{ payload.next_net.start_local_iso }}{%- endif -%}">{%- if payload and payload.next_net -%}{{ payload.next_net.start_local_iso | date: "%A, %B %-d, %Y at %-I:%M %p" }}{%- else -%}Fetching…{%- endif -%}</time>
+      <span class="next-net-tz">{%- if payload and payload.next_net -%}{{ payload.next_net.time_zone
         | replace: "America/New_York", "Eastern"
         | replace: "America/Los_Angeles", "Pacific"
         | replace: "America/Chicago", "Central"
-        | replace: "America/Denver", "Mountain" }}</span>
-      {%- if next.duration_min -%}
-      <span class="next-net-duration">· {{ next.duration_min }} min</span>
+        | replace: "America/Denver", "Mountain" }}{%- else -%}—{%- endif -%}</span>
+      {%- if payload and payload.next_net and payload.next_net.duration_min -%}
+      <span class="next-net-duration">· {{ payload.next_net.duration_min }} min</span>
       {%- endif -%}
     </p>
     <h4>What to expect</h4>
-    <p>{{ next.description }}</p>
+    <p>{%- if payload and payload.next_net -%}{{ payload.next_net.description }}{%- else -%}We’ll load details momentarily.{%- endif -%}</p>
   </article>
 </section>
-{%- endif -%}
+<script defer src="{{ '/assets/js/json-widgets.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>

@@ -1,0 +1,4 @@
+# Track backup archives with Git LFS
+backups/*.tar.gz filter=lfs diff=lfs merge=lfs -text
+backups/*.tar.xz filter=lfs diff=lfs merge=lfs -text
+backups/*.tar.bz2 filter=lfs diff=lfs merge=lfs -text
