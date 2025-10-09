@@ -22,5 +22,5 @@ Notes
   ```
 
 - Do not store credentials or private keys in this repo. If such files exist under `/opt/bhn`, add more excludes before pulling.
-- Consider Git LFS if the archive gets large (>10–20 MB).
-
+- Git LFS is enabled for `backups/*.tar.gz`, `backups/*.tar.xz`, and `backups/*.tar.bz2`.
+  - On your machine, run `git lfs install` once before adding archives.
