@@ -45,6 +45,14 @@ Example:
 
 Key rule: `start_local` must be the local wall‑clock time for the net’s `time_zone`. If your net runs in Australia/Sydney, set `time_zone: Australia/Sydney` and author `start_local` in Sydney time.
 
+Note on BHN default timezone
+
+- For Blind Hams (BHN) category pages, the site assumes a default timezone of `America/New_York` (Eastern) when a net does not specify `time_zone`. This is only a display default for schedule phrases. For accuracy across DST and conversions, always include an explicit `time_zone` per net even if it is Eastern.
+
+Related UI behavior
+
+- The site supports a global “Net time vs My time” toggle and an optional “Show UTC” setting for hydrated views. See docs/live-data-hydration.md for details on how labels and UTC suffixes are rendered.
+
 ---
 
 ## 2) JSON Generator Requirements (next_nets.json)
@@ -118,4 +126,3 @@ To display “My time” for these schedules, we plan to compute each net’s ne
 - In JSON, emit rolling `items[]` with:
   - `start_iso` (with offset), `end_iso` (optional), `duration_min`, `category`, and optionally `time_zone`
 - The UI already supports this; no repo‑side code changes are needed to adopt `start_iso`.
-
