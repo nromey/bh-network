@@ -1,7 +1,8 @@
 {%- assign payload = site.data.next_net -%}
+{%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
 {%- assign all_nets = site.data.nets.nets | default: empty -%}
 {%- if payload -%}
-<section class="home-next-nets" aria-labelledby="next-net-heading">
+<section class="home-next-nets" aria-labelledby="next-net-heading" data-next-net-json="{{ json_src }}">
   <h2 id="next-net-heading">Up Next on the Blind Hams Bridge</h2>
   {%- assign next = payload.next_net -%}
   {%- if next -%}
@@ -329,4 +330,5 @@
   {%- endif -%}
 </section>
 {%- endif -%}
+<script defer src="{{ '/assets/js/json-widgets.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/home-week-filter.js' | relative_url }}"></script>

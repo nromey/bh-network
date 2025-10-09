@@ -192,3 +192,18 @@ caption { text-align:left; font-weight:600; margin-bottom:.5rem; }
 .pager-cat-active { display:flex; gap:.5rem; flex-wrap:wrap; }
 .pager-cat-chip { background:#fff; color:#000; border:2px solid #fff; padding:.15rem .5rem; }
 .pager-cat-chip button { margin-left:.35rem; background:#111; color:#fff; border:2px solid #fff; padding:.1rem .35rem; cursor:pointer; }
+
+/* Subtle timestamp for data freshness */
+.data-updated {
+  font-size: 0.85rem;
+  color: #ccc;
+  margin-top: 0.5rem;
+}
+
+/* Contextual spacing within common blocks */
+.home-next-nets .data-updated,
+.next-net-card-block .data-updated,
+.nco-table-container .data-updated {
+  margin-top: 0.75rem;
+  display: block;
+}

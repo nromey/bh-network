@@ -1,9 +1,10 @@
 {%- assign payload = site.data.next_net -%}
+{%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
 {%- if payload and payload.next_net -%}
   {%- assign next = payload.next_net -%}
   {%- assign heading_id = include.heading_id | default: "next-net-heading" -%}
   {%- assign title = include.title | default: "Up Next on the Blind Hams Bridge" -%}
-<section class="next-net-card-block" aria-labelledby="{{ heading_id }}">
+<section class="next-net-card-block" aria-labelledby="{{ heading_id }}" data-next-net-json="{{ json_src }}">
   <h2 id="{{ heading_id }}">{{ title }}</h2>
   <article class="next-net-card" aria-labelledby="{{ heading_id }}-title">
     <h3 id="{{ heading_id }}-title">{{ next.name }}</h3>
@@ -24,3 +25,4 @@
   </article>
 </section>
 {%- endif -%}
+<script defer src="{{ '/assets/js/json-widgets.js' | relative_url }}"></script>
