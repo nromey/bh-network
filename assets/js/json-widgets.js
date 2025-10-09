@@ -4,6 +4,22 @@
 
 (function () {
   const cache = new Map();
+  const DIAG = (() => {
+    try { return new URLSearchParams(location.search).get('diag') === '1'; }
+    catch (_) { return false; }
+  })();
+
+  function appendDiag(container, text, live = 'polite') {
+    try {
+      if (!container || !text) return;
+      const p = document.createElement('p');
+      p.className = 'data-diag';
+      p.setAttribute('role', 'status');
+      p.setAttribute('aria-live', live);
+      p.textContent = String(text);
+      container.appendChild(p);
+    } catch (_) { /* ignore */ }
+  }
 
   async function fetchJSON(url) {
     try {
@@ -87,7 +103,10 @@
       const url = section.getAttribute('data-next-net-json');
       if (!url) return;
       const data = await fetchJSON(url);
-      if (!data) return;
+      if (!data) {
+        if (DIAG) appendDiag(section, 'Live data fetch failed for Next Net.');
+        return;
+      }
 
       // Determine the best "next" occurrence: always prefer earliest upcoming BHN.
       // If no BHN entries exist in the future window, fall back to earliest of any category.
@@ -116,7 +135,10 @@
         .concat(futureNext.filter((o) => isCat(o, primaryCat)));
       next = earliest(primaryPool);
       if (!next) next = earliest(futureWeek.concat(futureNext));
-      if (!next) return;
+      if (!next) {
+        if (DIAG) appendDiag(section, 'Live data loaded but no upcoming Next Net found.');
+        return;
+      }
 
       const card = section.querySelector('.next-net-card');
       if (!card) return;
@@ -168,6 +190,7 @@
       }
 
       appendUpdatedAt(section, data);
+      if (DIAG) appendDiag(section, `Live data loaded. Picked Next Net: ${next.name || ''} (${next.category || ''}) at ${next.start_local_iso || ''}.`);
     });
   }
 
@@ -178,7 +201,10 @@
       const url = wrap.getAttribute('data-nco-json');
       if (!url) return;
       const data = await fetchJSON(url);
-      if (!data) return;
+      if (!data) {
+        if (DIAG) appendDiag(wrap, 'Live data fetch failed for NCO schedule.');
+        return;
+      }
 
       const table = wrap.querySelector('table.nco-table');
       if (!table) return;
@@ -266,6 +292,7 @@
       tbody.appendChild(rows);
 
       appendUpdatedAt(wrap, data);
+      if (DIAG) appendDiag(wrap, `Live data loaded. NCO items: ${items.length}.`);
     });
   }
 
@@ -311,7 +338,10 @@
       const url = container.getAttribute('data-next-net-json');
       if (!url) return;
       const data = await fetchJSON(url);
-      if (!data || !Array.isArray(data.week)) return;
+      if (!data || !Array.isArray(data.week)) {
+        if (DIAG) appendDiag(container, 'Live data fetch failed for weekly list.');
+        return;
+      }
 
       const now = new Date();
       const week = data.week
@@ -462,6 +492,7 @@
       headingsView.appendChild(hfrag);
 
       appendUpdatedAt(container, data);
+      if (DIAG) appendDiag(container, `Live data loaded. Weekly items: ${week.length}.`);
     });
   }
 
