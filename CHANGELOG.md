@@ -26,6 +26,9 @@ All notable changes to this project are documented here.
   - Removed obsolete GitHub Actions that generated local YAML and triggered Netlify hooks (now superseded by client hydration):
     - `.github/workflows/build_sched.yml`
     - `.github/workflows/netlify_build_hook.yml`
+  - Removed generated YAML artifacts and switched to skeleton fallbacks so JSON can hydrate without conflicts:
+    - `_data/next_net.yml` (home widgets now render a placeholder and hydrate)
+    - `_data/bhn_ncos_schedule.yml` (NCO table renders an empty scaffold for hydration)
 
 ## 2025-10-02
 
