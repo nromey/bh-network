@@ -253,7 +253,16 @@
       }
 
       const tzEl = card.querySelector('.next-net-tz');
-      if (tzEl) tzEl.textContent = (TIME_VIEW === 'my') ? 'Local' : (tzDisplay(next.time_zone || '') || tzFromISO(getStartISO(next)));
+      if (tzEl) {
+        if (TIME_VIEW === 'my') {
+          tzEl.textContent = 'Local';
+        } else {
+          const tzIana = next.time_zone || '';
+          const name = tzDisplay(tzIana) || tzFromISO(getStartISO(next));
+          const ab = tzAbbr(tzIana, getStartISO(next));
+          tzEl.textContent = (name && ab) ? `${name} (${ab})` : name;
+        }
+      }
 
       // Append UTC display when enabled
       try {
@@ -523,7 +532,14 @@
         time.textContent = (TIME_VIEW === 'my') ? fmtWeekWhen(start || '') : formatISOAsWritten(start || '');
         const tzSpan = document.createElement('span');
         tzSpan.className = 'next-net-tz';
-        tzSpan.textContent = (TIME_VIEW === 'my') ? 'Local' : (tzDisplay(occ.time_zone || '') || tzFromISO(getStartISO(occ)));
+        if (TIME_VIEW === 'my') {
+          tzSpan.textContent = 'Local';
+        } else {
+          const tzIana2 = occ.time_zone || '';
+          const name2 = tzDisplay(tzIana2) || tzFromISO(getStartISO(occ));
+          const ab2 = tzAbbr(tzIana2, getStartISO(occ));
+          tzSpan.textContent = (name2 && ab2) ? `${name2} (${ab2})` : name2;
+        }
         tdWhen.appendChild(time);
         tdWhen.appendChild(document.createTextNode(' '));
         tdWhen.appendChild(tzSpan);
@@ -592,7 +608,14 @@
         pMeta.appendChild(time);
         const tz = document.createElement('span');
         tz.className = 'next-net-tz';
-        tz.textContent = (TIME_VIEW === 'my') ? 'Local' : (tzDisplay(occ.time_zone || '') || tzFromISO(getStartISO(occ)));
+        if (TIME_VIEW === 'my') {
+          tz.textContent = 'Local';
+        } else {
+          const tzIana3 = occ.time_zone || '';
+          const name3 = tzDisplay(tzIana3) || tzFromISO(getStartISO(occ));
+          const ab3 = tzAbbr(tzIana3, getStartISO(occ));
+          tz.textContent = (name3 && ab3) ? `${name3} (${ab3})` : name3;
+        }
         pMeta.appendChild(document.createTextNode(' '));
         pMeta.appendChild(tz);
         if (SHOW_UTC) {
@@ -715,7 +738,13 @@
         const occ = byId.get(id);
         if (!occ) { slot.textContent = ''; return; }
         const start = getStartISO(occ);
-        const label = (TIME_VIEW === 'my') ? 'Local' : (tzDisplay(occ.time_zone || '') || tzFromISO(start));
+        const label = (() => {
+          if (TIME_VIEW === 'my') return 'Local';
+          const tzIana4 = occ.time_zone || '';
+          const name4 = tzDisplay(tzIana4) || tzFromISO(start);
+          const ab4 = tzAbbr(tzIana4, start);
+          return (name4 && ab4) ? `${name4} (${ab4})` : name4;
+        })();
         const whenText = (TIME_VIEW === 'my') ? fmtWeekWhen(start || '') : formatISOAsWritten(start || '');
         // Write " — Next: ... <tz>"
         slot.textContent = ` — Next: ${whenText} `;
