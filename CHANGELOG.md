@@ -2,6 +2,31 @@
 
 All notable changes to this project are documented here.
 
+## 2025-10-09
+
+- JSON-powered nets (progressive enhancement)
+  - Home “Up Next” card and weekly list hydrate from external JSON: `https://data.blindhams.network/next_nets.json`.
+  - NCO schedule page hydrates from `https://data.blindhams.net/bhn_nco_12w.json`.
+  - Fully backwards compatible: Liquid/YAML fallback remains for no‑JS and outage scenarios.
+- Data model compatibility
+  - Supports both legacy shape (`week[]`, `start_local_iso`) and new shape (`items[]`, `start_iso`).
+  - Time zone label auto‑derived from ISO offset when `time_zone` is absent.
+- Selection and display improvements
+  - Next Net prefers earliest future BHN occurrence; falls back to any category if none.
+  - Category normalization: "Blind Hams" → `bhn`, "Disabilities" → `disability`, "General Interest" → `general`.
+  - Weekly list gained an in‑progress indicator: visible “(Live now!)” in the Net column, and “· Live now” next to the time; headings view shows “· Live now”.
+  - Added SR-visible diagnostics mode `?diag=1` that announces hydration status and picked items.
+- Resilience and UX
+  - Cache-busting on JSON widget scripts to avoid stale branch deploys.
+  - “Data updated …” badge (or “Live data loaded”) appears when live data is applied.
+  - Fixed headings/table toggle on home weekly block by including `assets/js/net-view.js`.
+- Data hygiene
+  - Removed stray `$` prefix from “Absolute Tech Net” in `_data/next_net.yml`.
+- CI cleanup
+  - Removed obsolete GitHub Actions that generated local YAML and triggered Netlify hooks (now superseded by client hydration):
+    - `.github/workflows/build_sched.yml`
+    - `.github/workflows/netlify_build_hook.yml`
+
 ## 2025-10-02
 
 - Nets data rendering
