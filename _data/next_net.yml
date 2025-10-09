@@ -1,7 +1,7 @@
 time_zone: America/New_York
 next_net:
   id: absolute-tech
-  name: $Absolute Tech Net
+  name: Absolute Tech Net
   description: A net to discuss technical amateur radio topics and troubleshoot issues
     faced by hams around the world.
   category: bhn
@@ -52,7 +52,7 @@ week:
     location: null
     website: null
 - id: absolute-tech
-  name: $Absolute Tech Net
+  name: Absolute Tech Net
   description: A net to discuss technical amateur radio topics and troubleshoot issues
     faced by hams around the world.
   category: bhn
