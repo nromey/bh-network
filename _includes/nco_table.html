@@ -125,21 +125,22 @@ FALLBACK (generator mode if items missing):
         {%- assign notes_text = "" -%}
 
         {%- comment -%} Normalize row shape (hash vs array) {%- endcomment -%}
-        {%- if r.date -%}
-          {%- assign date_iso = r.date -%}
+        {%- assign _date_obj = r.date | default: r.local_date -%}
+        {%- if _date_obj -%}
+          {%- assign date_iso = _date_obj -%}
           {%- assign date_disp = "" -%}
-          {%- assign _date_raw = r.date | default: "" -%}
+          {%- assign _date_raw = _date_obj | default: "" -%}
           {%- comment -%}
             Only format with Liquid's date filter when the value looks like an ISO date (YYYY-MM-DD).
             This prevents accidental epoch(0) rendering (Dec 31, 1969) when a non-date like "TBD" appears.
           {%- endcomment -%}
           {%- if _date_raw contains "-" and _date_raw | size == 10 -%}
-            {%- assign date_disp = r.date | date: "%A, %B %-d, %Y" -%}
+            {%- assign date_disp = _date_raw | date: "%A, %B %-d, %Y" -%}
           {%- else -%}
             {%- assign date_disp = _date_raw -%}
           {%- endif -%}
           {%- assign nco_name   = r.nco | default: r.operator | default: "" -%}
-          {%- assign notes_text = r.notes | default: "" -%}
+          {%- assign notes_text = r.notes | default: r.note | default: "" -%}
           {%- assign row_un     = r.unassigned -%}
         {%- else -%}
           {%- assign date_iso   = r[0] -%}

@@ -461,12 +461,12 @@
 
       const rows = document.createDocumentFragment();
       items.forEach((r, idx) => {
-        const dateIso = r.date || '';
+        const dateIso = (r.date || r.local_date || '');
         const dateDisp = dateIso ? new Date(dateIso + 'T00:00:00').toLocaleDateString(undefined, {
           weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
         }) : '';
         const nco = (r.nco || r.operator || '').trim();
-        const notes = r.notes || '';
+        const notes = r.notes || r.note || '';
         const unassigned = !!(r.unassigned || !nco || nco.toUpperCase() === 'TBD');
 
         const tr = document.createElement('tr');
