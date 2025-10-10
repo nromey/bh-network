@@ -25,7 +25,12 @@ Helper snippet: given n, compute:
 This block is duplicated in both views (scoped to each n).
 {%- endcomment -%}
 
-{%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
+{%- assign use_proxy = site.data_fetch.use_proxy | default: false -%}
+{%- if use_proxy -%}
+  {%- assign json_src = site.data_endpoints.next_nets_proxy | default: "/data/next_nets.json" -%}
+{%- else -%}
+  {%- assign json_src = site.data_endpoints.next_nets | default: "https://data.blindhams.network/next_nets.json" -%}
+{%- endif -%}
 <section class="nets-section" data-view="table" id="{{ section_id }}" data-next-net-json="{{ json_src }}"
   data-tz-show-abbr="{%- if site.time_labels.show_abbr == false or site.time_labels.show_abbr == 'false' -%}false{%- elsif site.time_labels.show_abbr == true or site.time_labels.show_abbr == 'true' -%}true{%- else -%}true{%- endif -%}"
   data-tz-show-label="{%- if site.time_labels.show_label == false or site.time_labels.show_label == 'false' -%}false{%- elsif site.time_labels.show_label == true or site.time_labels.show_label == 'true' -%}true{%- else -%}true{%- endif -%}"

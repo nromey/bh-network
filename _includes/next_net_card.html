@@ -1,5 +1,10 @@
 {%- assign payload = site.data.next_net -%}
-{%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
+{%- assign use_proxy = site.data_fetch.use_proxy | default: false -%}
+{%- if use_proxy -%}
+  {%- assign json_src = site.data_endpoints.next_nets_proxy | default: "/data/next_nets.json" -%}
+{%- else -%}
+  {%- assign json_src = site.data_endpoints.next_nets | default: "https://data.blindhams.network/next_nets.json" -%}
+{%- endif -%}
 {%- assign heading_id = include.heading_id | default: "next-net-heading" -%}
 {%- assign title = include.title | default: "Up Next on the Blind Hams Bridge" -%}
 <section class="next-net-card-block" aria-labelledby="{{ heading_id }}" data-next-net-json="{{ json_src }}"

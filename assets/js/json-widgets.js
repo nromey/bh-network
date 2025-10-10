@@ -10,6 +10,23 @@
     catch (_) { return false; }
   })();
 
+  function isLocalhost() {
+    try {
+      const h = location.hostname;
+      return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.localhost');
+    } catch (_) { return false; }
+  }
+
+  function localFallbackUrl(remoteUrl) {
+    try {
+      const u = new URL(remoteUrl);
+      const last = u.pathname.split('/').filter(Boolean).pop();
+      return `/assets/data/${last}`;
+    } catch (_) {
+      return '/assets/data/bhn_nco_12w.json';
+    }
+  }
+
   // Global time view: 'net' (event-local) or 'my' (viewer-local)
   let TIME_VIEW = 'net';
   let SHOW_UTC = false;
@@ -401,10 +418,19 @@
     containers.forEach(async (wrap) => {
       const url = wrap.getAttribute('data-nco-json');
       if (!url) return;
-      const data = await fetchJSON(url);
+      let data = await fetchJSON(url);
       if (!data) {
-        if (DIAG) appendDiag(wrap, 'Live data fetch failed for NCO schedule.');
-        return;
+        // Try local fallback during local development
+        if (isLocalhost()) {
+          const alt = localFallbackUrl(url);
+          if (DIAG) appendDiag(wrap, `Primary NCO fetch failed; trying local: ${alt}`);
+          data = await fetchJSON(alt);
+        }
+        if (!data) {
+          // Always inform users on failure; fall back to server-rendered rows
+          appendDiag(wrap, 'Could not load live NCO schedule; showing fallback.');
+          return;
+        }
       }
 
       const table = wrap.querySelector('table.nco-table');
@@ -414,7 +440,10 @@
       if (!tbody) return;
 
       const items = Array.isArray(data.items) ? data.items : [];
-      if (!items.length) return;
+      if (!items.length) {
+        appendDiag(wrap, 'Live NCO data loaded but contains no items; showing fallback.');
+        return;
+      }
 
       const timeLocal = data.time_local || null; // e.g., "10:00"
       const tzFull = data.tz_full || null;      // e.g., "Eastern"

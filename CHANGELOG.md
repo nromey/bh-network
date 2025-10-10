@@ -6,7 +6,7 @@ All notable changes to this project are documented here.
 
 - JSON-powered nets (progressive enhancement)
   - Home “Up Next” card and weekly list hydrate from external JSON: `https://data.blindhams.network/next_nets.json`.
-  - NCO schedule page hydrates from `https://data.blindhams.net/bhn_nco_12w.json`.
+  - NCO schedule page hydrates from `https://data.blindhams.network/bhn_nco_12w.json`.
   - Fully backwards compatible: Liquid/YAML fallback remains for no‑JS and outage scenarios.
 - Data model compatibility
   - Supports both legacy shape (`week[]`, `start_local_iso`) and new shape (`items[]`, `start_iso`).

@@ -1,0 +1,19 @@
+{
+  "updated_at": "2025-01-01T00:00:00Z",
+  "time_local": "10:00",
+  "tz_full": "Eastern",
+  "items": [
+    { "date": "2025-10-11", "nco": "VE3RWJ", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-10-18", "nco": "N2DYI", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-10-25", "nco": "K5NER", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-11-01", "nco": "W5MRR", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-11-08", "nco": "VE3RWJ", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-11-15", "nco": "N2DYI", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-11-22", "nco": "K5NER", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-11-29", "nco": "W5MRR", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-12-06", "nco": "VE3RWJ", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-12-13", "nco": "N2DYI", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-12-20", "nco": "K5NER", "notes": "Sample dev data", "unassigned": false },
+    { "date": "2025-12-27", "nco": "TBD", "notes": "Sample dev data", "unassigned": true }
+  ]
+}

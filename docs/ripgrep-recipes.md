@@ -42,4 +42,3 @@ Tips
 - Combine -g globs as needed; order doesn’t matter.
 - Use -S to disable smart case if you want exact case behavior.
 - Use quotes around patterns with special chars (spaces, ?, *, parentheses).
-

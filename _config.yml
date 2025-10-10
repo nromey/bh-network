@@ -56,3 +56,17 @@ time_labels:
 # Silence deprecation warnings from theme/dependencies while keeping ours visible.
 sass:
   quiet_deps: true
+
+# Centralized data endpoints (used by includes/JS)
+data_endpoints:
+  # Full URLs (production)
+  next_nets: "https://data.blindhams.network/next_nets.json"
+  nco_12w: "https://data.blindhams.network/bhn_nco_12w.json"
+  # Same-origin proxy paths (Netlify rewrite provides no-CORS fallback)
+  next_nets_proxy: "/data/next_nets.json"
+  nco_12w_proxy: "/data/bhn_nco_12w.json"
+
+# Data fetch behavior
+data_fetch:
+  # When true, pages use the same-origin proxy paths defined above
+  use_proxy: false

@@ -24,7 +24,7 @@ It covers JSON formats, selection rules, time handling, diagnostics, failure mod
   - “Next Net” subset: `_includes/next_net_card.html`
     - Also includes `data-next-net-json` + loads `json-widgets.js`
   - NCO page: `nets/blind-hams/bhn-schedule.md`
-    - Adds `data-nco-json="https://data.blindhams.net/bhn_nco_12w.json"` and loads `json-widgets.js`
+    - Adds `data-nco-json="https://data.blindhams.network/bhn_nco_12w.json"` and loads `json-widgets.js`
 
 Hydration is a progressive enhancement; server-rendered Liquid/YAML remains as fallback.
 
@@ -46,7 +46,7 @@ Supported structures (both accepted):
   - Each occurrence contains `start_iso` (with offset), `end_iso` (optional), `duration_min`
   - Optional `categories` array and `category` string
 
-NCO Schedule: `https://data.blindhams.net/bhn_nco_12w.json`
+NCO Schedule: `https://data.blindhams.network/bhn_nco_12w.json`
 
 - `items`: array with `{ date, nco, notes, unassigned }`
 - Optional `time_local`, `tz_full`, `updated_at`

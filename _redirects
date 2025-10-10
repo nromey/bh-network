@@ -5,3 +5,5 @@ https://blindhams.network/*  https://www.blindhams.network/:splat  301!
 http://blindhams.network/*   https://www.blindhams.network/:splat  301!
 http://www.blindhams.network/*  https://www.blindhams.network/:splat  301!
 
+# Proxy data to avoid CORS in production
+/data/*  https://data.blindhams.network/:splat  200

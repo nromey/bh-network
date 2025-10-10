@@ -11,7 +11,7 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 - Authoring data: `_data/nets.yml` and `_data/ncos.yml`
 - Live JSON feeds (rendered at runtime):
   - Next + 7‑day: https://data.blindhams.network/next_nets.json
-  - NCO 12‑week: https://data.blindhams.net/bhn_nco_12w.json
+  - NCO 12‑week: https://data.blindhams.network/bhn_nco_12w.json
 - Client scripts: `assets/js/json-widgets.js`, `assets/js/time-view.js`, `assets/js/net-view.js`, `assets/js/home-week-filter.js`
 - Styles: `assets/css/extra.css`, `assets/css/nets.css`
 
@@ -53,4 +53,3 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 10) Useful Links
 - docs/live-data-hydration.md — hydration behavior and formats
 - docs/nets-data.md — authoring nets + generator output spec
-
