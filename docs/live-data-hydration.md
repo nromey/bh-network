@@ -49,7 +49,8 @@ Supported structures (both accepted):
 NCO Schedule: `https://data.blindhams.network/bhn_nco_12w.json`
 
 - `items`: array with `{ date, nco, notes, unassigned }`
-- Optional `time_local`, `tz_full`, `updated_at`
+  - Aliases accepted for back-compat: `local_date` (as `date`), `note` (as `notes`).
+- Optional top-level: `time_local` (HH:MM), `tz_full` (e.g., "Eastern"), `updated_at`/`generated_at`.
 
 Example (current weekly shape):
 

@@ -18,7 +18,10 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 2) Hydration Model
 - Pages render a scaffold and hydrate from JSON when JS runs.
 - Supported shapes: legacy `week[]/start_local_iso` and current `items[]/start_iso(+end_iso)`.
-- NCO uses `items[]` with `{ date, nco, notes, unassigned }` (+ optional `time_local`, `tz_full`).
+- NCO uses `items[]` with `{ date, nco, notes, unassigned }`.
+  - Canonical: `date` (YYYY-MM-DD in the BHN net time zone), `notes`.
+  - Accepted aliases (back-compat): `local_date` for `date`, `note` for `notes`.
+  - Recommended top-level fields: `time_local` (HH:MM) and `tz_full` (e.g., "Eastern").
 - Diagnostics: add `?diag=1` to see SR-visible status lines.
 
 3) Time Handling
@@ -32,6 +35,7 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 
 5) JSON Output (Reference)
 - Prefer: `items[]` with `id,name,category,duration_min,start_iso(+offset),end_iso?,time_zone?`, `connections{}`; optional `next_net`, `updated_at`.
+  - NCO feed (12-week): `items[]` should include `date,nco,notes,unassigned`; also include top-level `time_local` and `tz_full` for display. Accept aliases `local_date`→`date`, `note`→`notes` during transition.
 - Backward compatible with `week[] + start_local_iso`.
 - See docs/live-data-hydration.md for details.
 
