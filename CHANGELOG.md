@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## 2025-10-10
+
+- NCO hydration fixes and endpoint normalization
+  - Switched NCO schedule to `https://data.blindhams.network/bhn_nco_12w.json` (was `.net`).
+  - Centralized data endpoints in `_config.yml` under `data_endpoints` with an optional `use_proxy` switch.
+  - Added visible diagnostics for NCO hydration failures and empty data; improved fallback UX.
+  - Guarded Liquid fallback date formatting to avoid epoch artifacts (no more “Dec 31, 1969”).
+- Proxy and headers
+  - Added Netlify rewrite `/data/* -> https://data.blindhams.network/:splat` to support same-origin fetch when enabled.
+  - Introduced CSP `connect-src 'self' https://data.blindhams.network`.
+  - Defaulted to direct endpoints after confirming CORS headers on the data host.
+- Docs
+  - Added `docs/data-server-setup.md` with Apache/NGINX/S3 examples for CORS and caching.
+  - Removed `docs/pr-dev-to-main.md` (obsolete dev note).
+
 ## 2025-10-09
 
 - JSON-powered nets (progressive enhancement)

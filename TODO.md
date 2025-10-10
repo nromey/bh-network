@@ -1,5 +1,10 @@
 # TODO
 
+- Data endpoints and health
+  - Add staging vs production endpoints in `_config.yml` with a simple switch (via `JEKYLL_ENV` or a `site.env` var) to avoid manual edits.
+  - Add a lightweight health-check widget/page that surfaces data freshness and connectivity (shows `updated_at`/`generated_at`, CORS status, and endpoint in use). Expose at `/status/`.
+  - Add a CI/Lint check that flags any lingering `data.blindhams.net` references; ensure all new code uses `site.data_endpoints`.
+
 - Add “How to connect” banner content
   - Paste Patrick’s copy into `_includes/how_to_connect.md` (use Markdown table)
   - Include a caption via kramdown IAL to aid accessibility
