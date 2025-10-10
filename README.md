@@ -7,3 +7,6 @@ Questions or suggestions?
 - Email: k5ner@email.cc
 
 Thanks for helping make the Blind Hams Digital Net better for everyone.
+
+Admin docs
+- docs/admin/index.md — quick links for adding nets and managing NCOs
