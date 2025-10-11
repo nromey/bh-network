@@ -1,6 +1,6 @@
 [build]
-  # Netlify will run this to build your site
-  command = "bundle exec jekyll build"
+  # Install Node deps (for Functions) then build Jekyll site
+  command = "npm install --no-audit --no-fund && bundle exec jekyll build"
   # Jekyll outputs to _site by default
   publish = "_site"
 
