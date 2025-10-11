@@ -49,20 +49,7 @@ The **Blind Hams Digital Network** is a community built by and for blind and vis
 - Bored? Want to see something cool that took way too long to make but looks positively normal? Check the dynamically generated NCO rotation for our flagship Saturday morning net:
   **[The Blind Hams Digital Net — Nifty NER&trade;'s NCO Schedule](/nets/blind-hams/nco-schedule/)**
 
-<section class="stats-section" role="region" aria-labelledby="site-stats-heading">
-  <h2 id="site-stats-heading">Site Stats</h2>
-  <p class="visit-counter">
-    Home visits: <span id="home-visit-total">—</span>
-    <span aria-hidden="true"> • </span>
-    This month: <span id="home-visit-month">—</span>
-  </p>
-  <script defer src="{{ '/assets/js/visit-counter.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
-  <noscript>Enable JavaScript to see visit counts.</noscript>
-  <p><small>Counts update automatically and reset monthly in the site time zone.</small></p>
-  
-</section>
 
----
 
 Questions, ideas, or something we should add? We’d love to hear from you.
 
