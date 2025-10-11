@@ -21,5 +21,5 @@
 [functions]
   # Directory for Netlify Functions
   directory = "netlify/functions"
-  # Use classic bundler that installs deps from functions/package.json
-  node_bundler = "zisi"
+  # Use esbuild to bundle deps from the root node_modules
+  node_bundler = "esbuild"
