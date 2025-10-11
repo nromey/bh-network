@@ -66,10 +66,17 @@ exports.handler = async (event) => {
     ]);
     return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ value: total, total, month, ym, tz: COUNTER_TZ }) };
   } catch (err) {
-    return {
-      statusCode: 500,
-      headers: jsonHeaders,
-      body: JSON.stringify({ error: 'server_error', message: String((err && err.message) || err) }),
-    };
+    try {
+      // Graceful fallback: return zeros so the UI shows 0 instead of a dash
+      const tz = COUNTER_TZ;
+      const ym = getYearMonth(tz);
+      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ value: 0, total: 0, month: 0, ym, tz, error: 'server_error' }) };
+    } catch (_) {
+      return {
+        statusCode: 500,
+        headers: jsonHeaders,
+        body: JSON.stringify({ error: 'server_error', message: String((err && err.message) || err) }),
+      };
+    }
   }
 };
