@@ -38,7 +38,15 @@ export const handler = async (event) => {
     const ns = url.searchParams.get('ns');
     const keyParam = url.searchParams.get('key');
 
-    const store = getStore({ name: STORE_NAME });
+    // Prefer automatic Netlify runtime configuration. If Blobs is not
+    // auto-configured for this site, allow manual credentials via env vars.
+    // Provide both values or neither:
+    //   BLOBS_SITE_ID (or NETLIFY_SITE_ID) and BLOBS_TOKEN
+    const siteID = process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID;
+    const token = process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN;
+    const store = (siteID && token)
+      ? getStore({ name: STORE_NAME, siteID, token })
+      : getStore({ name: STORE_NAME });
     const baseKey = ns && keyParam ? `${ns}:${keyParam}` : (keyParam || DEFAULT_KEY);
     const ym = getYearMonth(COUNTER_TZ);
     const monthKey = `${baseKey}:${ym}`;

@@ -10,6 +10,7 @@ All notable changes to this project are documented here.
   - Display: “Home visits: X • This month: Y”. The section is a landmark region for easy skipping, and is static (no live announcements).
   - Config: `netlify.toml` declares `[functions] directory = "netlify/functions"` and uses `esbuild`; function `package.json` depends on `@netlify/blobs` and sets `"type":"module"`.
   - Fix: Converted functions to ESM and switched bundler to `esbuild` to resolve `@netlify/blobs` ESM/CJS errors.
+  - Fallback config: When Blobs isn’t auto‑configured for the site, the function can use manual credentials via env vars: set `BLOBS_TOKEN` (RW) and optionally `BLOBS_SITE_ID` (or rely on `NETLIFY_SITE_ID`).
   - No Ruby gems or third-party calls required; CountAPI was removed in favor of Netlify-native storage.
   - CQ Blind Hams page was not modified; if a counter appears live there, remove any Netlify “Snippet injection”.
 
