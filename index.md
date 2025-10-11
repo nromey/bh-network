@@ -56,7 +56,7 @@ The **Blind Hams Digital Network** is a community built by and for blind and vis
     <span aria-hidden="true"> • </span>
     This month: <span id="home-visit-month">—</span>
   </p>
-  <script defer src="{{ '/assets/js/visit-counter.js' | relative_url }}"></script>
+  <script defer src="{{ '/assets/js/visit-counter.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
   <noscript>Enable JavaScript to see visit counts.</noscript>
   <p><small>Counts update automatically and reset monthly in the site time zone.</small></p>
   

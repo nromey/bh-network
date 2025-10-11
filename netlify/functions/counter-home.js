@@ -19,12 +19,17 @@ const jsonHeaders = {
 
 function getYearMonth(tz) {
   const now = new Date();
-  // Format YYYY-MM in the specified timezone
-  const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit' });
-  const parts = fmt.formatToParts(now);
-  const y = parts.find(p => p.type === 'year')?.value || String(now.getUTCFullYear());
-  const m = parts.find(p => p.type === 'month')?.value || String(now.getUTCMonth() + 1).padStart(2, '0');
-  return `${y}-${m}`;
+  try {
+    // Preferred: format in the specified timezone
+    const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit' });
+    const parts = fmt.formatToParts(now);
+    const y = parts.find(p => p.type === 'year')?.value || String(now.getUTCFullYear());
+    const m = parts.find(p => p.type === 'month')?.value || String(now.getUTCMonth() + 1).padStart(2, '0');
+    return `${y}-${m}`;
+  } catch (_) {
+    // Fallback: UTC YYYY-MM to avoid throwing in environments without TZ data
+    return now.toISOString().slice(0, 7);
+  }
 }
 
 exports.handler = async (event) => {
@@ -72,7 +77,8 @@ exports.handler = async (event) => {
     try {
       // Graceful fallback: return zeros so the UI shows 0 instead of a dash
       const tz = COUNTER_TZ;
-      const ym = getYearMonth(tz);
+      // Safe UTC-based ym here to guarantee no throw in fallback
+      const ym = new Date().toISOString().slice(0, 7);
       const body = { value: 0, total: 0, month: 0, ym, tz, source: 'fallback', error: 'server_error', error_message: String((err && err.message) || err) };
       return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(diag ? body : { value: 0, total: 0, month: 0 }) };
     } catch (_) {

@@ -2,11 +2,12 @@
 // and updates the inline placeholder. Fails silently if anything goes wrong.
 (function () {
   try {
+    if (!window.fetch) return;
     var elTotal = document.getElementById('home-visit-total');
     var elMonth = document.getElementById('home-visit-month');
-    if ((!elTotal && !elMonth) || !window.fetch) return;
+    var isDiag = (new URLSearchParams(location.search).get('diag') === '1');
 
-    var url = '/.netlify/functions/counter-home?mode=inc';
+    var url = '/.netlify/functions/counter-home?mode=inc' + (isDiag ? '&diag=1' : '');
     fetch(url, { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
@@ -15,7 +16,10 @@
         var month = (typeof d.month === 'number') ? d.month : null;
         if (elTotal && typeof total === 'number') elTotal.textContent = total.toLocaleString();
         if (elMonth && typeof month === 'number') elMonth.textContent = month.toLocaleString();
+        if (isDiag) {
+          console.log('[visit-counter]', { d, elTotal: !!elTotal, elMonth: !!elMonth, total, month });
+        }
       })
-      .catch(function () { /* ignore */ });
+      .catch(function (e) { if (isDiag) console.warn('[visit-counter] fetch error', e); });
   } catch (e) { /* ignore */ }
 })();
