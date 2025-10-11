@@ -32,6 +32,7 @@ exports.handler = async (event) => {
     const { getStore } = await import('@netlify/blobs');
     const url = new URL(event.rawUrl || 'http://localhost');
     const mode = (url.searchParams.get('mode') || 'hit').toLowerCase(); // 'hit' | 'inc' | 'get'
+    const diag = url.searchParams.get('diag') === '1';
     const ns = url.searchParams.get('ns');
     const keyParam = url.searchParams.get('key');
 
@@ -45,7 +46,8 @@ exports.handler = async (event) => {
       const monthData = await store.getJSON(monthKey);
       const total = totalData && typeof totalData.value === 'number' ? totalData.value : 0;
       const month = monthData && typeof monthData.value === 'number' ? monthData.value : 0;
-      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ value: total, total, month, ym, tz: COUNTER_TZ }) };
+      const body = { value: total, total, month, ym, tz: COUNTER_TZ, source: 'ok' };
+      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(diag ? body : { value: body.value, total: body.total, month: body.month }) };
     }
 
     // Default: increment on 'hit' or 'inc'
@@ -64,13 +66,15 @@ exports.handler = async (event) => {
       store.setJSON(baseKey, { value: total }),
       store.setJSON(monthKey, { value: month }),
     ]);
-    return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ value: total, total, month, ym, tz: COUNTER_TZ }) };
+    const body = { value: total, total, month, ym, tz: COUNTER_TZ, source: 'ok' };
+    return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(diag ? body : { value: body.value, total: body.total, month: body.month }) };
   } catch (err) {
     try {
       // Graceful fallback: return zeros so the UI shows 0 instead of a dash
       const tz = COUNTER_TZ;
       const ym = getYearMonth(tz);
-      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ value: 0, total: 0, month: 0, ym, tz, error: 'server_error' }) };
+      const body = { value: 0, total: 0, month: 0, ym, tz, source: 'fallback', error: 'server_error', error_message: String((err && err.message) || err) };
+      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(diag ? body : { value: 0, total: 0, month: 0 }) };
     } catch (_) {
       return {
         statusCode: 500,
