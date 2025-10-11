@@ -1,8 +1,0 @@
-{
-  "name": "bhn-site",
-  "private": true,
-  "dependencies": {
-    "@netlify/blobs": "^6.5.1"
-  }
-}
-

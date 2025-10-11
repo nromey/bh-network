@@ -1,6 +1,6 @@
 [build]
-  # Install Node deps (for Functions) then build Jekyll site
-  command = "npm install --no-audit --no-fund && bundle exec jekyll build"
+  # Build Jekyll site; function deps installed by Functions Install Core plugin
+  command = "bundle exec jekyll build"
   # Jekyll outputs to _site by default
   publish = "_site"
 
@@ -21,8 +21,8 @@
 [functions]
   # Directory for Netlify Functions
   directory = "netlify/functions"
-  # Prefer esbuild bundler; root node_modules contains deps
-  node_bundler = "esbuild"
+  # Use zisi bundler with plugin to install function-specific deps
+  node_bundler = "zisi"
 
 [[plugins]]
 package = "@netlify/plugin-functions-install-core"
