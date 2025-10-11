@@ -2,7 +2,7 @@
 // Increments or fetches a page view counter using Netlify Blobs.
 // No third-party calls; durable storage per site/environment.
 
-// Use dynamic import to support ESM-only @netlify/blobs from CommonJS function
+import { getStore } from '@netlify/blobs';
 
 // Configuration via env vars (optional):
 //   BLOBS_STORE: store name within Netlify Blobs (default: "counters")
@@ -20,23 +20,20 @@ const jsonHeaders = {
 function getYearMonth(tz) {
   const now = new Date();
   try {
-    // Preferred: format in the specified timezone
     const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit' });
     const parts = fmt.formatToParts(now);
     const y = parts.find(p => p.type === 'year')?.value || String(now.getUTCFullYear());
     const m = parts.find(p => p.type === 'month')?.value || String(now.getUTCMonth() + 1).padStart(2, '0');
     return `${y}-${m}`;
   } catch (_) {
-    // Fallback: UTC YYYY-MM to avoid throwing in environments without TZ data
     return now.toISOString().slice(0, 7);
   }
 }
 
-exports.handler = async (event) => {
+export async function handler(event) {
   try {
-    const { getStore } = require('@netlify/blobs');
     const url = new URL(event.rawUrl || 'http://localhost');
-    const mode = (url.searchParams.get('mode') || 'hit').toLowerCase(); // 'hit' | 'inc' | 'get'
+    const mode = (url.searchParams.get('mode') || 'hit').toLowerCase();
     const diag = url.searchParams.get('diag') === '1';
     const ns = url.searchParams.get('ns');
     const keyParam = url.searchParams.get('key');
@@ -55,7 +52,6 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(diag ? body : { value: body.value, total: body.total, month: body.month }) };
     }
 
-    // Default: increment on 'hit' or 'inc'
     if (!(mode === 'hit' || mode === 'inc')) {
       return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'bad_mode' }) };
     }
@@ -74,11 +70,9 @@ exports.handler = async (event) => {
     const body = { value: total, total, month, ym, tz: COUNTER_TZ, source: 'ok' };
     return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(diag ? body : { value: body.value, total: body.total, month: body.month }) };
   } catch (err) {
-    // Graceful fallback: return zeros so the UI shows 0 instead of a dash.
-    // Do NOT reference variables declared inside the try block here.
     const tz = COUNTER_TZ;
     const ym = new Date().toISOString().slice(0, 7);
     const body = { value: 0, total: 0, month: 0, ym, tz, source: 'fallback', error: 'server_error', error_message: String((err && err.message) || err) };
     return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(body) };
   }
-};
+}
