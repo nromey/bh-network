@@ -21,5 +21,8 @@
 [functions]
   # Directory for Netlify Functions
   directory = "netlify/functions"
-  # Use esbuild to bundle deps from the root node_modules
+  # Prefer esbuild bundler; root node_modules contains deps
   node_bundler = "esbuild"
+
+[[plugins]]
+package = "@netlify/plugin-functions-install-core"
