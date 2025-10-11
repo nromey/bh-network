@@ -2,7 +2,7 @@
 // Increments or fetches a page view counter using Netlify Blobs.
 // No third-party calls; durable storage per site/environment.
 
-import { getStore } from '@netlify/blobs';
+const { getStore } = require('@netlify/blobs');
 
 // Configuration via env vars (optional):
 //   BLOBS_STORE: store name within Netlify Blobs (default: "counters")
@@ -30,7 +30,7 @@ function getYearMonth(tz) {
   }
 }
 
-export async function handler(event) {
+exports.handler = async (event) => {
   try {
     const url = new URL(event.rawUrl || 'http://localhost');
     const mode = (url.searchParams.get('mode') || 'hit').toLowerCase();
@@ -75,4 +75,4 @@ export async function handler(event) {
     const body = { value: 0, total: 0, month: 0, ym, tz, source: 'fallback', error: 'server_error', error_message: String((err && err.message) || err) };
     return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(body) };
   }
-}
+};
