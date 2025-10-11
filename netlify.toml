@@ -17,3 +17,25 @@
   BUNDLE_WITHOUT = "development:test"
   # Set timezone for schedule generation and logs
   TZ = "America/New_York"
+
+[functions]
+  # Directory for Netlify Functions
+  directory = "netlify/functions"
+  # Use esbuild so ESM deps (like @netlify/blobs) bundle correctly
+  node_bundler = "esbuild"
+
+[[plugins]]
+package = "@netlify/plugin-functions-install-core"
+
+# Context-specific environment overrides
+[context.production.environment]
+  # Production site: keep counter hidden (index gated by jekyll.environment)
+  JEKYLL_ENV = "production"
+
+[context.deploy-preview.environment]
+  # Hide counter on Deploy Previews
+  JEKYLL_ENV = "production"
+
+[context."dev".environment]
+  # Enable counter only for the 'dev' branch deploys
+  JEKYLL_ENV = "development"
