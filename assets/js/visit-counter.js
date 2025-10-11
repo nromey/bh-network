@@ -6,7 +6,7 @@
     var elMonth = document.getElementById('home-visit-month');
     if ((!elTotal && !elMonth) || !window.fetch) return;
 
-    var url = '/.netlify/functions/hit-home?mode=hit';
+    var url = '/.netlify/functions/counter-home?mode=inc';
     fetch(url, { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {

@@ -1,8 +1,8 @@
-// Netlify Function: hit-home (Blobs-backed)
+// Netlify Function: counter-home (Blobs-backed)
 // Increments or fetches a page view counter using Netlify Blobs.
 // No third-party calls; durable storage per site/environment.
 
-const { getStore } = require('@netlify/blobs');
+// Use dynamic import to support ESM-only @netlify/blobs from CommonJS function
 
 // Configuration via env vars (optional):
 //   BLOBS_STORE: store name within Netlify Blobs (default: "counters")
@@ -29,8 +29,9 @@ function getYearMonth(tz) {
 
 exports.handler = async (event) => {
   try {
+    const { getStore } = await import('@netlify/blobs');
     const url = new URL(event.rawUrl || 'http://localhost');
-    const mode = (url.searchParams.get('mode') || 'hit').toLowerCase(); // 'hit' | 'get'
+    const mode = (url.searchParams.get('mode') || 'hit').toLowerCase(); // 'hit' | 'inc' | 'get'
     const ns = url.searchParams.get('ns');
     const keyParam = url.searchParams.get('key');
 
@@ -47,7 +48,10 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ value: total, total, month, ym, tz: COUNTER_TZ }) };
     }
 
-    // Default: increment
+    // Default: increment on 'hit' or 'inc'
+    if (!(mode === 'hit' || mode === 'inc')) {
+      return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'bad_mode' }) };
+    }
     const [totalCurrent, monthCurrent] = await Promise.all([
       store.getJSON(baseKey),
       store.getJSON(monthKey),
