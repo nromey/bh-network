@@ -74,19 +74,11 @@ exports.handler = async (event) => {
     const body = { value: total, total, month, ym, tz: COUNTER_TZ, source: 'ok' };
     return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(diag ? body : { value: body.value, total: body.total, month: body.month }) };
   } catch (err) {
-    try {
-      // Graceful fallback: return zeros so the UI shows 0 instead of a dash
-      const tz = COUNTER_TZ;
-      // Safe UTC-based ym here to guarantee no throw in fallback
-      const ym = new Date().toISOString().slice(0, 7);
-      const body = { value: 0, total: 0, month: 0, ym, tz, source: 'fallback', error: 'server_error', error_message: String((err && err.message) || err) };
-      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(diag ? body : { value: 0, total: 0, month: 0 }) };
-    } catch (_) {
-      return {
-        statusCode: 500,
-        headers: jsonHeaders,
-        body: JSON.stringify({ error: 'server_error', message: String((err && err.message) || err) }),
-      };
-    }
+    // Graceful fallback: return zeros so the UI shows 0 instead of a dash.
+    // Do NOT reference variables declared inside the try block here.
+    const tz = COUNTER_TZ;
+    const ym = new Date().toISOString().slice(0, 7);
+    const body = { value: 0, total: 0, month: 0, ym, tz, source: 'fallback', error: 'server_error', error_message: String((err && err.message) || err) };
+    return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(body) };
   }
 };
