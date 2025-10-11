@@ -34,7 +34,7 @@ function getYearMonth(tz) {
 
 exports.handler = async (event) => {
   try {
-    const { getStore } = await import('@netlify/blobs');
+    const { getStore } = require('@netlify/blobs');
     const url = new URL(event.rawUrl || 'http://localhost');
     const mode = (url.searchParams.get('mode') || 'hit').toLowerCase(); // 'hit' | 'inc' | 'get'
     const diag = url.searchParams.get('diag') === '1';
