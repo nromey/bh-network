@@ -17,3 +17,9 @@
   BUNDLE_WITHOUT = "development:test"
   # Set timezone for schedule generation and logs
   TZ = "America/New_York"
+
+[functions]
+  # Directory for Netlify Functions
+  directory = "netlify/functions"
+  # Use esbuild bundler; no external deps required for our function
+  node_bundler = "esbuild"

@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## 2025-10-11
+
+- Home page stats counter (Netlify Functions + Blobs)
+  - Added a serverless function `netlify/functions/hit-home.js` backed by Netlify Blobs that tracks both total visits and a month bucket (YYYY-MM in `COUNTER_TZ`, default `America/New_York`).
+  - New client helper `assets/js/visit-counter.js` updates a concise “Site Stats” section near the bottom of the home page (`index.md`).
+  - Display: “Home visits: X • This month: Y”. The section is a landmark region for easy skipping, and is static (no live announcements).
+  - Config: `netlify.toml` now declares `[functions] directory = "netlify/functions"` and uses `esbuild`; function `package.json` depends on `@netlify/blobs`.
+  - No Ruby gems or third-party calls required; CountAPI was removed in favor of Netlify-native storage.
+  - CQ Blind Hams page was not modified; if a counter appears live there, remove any Netlify “Snippet injection”.
+
 ## 2025-10-10
 
 - NCO hydration fixes and endpoint normalization
