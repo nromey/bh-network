@@ -73,6 +73,35 @@ export const handler = async (event) => {
       return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ list: keys, count: keys.length, prefix, ym, tz: COUNTER_TZ, source: 'ok' }) };
     }
 
+    if (mode === 'purge') {
+      if (!diag) {
+        return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'diag_required' }) };
+      }
+      // Safety guard: require either ns or key prefix to avoid wiping entire store accidentally.
+      const prefix = ns ? `${ns}:` : (keyParam ? String(keyParam) : '');
+      if (!prefix) {
+        return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'prefix_required', note: 'Provide ns=... or key=... to limit purge scope' }) };
+      }
+      const toDelete = [];
+      try {
+        let cursor = undefined;
+        do {
+          const res = await store.list({ prefix, cursor, limit: 100 });
+          if (res && Array.isArray(res.blobs)) {
+            for (const b of res.blobs) toDelete.push(b.key);
+          }
+          cursor = res && res.cursor ? res.cursor : undefined;
+        } while (cursor && toDelete.length < 5000);
+      } catch (e) {
+        return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ purged: 0, attempted: 0, prefix, ym, tz: COUNTER_TZ, source: 'fallback', error: 'list_error', error_message: String(e && e.message || e) }) };
+      }
+      let purged = 0;
+      for (const k of toDelete) {
+        try { await store.delete(k); purged++; } catch (_) { /* ignore */ }
+      }
+      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ purged, attempted: toDelete.length, prefix, ym, tz: COUNTER_TZ, source: 'ok' }) };
+    }
+
     if (mode === 'get') {
       const totalData = await store.getJSON(baseKey);
       const monthData = await store.getJSON(monthKey);
@@ -106,4 +135,3 @@ export const handler = async (event) => {
     return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(body) };
   }
 };
-

@@ -11,7 +11,7 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 - Authoring data: `_data/nets.yml` and `_data/ncos.yml`
 - Live JSON feeds (rendered at runtime):
   - Next + 7‑day: https://data.blindhams.network/next_nets.json
-  - NCO 12‑week: https://data.blindhams.net/bhn_nco_12w.json
+  - NCO 12‑week: https://data.blindhams.network/bhn_nco_12w.json
 - Client scripts: `assets/js/json-widgets.js`, `assets/js/time-view.js`, `assets/js/net-view.js`, `assets/js/home-week-filter.js`
 - Styles: `assets/css/extra.css`, `assets/css/nets.css`
 
@@ -54,3 +54,29 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 - docs/live-data-hydration.md — hydration behavior and formats
 - docs/nets-data.md — authoring nets + generator output spec
 
+---
+
+11) Dev‑Only Visit Counter (Netlify Blobs)
+- Purpose: A small page visit counter shown only on the `dev` branch deploys and local dev to avoid any credits usage in production.
+- Gating:
+  - `index.md` renders the counter only when `jekyll.environment == 'development'`.
+  - `netlify.toml` sets `JEKYLL_ENV=development` only for `[context."dev".environment]`. Production and Deploy Previews stay `production`.
+  - On `main`, the Site Stats section is removed entirely.
+- Namespacing:
+  - `index.md` sets `window.BHN_COUNTER_NS = 'dev'` in dev; `assets/js/visit-counter.js` appends `ns=dev` so dev data is isolated from any future prod usage.
+- Functions:
+  - Path: `netlify/functions/counter-home.js` (ESM).
+  - Uses `@netlify/blobs` with automatic Netlify Function runtime credentials; no UI toggle or tokens required.
+  - Store defaults: `STORE_NAME=counters`, `DEFAULT_KEY=home`, monthly bucket uses `COUNTER_TZ` (default `America/New_York`).
+  - Modes:
+    - `mode=inc`: increments total and month and returns counts.
+    - `mode=get`: returns counts without incrementing.
+    - `mode=list` (diag only): lists blob keys; supports `ns` or `key` prefix.
+    - `mode=purge` (diag only): deletes keys by prefix; requires `ns` or `key`.
+  - Diagnostics: add `diag=1` to include extra fields and enable list/purge.
+- Verify on dev Branch Deploy:
+  - List keys: `/.netlify/functions/counter-home?mode=list&diag=1&ns=dev`
+  - Get counts: `/.netlify/functions/counter-home?mode=get&diag=1&ns=dev&key=home`
+  - Increment: `/.netlify/functions/counter-home?mode=inc&diag=1&ns=dev`
+  - Purge: `/.netlify/functions/counter-home?mode=purge&diag=1&ns=dev`
+- Local testing: `bundle exec jekyll serve` shows the section but functions are not available; use `netlify dev` to run functions locally if needed.
