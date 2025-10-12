@@ -847,11 +847,16 @@
     const sections = document.querySelectorAll('.nets-section[data-next-net-json]');
     if (!sections.length) return;
     for (const section of sections) {
+      try {
       const SHOW_ABBR = String(section.dataset.tzShowAbbr || 'true') !== 'false';
       const SHOW_LABEL = String(section.dataset.tzShowLabel || 'true') !== 'false';
       if (DIAG) appendDiag(section, `Time-label config (category): label=${SHOW_LABEL ? 'on' : 'off'} abbr=${SHOW_ABBR ? 'on' : 'off'} · view=${TIME_VIEW} · utc=${SHOW_UTC ? 'on' : 'off'} · force=${section.dataset.tzForceIana ? section.dataset.tzForceIana : '—'}`);
       const url = section.getAttribute('data-next-net-json');
       if (!url) continue;
+      if (DIAG) {
+        const slots0 = section.querySelectorAll('.net-next-when[data-net-id]');
+        appendDiag(section, `Category init: slots=${slots0.length}`);
+      }
       const data = await fetchJSON(url);
       if (!data) {
         if (DIAG) appendDiag(section, 'Live data fetch failed for category nets.');
@@ -862,6 +867,7 @@
         if (DIAG) appendDiag(section, 'Live data loaded but no weekly array found (category nets).');
         continue;
       }
+      if (DIAG) appendDiag(section, `Category items loaded: ${arr.length}`);
       const now = new Date();
       const normId = (s) => {
         try {
@@ -1033,7 +1039,7 @@
         }
 
         if (DIAG) appendDiag(section, 'Category nets reordered chronologically.');
-      } catch (_) {}
+      } catch (e) { if (DIAG) appendDiag(section, `Category reorder error: ${String(e && e.message || e)}`); }
 
       // Compute a unified tz (if any) across ONLY the ids present in this section, or respect forced tz
       try {
@@ -1068,7 +1074,8 @@
           delete section.dataset.tzAbbr;
         }
         document.dispatchEvent(new CustomEvent('bhn:tzcontext-change'));
-      } catch (_) {}
+      } catch (e) { if (DIAG) appendDiag(section, `TZ context error: ${String(e && e.message || e)}`); }
+      } catch (outer) { if (DIAG) appendDiag(section, `Category block error: ${String(outer && outer.message || outer)}`); }
     }
   }
 

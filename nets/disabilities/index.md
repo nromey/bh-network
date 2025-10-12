@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Disability Related Nets
-permalink: /nets/disability/
+permalink: /nets/disabilities/
 ---
 
 This page highlights nets of interest to blind, low-vision, and disability communities.
