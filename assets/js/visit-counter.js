@@ -7,7 +7,11 @@
     var elMonth = document.getElementById('home-visit-month');
     var isDiag = (new URLSearchParams(location.search).get('diag') === '1');
 
-    var url = '/.netlify/functions/counter-home?mode=inc' + (isDiag ? '&diag=1' : '');
+    var ns = (typeof window !== 'undefined' && typeof window.BHN_COUNTER_NS === 'string' && window.BHN_COUNTER_NS) ? String(window.BHN_COUNTER_NS) : '';
+    var url = '/.netlify/functions/counter-home?mode=inc'
+      + (isDiag ? '&diag=1' : '')
+      + '&key=home'
+      + (ns ? '&ns=' + encodeURIComponent(ns) : '');
     fetch(url, { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {

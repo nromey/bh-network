@@ -1,7 +1,6 @@
 // Netlify Function: counter-home (Blobs-backed)
 // Increments or fetches a page view counter using Netlify Blobs.
 // No third-party calls; durable storage per site/environment.
-
 import { getStore } from '@netlify/blobs';
 
 // Configuration via env vars (optional):
@@ -38,22 +37,121 @@ export const handler = async (event) => {
     const ns = url.searchParams.get('ns');
     const keyParam = url.searchParams.get('key');
 
+    if (mode === 'env') {
+      if (!diag) {
+        return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'diag_required' }) };
+      }
+      const siteIdHeader = (event && event.headers && (event.headers['x-nf-site-id'] || event.headers['X-Nf-Site-Id'])) || null;
+      const blobsRaw = (event && event.blobs) ? String(event.blobs) : '';
+      const blobsDecoded = (() => {
+        try {
+          if (!blobsRaw) return null;
+          const buf = Buffer.from(blobsRaw, 'base64');
+          return JSON.parse(buf.toString('utf8'));
+        } catch (_) { return null; }
+      })();
+      const runtime = {
+        node: process.version,
+        netlify: !!process.env.NETLIFY,
+        blobs_context: !!process.env.NETLIFY_BLOBS_CONTEXT,
+        site_id_present: !!(process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID),
+        token_present: !!(process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN),
+        site_id_header_present: !!siteIdHeader,
+        event_blobs_present: !!blobsDecoded,
+        event_blobs_url_present: !!(blobsDecoded && blobsDecoded.url),
+      };
+      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ ok: true, runtime }) };
+    }
+
     // Prefer automatic Netlify runtime configuration. If Blobs is not
     // auto-configured for this site, allow manual credentials via env vars.
     // Provide both values or neither:
     //   BLOBS_SITE_ID (or NETLIFY_SITE_ID) and BLOBS_TOKEN
-    const siteID = process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID;
-    const token = process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN;
-    const store = (siteID && token)
-      ? getStore({ name: STORE_NAME, siteID, token })
-      : getStore({ name: STORE_NAME });
+    // Try multiple sources for siteID/token in order of preference.
+    // 1) Explicit env vars (BLOBS_* or NETLIFY_*)
+    // 2) Site ID from function header (x-nf-site-id)
+    // 3) Token from event.blobs (edge access payload), if present
+    const siteIdHeader = (event && event.headers && (event.headers['x-nf-site-id'] || event.headers['X-Nf-Site-Id'])) || undefined;
+    let siteID = process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID || siteIdHeader;
+    let apiToken = process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN; // Personal Access Token for API mode
+    let edgeData = null; // { url, token }
+    if (event && event.blobs) {
+      try {
+        const buf = Buffer.from(String(event.blobs), 'base64');
+        const data = JSON.parse(buf.toString('utf8'));
+        if (data && typeof data === 'object') edgeData = data;
+      } catch (_) { /* ignore */ }
+    }
+    // Choose best-available client:
+    // - Edge access if edgeData has url+token
+    // - API access if siteID + apiToken are present
+    // - Auto-binding fallback (may throw if no binding)
+    let store;
+    if (edgeData && edgeData.url && edgeData.token && siteID) {
+      store = getStore({ name: STORE_NAME, siteID, token: edgeData.token, edgeURL: edgeData.url });
+    } else if (siteID && apiToken) {
+      store = getStore({ name: STORE_NAME, siteID, token: apiToken });
+    } else {
+      store = getStore({ name: STORE_NAME });
+    }
     const baseKey = ns && keyParam ? `${ns}:${keyParam}` : (keyParam || DEFAULT_KEY);
     const ym = getYearMonth(COUNTER_TZ);
     const monthKey = `${baseKey}:${ym}`;
 
+    if (mode === 'list') {
+      if (!diag) {
+        return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'diag_required' }) };
+      }
+      const prefix = ns ? `${ns}:` : (keyParam ? String(keyParam) : '');
+      const keys = [];
+      try {
+        // Use paginate iterator to avoid cursor management differences across versions
+        for await (const entry of store.list({ paginate: true, prefix })) {
+          if (entry && Array.isArray(entry.blobs)) {
+            for (const b of entry.blobs) keys.push(b.key);
+          }
+        }
+      } catch (e) {
+        return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ list: [], count: 0, prefix, ym, tz: COUNTER_TZ, source: 'fallback', error: 'list_error', error_message: String(e && e.message || e) }) };
+      }
+      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ list: keys, count: keys.length, prefix, ym, tz: COUNTER_TZ, source: 'ok' }) };
+    }
+
+    if (mode === 'purge') {
+      if (!diag) {
+        return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'diag_required' }) };
+      }
+      // Safety guard: require either ns or key prefix to avoid wiping entire store accidentally.
+      const prefix = ns ? `${ns}:` : (keyParam ? String(keyParam) : '');
+      if (!prefix) {
+        return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'prefix_required', note: 'Provide ns=... or key=... to limit purge scope' }) };
+      }
+      const toDelete = [];
+      try {
+        for await (const entry of store.list({ paginate: true, prefix })) {
+          if (entry && Array.isArray(entry.blobs)) {
+            for (const b of entry.blobs) toDelete.push(b.key);
+            if (toDelete.length >= 5000) break;
+          }
+        }
+      } catch (e) {
+        return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ purged: 0, attempted: 0, prefix, ym, tz: COUNTER_TZ, source: 'fallback', error: 'list_error', error_message: String(e && e.message || e) }) };
+      }
+      let purged = 0;
+      for (const k of toDelete) {
+        try { await store.delete(k); purged++; } catch (_) { /* ignore */ }
+      }
+      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ purged, attempted: toDelete.length, prefix, ym, tz: COUNTER_TZ, source: 'ok' }) };
+    }
+
     if (mode === 'get') {
-      const totalData = await store.getJSON(baseKey);
-      const monthData = await store.getJSON(monthKey);
+      const readJSON = async (key) => {
+        try {
+          const res = await store.getWithMetadata(key, { type: 'json' });
+          return res && res.data ? res.data : null;
+        } catch (_) { return null; }
+      };
+      const [totalData, monthData] = await Promise.all([readJSON(baseKey), readJSON(monthKey)]);
       const total = totalData && typeof totalData.value === 'number' ? totalData.value : 0;
       const month = monthData && typeof monthData.value === 'number' ? monthData.value : 0;
       const body = { value: total, total, month, ym, tz: COUNTER_TZ, source: 'ok' };
@@ -63,9 +161,15 @@ export const handler = async (event) => {
     if (!(mode === 'hit' || mode === 'inc')) {
       return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'bad_mode' }) };
     }
+    const readJSON = async (key) => {
+      try {
+        const res = await store.getWithMetadata(key, { type: 'json' });
+        return res && res.data ? res.data : null;
+      } catch (_) { return null; }
+    };
     const [totalCurrent, monthCurrent] = await Promise.all([
-      store.getJSON(baseKey),
-      store.getJSON(monthKey),
+      readJSON(baseKey),
+      readJSON(monthKey),
     ]);
     let total = totalCurrent && typeof totalCurrent.value === 'number' ? totalCurrent.value : 0;
     let month = monthCurrent && typeof monthCurrent.value === 'number' ? monthCurrent.value : 0;
@@ -80,7 +184,17 @@ export const handler = async (event) => {
   } catch (err) {
     const tz = COUNTER_TZ;
     const ym = new Date().toISOString().slice(0, 7);
+    const runtime = {
+      node: process.version,
+      netlify: !!process.env.NETLIFY,
+      blobs_context: !!process.env.NETLIFY_BLOBS_CONTEXT,
+      site_id_present: !!(process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID),
+      token_present: !!(process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN),
+    };
     const body = { value: 0, total: 0, month: 0, ym, tz, source: 'fallback', error: 'server_error', error_message: String((err && err.message) || err) };
+    if (event && event.queryStringParameters && event.queryStringParameters.diag === '1') {
+      body.runtime = runtime;
+    }
     return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(body) };
   }
 };

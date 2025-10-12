@@ -1,5 +1,5 @@
 [build]
-  # Build Jekyll site; function deps installed by Functions Install Core plugin
+  # Netlify will run this to build your site
   command = "bundle exec jekyll build"
   # Jekyll outputs to _site by default
   publish = "_site"
@@ -26,3 +26,23 @@
 
 [[plugins]]
 package = "@netlify/plugin-functions-install-core"
+
+# Context-specific environment overrides
+[context.production.environment]
+  # Production site: keep counter hidden (index gated by jekyll.environment)
+  JEKYLL_ENV = "production"
+
+[context.deploy-preview.environment]
+  # Hide counter on Deploy Previews
+  JEKYLL_ENV = "production"
+
+[context."dev".environment]
+  # Enable counter only for the 'dev' branch deploys
+  JEKYLL_ENV = "development"
+
+[context."dev"]
+  # Override build command for dev branch to set correct site.url
+  command = "bundle exec jekyll build --config _config.yml,_config_dev.yml"
+
+# DevB branch: mirror dev settings so preview widgets (like the
+# Blobs-backed visit counter) are enabled and the dev site URL is used.
