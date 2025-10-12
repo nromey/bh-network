@@ -401,7 +401,7 @@
       }
 
       appendUpdatedAt(section, data);
-      if (DIAG) appendDiag(section, `Live data loaded. Picked Next Net: ${next.name || ''} (${next.category || ''}) at ${next.start_local_iso || ''}.`);
+      if (DIAG) appendDiag(section, `Live data loaded. Picked Next Net: ${next.name || ''} (${next.category || ''}) at ${getStartISO(next) || ''}.`);
 
       // Expose tz context for this section (for toggle labeling)
       const tzIana = next.time_zone || DEFAULT_TZ_IANA;
@@ -1078,6 +1078,11 @@
     enhanceNcoTable();
     // Category nets (BHN/Disability/General pages)
     enhanceCategoryNets();
+    // Run category enhancement again after toggles/layout settle
+    try {
+      setTimeout(enhanceCategoryNets, 500);
+      setTimeout(enhanceCategoryNets, 2000);
+    } catch (_) {}
 
   // Re-render on time view change
   document.addEventListener('bhn:timeview-change', () => {
