@@ -42,4 +42,9 @@ package = "@netlify/plugin-functions-install-core"
 
 [context."dev"]
   # Override build command for dev branch to set correct site.url
-  command = "bundle exec jekyll build --config _config.yml,_config_dev.yml"
+  # Ensure function deps are installed before bundling (belt-and-suspenders
+  # in case the functions install plugin doesn’t run in this context).
+  command = "npm --prefix netlify/functions ci || npm --prefix netlify/functions install && bundle exec jekyll build --config _config.yml,_config_dev.yml"
+
+# DevB branch: mirror dev settings so preview widgets (like the
+# Blobs-backed visit counter) are enabled and the dev site URL is used.
