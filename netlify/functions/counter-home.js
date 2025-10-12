@@ -105,15 +105,12 @@ export const handler = async (event) => {
       const prefix = ns ? `${ns}:` : (keyParam ? String(keyParam) : '');
       const keys = [];
       try {
-        let cursor = undefined;
-        do {
-          // list returns { blobs: [{ key, size, etag, uploadedAt }], cursor }
-          const res = await store.list({ prefix, cursor, limit: 100 });
-          if (res && Array.isArray(res.blobs)) {
-            for (const b of res.blobs) keys.push(b.key);
+        // Use paginate iterator to avoid cursor management differences across versions
+        for await (const entry of store.list({ paginate: true, prefix })) {
+          if (entry && Array.isArray(entry.blobs)) {
+            for (const b of entry.blobs) keys.push(b.key);
           }
-          cursor = res && res.cursor ? res.cursor : undefined;
-        } while (cursor && keys.length < 1000);
+        }
       } catch (e) {
         return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ list: [], count: 0, prefix, ym, tz: COUNTER_TZ, source: 'fallback', error: 'list_error', error_message: String(e && e.message || e) }) };
       }
@@ -131,14 +128,12 @@ export const handler = async (event) => {
       }
       const toDelete = [];
       try {
-        let cursor = undefined;
-        do {
-          const res = await store.list({ prefix, cursor, limit: 100 });
-          if (res && Array.isArray(res.blobs)) {
-            for (const b of res.blobs) toDelete.push(b.key);
+        for await (const entry of store.list({ paginate: true, prefix })) {
+          if (entry && Array.isArray(entry.blobs)) {
+            for (const b of entry.blobs) toDelete.push(b.key);
+            if (toDelete.length >= 5000) break;
           }
-          cursor = res && res.cursor ? res.cursor : undefined;
-        } while (cursor && toDelete.length < 5000);
+        }
       } catch (e) {
         return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ purged: 0, attempted: 0, prefix, ym, tz: COUNTER_TZ, source: 'fallback', error: 'list_error', error_message: String(e && e.message || e) }) };
       }
@@ -150,8 +145,13 @@ export const handler = async (event) => {
     }
 
     if (mode === 'get') {
-      const totalData = await store.getJSON(baseKey);
-      const monthData = await store.getJSON(monthKey);
+      const readJSON = async (key) => {
+        try {
+          const res = await store.getWithMetadata(key, { type: 'json' });
+          return res && res.data ? res.data : null;
+        } catch (_) { return null; }
+      };
+      const [totalData, monthData] = await Promise.all([readJSON(baseKey), readJSON(monthKey)]);
       const total = totalData && typeof totalData.value === 'number' ? totalData.value : 0;
       const month = monthData && typeof monthData.value === 'number' ? monthData.value : 0;
       const body = { value: total, total, month, ym, tz: COUNTER_TZ, source: 'ok' };
@@ -161,9 +161,15 @@ export const handler = async (event) => {
     if (!(mode === 'hit' || mode === 'inc')) {
       return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'bad_mode' }) };
     }
+    const readJSON = async (key) => {
+      try {
+        const res = await store.getWithMetadata(key, { type: 'json' });
+        return res && res.data ? res.data : null;
+      } catch (_) { return null; }
+    };
     const [totalCurrent, monthCurrent] = await Promise.all([
-      store.getJSON(baseKey),
-      store.getJSON(monthKey),
+      readJSON(baseKey),
+      readJSON(monthKey),
     ]);
     let total = totalCurrent && typeof totalCurrent.value === 'number' ? totalCurrent.value : 0;
     let month = monthCurrent && typeof monthCurrent.value === 'number' ? monthCurrent.value : 0;
