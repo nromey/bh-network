@@ -249,6 +249,18 @@
       if (!url) return;
       const data = await fetchJSON(url);
       if (!data) {
+        // Show a neutral fallback so we don't hang on the loading text
+        const card = section.querySelector('.next-net-card');
+        if (card) {
+          const title = card.querySelector('h3');
+          if (title) title.textContent = 'Live data unavailable';
+          const timeEl = card.querySelector('time');
+          if (timeEl) { timeEl.removeAttribute('datetime'); timeEl.textContent = '—'; }
+          const tzEl = card.querySelector('.next-net-tz');
+          if (tzEl) tzEl.textContent = '';
+          const dur = card.querySelector('.next-net-duration');
+          if (dur) dur.remove();
+        }
         if (DIAG) appendDiag(section, 'Live data fetch failed for Next Net.');
         return;
       }
