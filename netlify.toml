@@ -39,3 +39,7 @@ package = "@netlify/plugin-functions-install-core"
 [context."dev".environment]
   # Enable counter only for the 'dev' branch deploys
   JEKYLL_ENV = "development"
+
+[context."dev"]
+  # Override build command for dev branch to set correct site.url
+  command = "bundle exec jekyll build --config _config.yml,_config_dev.yml"

@@ -47,6 +47,11 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 - `bundle exec jekyll serve`; open `/?diag=1`.
 - Verify hydration, time toggle, headings/table toggle, and weekly filters.
 
+8.1) Branch Deploy URL config
+- `_config.yml` sets `url: https://www.blindhams.network` for production.
+- `_config_dev.yml` overrides `url: https://dev.blindhams.network`.
+- `netlify.toml` overrides the build command for the `dev` branch to use both configs: `bundle exec jekyll build --config _config.yml,_config_dev.yml`.
+
 9) Accessibility
 - Live status and toggles use `aria-live`; weekly table includes visible “(Live now!)” for SR table navigation.
 
