@@ -247,7 +247,13 @@
       if (DIAG) appendDiag(section, `Time-label config: label=${SHOW_LABEL ? 'on' : 'off'} abbr=${SHOW_ABBR ? 'on' : 'off'} · view=${TIME_VIEW} · utc=${SHOW_UTC ? 'on' : 'off'}`);
       const url = section.getAttribute('data-next-net-json');
       if (!url) return;
-      const data = await fetchJSON(url);
+      if (DIAG) appendDiag(section, `Fetching Next Net/Weekly from: ${url}`);
+      let data = await fetchJSON(url);
+      if (!data) {
+        const purl = '/.netlify/functions/proxy-next-nets?url=' + encodeURIComponent(url);
+        if (DIAG) appendDiag(section, `Next Net fallback: ${purl}`);
+        data = await fetchJSON(purl);
+      }
       if (!data) {
         // Show a neutral fallback so we don't hang on the loading text
         const card = section.querySelector('.next-net-card');
@@ -556,7 +562,13 @@
     sections.forEach(async (container) => {
       const url = container.getAttribute('data-next-net-json');
       if (!url) return;
-      const data = await fetchJSON(url);
+      if (DIAG) appendDiag(container, `Fetching Weekly list from: ${url}`);
+      let data = await fetchJSON(url);
+      if (!data) {
+        const purl = '/.netlify/functions/proxy-next-nets?url=' + encodeURIComponent(url);
+        if (DIAG) appendDiag(container, `Weekly list fallback: ${purl}`);
+        data = await fetchJSON(purl);
+      }
       if (!data) {
         // Visible fallback so the UI doesn't sit waiting
         const weekBlock = container.querySelector('#home-week-nets');
@@ -853,11 +865,17 @@
       if (DIAG) appendDiag(section, `Time-label config (category): label=${SHOW_LABEL ? 'on' : 'off'} abbr=${SHOW_ABBR ? 'on' : 'off'} · view=${TIME_VIEW} · utc=${SHOW_UTC ? 'on' : 'off'} · force=${section.dataset.tzForceIana ? section.dataset.tzForceIana : '—'}`);
       const url = section.getAttribute('data-next-net-json');
       if (!url) continue;
+      if (DIAG) appendDiag(section, `Fetching Category from: ${url}`);
       if (DIAG) {
         const slots0 = section.querySelectorAll('.net-next-when[data-net-id]');
         appendDiag(section, `Category init: slots=${slots0.length}`);
       }
-      const data = await fetchJSON(url);
+      let data = await fetchJSON(url);
+      if (!data) {
+        const purl = '/.netlify/functions/proxy-next-nets?url=' + encodeURIComponent(url);
+        if (DIAG) appendDiag(section, `Category fallback: ${purl}`);
+        data = await fetchJSON(purl);
+      }
       if (!data) {
         if (DIAG) appendDiag(section, 'Live data fetch failed for category nets.');
         continue;
