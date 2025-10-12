@@ -863,6 +863,17 @@
         continue;
       }
       const now = new Date();
+      const normId = (s) => {
+        try {
+          return String(s || '')
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/_/g, '-')
+            .replace(/[^a-z0-9-]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+        } catch (_) { return String(s || ''); }
+      };
       // Map to earliest upcoming occurrence per net id
       const nextById = new Map();
       // Map to most recent past occurrence per net id
@@ -874,12 +885,23 @@
         let t;
         try { t = new Date(siso).getTime(); } catch (_) { return; }
         if (!(Number.isFinite(t))) return;
+        const nid = normId(sid);
         if (t >= now.getTime()) {
-          const prev = nextById.get(sid);
-          if (!prev || new Date(getStartISO(occ)) < new Date(getStartISO(prev))) nextById.set(sid, occ);
+          const prevA = nextById.get(sid);
+          const prevB = nextById.get(nid);
+          const prev = prevA || prevB;
+          if (!prev || new Date(getStartISO(occ)) < new Date(getStartISO(prev))) {
+            nextById.set(sid, occ);
+            nextById.set(nid, occ);
+          }
         } else {
-          const prevP = lastPastById.get(sid);
-          if (!prevP || new Date(getStartISO(occ)) > new Date(getStartISO(prevP))) lastPastById.set(sid, occ);
+          const prevPA = lastPastById.get(sid);
+          const prevPB = lastPastById.get(nid);
+          const prevP = prevPA || prevPB;
+          if (!prevP || new Date(getStartISO(occ)) > new Date(getStartISO(prevP))) {
+            lastPastById.set(sid, occ);
+            lastPastById.set(nid, occ);
+          }
         }
       });
       const SHOW_ABBR_CAT = String(section.dataset.tzShowAbbr || 'true') !== 'false';
@@ -889,7 +911,7 @@
         const id = slot.getAttribute('data-net-id');
         if (!id) return;
         usedIds.add(id);
-        const occ = nextById.get(id);
+        const occ = nextById.get(id) || nextById.get(normId(id));
         if (!occ) { slot.textContent = ''; return; }
         const start = getStartISO(occ);
         const label = (() => {
@@ -925,8 +947,9 @@
       // Reorder category lists to start with upcoming, then circle back to recent past
       try {
         const getTimes = (id) => {
-          const occNext = nextById.get(id);
-          const occPast = lastPastById.get(id);
+          const nid = normId(id);
+          const occNext = nextById.get(id) || nextById.get(nid);
+          const occPast = lastPastById.get(id) || lastPastById.get(nid);
           let tNext = Number.POSITIVE_INFINITY;
           let tPast = Number.NEGATIVE_INFINITY;
           if (occNext) {
