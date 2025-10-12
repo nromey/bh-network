@@ -3,6 +3,12 @@
 // If fetch fails, the server-rendered Liquid output remains visible.
 
 (function () {
+  try {
+    if (typeof window !== 'undefined') {
+      if (window.BHN_JSON_WIDGETS_INIT) return;
+      window.BHN_JSON_WIDGETS_INIT = true;
+    }
+  } catch (_) {}
   const DEFAULT_TZ_IANA = 'America/New_York'; // BHN standard net time
   const cache = new Map();
   const DIAG = (() => {
@@ -1103,11 +1109,7 @@
     enhanceNcoTable();
     // Category nets (BHN/Disability/General pages)
     enhanceCategoryNets();
-    // Run category enhancement again after toggles/layout settle
-    try {
-      setTimeout(enhanceCategoryNets, 500);
-      setTimeout(enhanceCategoryNets, 2000);
-    } catch (_) {}
+    // If needed in the future we can re-run after layout settles.
 
   // Re-render on time view change
   document.addEventListener('bhn:timeview-change', () => {
