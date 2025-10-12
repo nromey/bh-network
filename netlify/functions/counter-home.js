@@ -41,12 +41,23 @@ export const handler = async (event) => {
       if (!diag) {
         return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'diag_required' }) };
       }
+      const siteIdHeader = (event && event.headers && (event.headers['x-nf-site-id'] || event.headers['X-Nf-Site-Id'])) || null;
+      const blobsRaw = (event && event.blobs) ? String(event.blobs) : '';
+      const blobsDecoded = (() => {
+        try {
+          if (!blobsRaw) return null;
+          const buf = Buffer.from(blobsRaw, 'base64');
+          return JSON.parse(buf.toString('utf8'));
+        } catch (_) { return null; }
+      })();
       const runtime = {
         node: process.version,
         netlify: !!process.env.NETLIFY,
         blobs_context: !!process.env.NETLIFY_BLOBS_CONTEXT,
         site_id_present: !!(process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID),
         token_present: !!(process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN),
+        site_id_header_present: !!siteIdHeader,
+        event_blobs_present: !!blobsDecoded,
       };
       return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ ok: true, runtime }) };
     }
@@ -55,8 +66,20 @@ export const handler = async (event) => {
     // auto-configured for this site, allow manual credentials via env vars.
     // Provide both values or neither:
     //   BLOBS_SITE_ID (or NETLIFY_SITE_ID) and BLOBS_TOKEN
-    const siteID = process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID;
-    const token = process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN;
+    // Try multiple sources for siteID/token in order of preference.
+    // 1) Explicit env vars (BLOBS_* or NETLIFY_*)
+    // 2) Site ID from function header (x-nf-site-id)
+    // 3) Token from event.blobs (edge access payload), if present
+    const siteIdHeader = (event && event.headers && (event.headers['x-nf-site-id'] || event.headers['X-Nf-Site-Id'])) || undefined;
+    let siteID = process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID || siteIdHeader;
+    let token = process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN;
+    if (!token && event && event.blobs) {
+      try {
+        const buf = Buffer.from(String(event.blobs), 'base64');
+        const data = JSON.parse(buf.toString('utf8'));
+        if (data && typeof data.token === 'string' && data.token) token = data.token;
+      } catch (_) { /* ignore */ }
+    }
     const store = (siteID && token)
       ? getStore({ name: STORE_NAME, siteID, token })
       : getStore({ name: STORE_NAME });
