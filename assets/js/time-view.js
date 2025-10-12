@@ -183,7 +183,8 @@
   }
 
   const initView = load();
-  apply(initView);
+  // Don't rebroadcast on initial load; hydration runs once separately
+  apply(initView, { silent: true });
 
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-time-button]');

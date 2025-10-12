@@ -3,29 +3,18 @@
 // If fetch fails, the server-rendered Liquid output remains visible.
 
 (function () {
+  try {
+    if (typeof window !== 'undefined') {
+      if (window.BHN_JSON_WIDGETS_INIT) return;
+      window.BHN_JSON_WIDGETS_INIT = true;
+    }
+  } catch (_) {}
   const DEFAULT_TZ_IANA = 'America/New_York'; // BHN standard net time
   const cache = new Map();
   const DIAG = (() => {
     try { return new URLSearchParams(location.search).get('diag') === '1'; }
     catch (_) { return false; }
   })();
-
-  function isLocalhost() {
-    try {
-      const h = location.hostname;
-      return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.localhost');
-    } catch (_) { return false; }
-  }
-
-  function localFallbackUrl(remoteUrl) {
-    try {
-      const u = new URL(remoteUrl);
-      const last = u.pathname.split('/').filter(Boolean).pop();
-      return `/assets/data/${last}`;
-    } catch (_) {
-      return '/assets/data/bhn_nco_12w.json';
-    }
-  }
 
   // Global time view: 'net' (event-local) or 'my' (viewer-local)
   let TIME_VIEW = 'net';
@@ -264,8 +253,26 @@
       if (DIAG) appendDiag(section, `Time-label config: label=${SHOW_LABEL ? 'on' : 'off'} abbr=${SHOW_ABBR ? 'on' : 'off'} · view=${TIME_VIEW} · utc=${SHOW_UTC ? 'on' : 'off'}`);
       const url = section.getAttribute('data-next-net-json');
       if (!url) return;
-      const data = await fetchJSON(url);
+      if (DIAG) appendDiag(section, `Fetching Next Net/Weekly from: ${url}`);
+      let data = await fetchJSON(url);
       if (!data) {
+        const purl = '/.netlify/functions/proxy-next-nets?url=' + encodeURIComponent(url);
+        if (DIAG) appendDiag(section, `Next Net fallback: ${purl}`);
+        data = await fetchJSON(purl);
+      }
+      if (!data) {
+        // Show a neutral fallback so we don't hang on the loading text
+        const card = section.querySelector('.next-net-card');
+        if (card) {
+          const title = card.querySelector('h3');
+          if (title) title.textContent = 'Live data unavailable';
+          const timeEl = card.querySelector('time');
+          if (timeEl) { timeEl.removeAttribute('datetime'); timeEl.textContent = '—'; }
+          const tzEl = card.querySelector('.next-net-tz');
+          if (tzEl) tzEl.textContent = '';
+          const dur = card.querySelector('.next-net-duration');
+          if (dur) dur.remove();
+        }
         if (DIAG) appendDiag(section, 'Live data fetch failed for Next Net.');
         return;
       }
@@ -381,7 +388,13 @@
       }
 
       const desc = card.querySelector('.next-net-description') || card.querySelector('h4 ~ p');
-      if (desc) desc.textContent = next.description || '';
+      if (desc) {
+        const meta = (typeof window !== 'undefined' && window.BHN_NET_META && window.BHN_NET_META.descriptions) ? window.BHN_NET_META.descriptions : null;
+        const descHTML = meta && next && next.id ? (meta[next.id] || '') : '';
+        if (next && next.description) desc.textContent = next.description;
+        else if (descHTML) desc.innerHTML = descHTML;
+        else desc.textContent = '';
+      }
 
       // Connections block (if present)
       const pConn = card.querySelector('.next-net-connections');
@@ -400,7 +413,7 @@
       }
 
       appendUpdatedAt(section, data);
-      if (DIAG) appendDiag(section, `Live data loaded. Picked Next Net: ${next.name || ''} (${next.category || ''}) at ${next.start_local_iso || ''}.`);
+      if (DIAG) appendDiag(section, `Live data loaded. Picked Next Net: ${next.name || ''} (${next.category || ''}) at ${getStartISO(next) || ''}.`);
 
       // Expose tz context for this section (for toggle labeling)
       const tzIana = next.time_zone || DEFAULT_TZ_IANA;
@@ -418,19 +431,10 @@
     containers.forEach(async (wrap) => {
       const url = wrap.getAttribute('data-nco-json');
       if (!url) return;
-      let data = await fetchJSON(url);
+      const data = await fetchJSON(url);
       if (!data) {
-        // Try local fallback during local development
-        if (isLocalhost()) {
-          const alt = localFallbackUrl(url);
-          if (DIAG) appendDiag(wrap, `Primary NCO fetch failed; trying local: ${alt}`);
-          data = await fetchJSON(alt);
-        }
-        if (!data) {
-          // Always inform users on failure; fall back to server-rendered rows
-          appendDiag(wrap, 'Could not load live NCO schedule; showing fallback.');
-          return;
-        }
+        if (DIAG) appendDiag(wrap, 'Live data fetch failed for NCO schedule.');
+        return;
       }
 
       const table = wrap.querySelector('table.nco-table');
@@ -440,10 +444,7 @@
       if (!tbody) return;
 
       const items = Array.isArray(data.items) ? data.items : [];
-      if (!items.length) {
-        appendDiag(wrap, 'Live NCO data loaded but contains no items; showing fallback.');
-        return;
-      }
+      if (!items.length) return;
 
       const timeLocal = data.time_local || null; // e.g., "10:00"
       const tzFull = data.tz_full || null;      // e.g., "Eastern"
@@ -461,12 +462,12 @@
 
       const rows = document.createDocumentFragment();
       items.forEach((r, idx) => {
-        const dateIso = (r.date || r.local_date || '');
+        const dateIso = r.date || '';
         const dateDisp = dateIso ? new Date(dateIso + 'T00:00:00').toLocaleDateString(undefined, {
           weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
         }) : '';
         const nco = (r.nco || r.operator || '').trim();
-        const notes = r.notes || r.note || '';
+        const notes = r.notes || '';
         const unassigned = !!(r.unassigned || !nco || nco.toUpperCase() === 'TBD');
 
         const tr = document.createElement('tr');
@@ -567,8 +568,22 @@
     sections.forEach(async (container) => {
       const url = container.getAttribute('data-next-net-json');
       if (!url) return;
-      const data = await fetchJSON(url);
+      if (DIAG) appendDiag(container, `Fetching Weekly list from: ${url}`);
+      let data = await fetchJSON(url);
       if (!data) {
+        const purl = '/.netlify/functions/proxy-next-nets?url=' + encodeURIComponent(url);
+        if (DIAG) appendDiag(container, `Weekly list fallback: ${purl}`);
+        data = await fetchJSON(purl);
+      }
+      if (!data) {
+        // Visible fallback so the UI doesn't sit waiting
+        const weekBlock = container.querySelector('#home-week-nets');
+        if (weekBlock) {
+          let p = weekBlock.querySelector('.week-fallback');
+          if (!p) { p = document.createElement('p'); p.className = 'week-fallback'; }
+          p.textContent = 'Live data unavailable for weekly list.';
+          weekBlock.appendChild(p);
+        }
         if (DIAG) appendDiag(container, 'Live data fetch failed for weekly list.');
         return;
       }
@@ -578,12 +593,24 @@
         return;
       }
 
+      // Build chronologically, but rotate so we start at the next
+      // upcoming occurrence and then circle back to recently past ones.
+      const allSorted = arr.slice().sort((a, b) => new Date(getStartISO(a)) - new Date(getStartISO(b)));
       const now = new Date();
-      const week = arr
-        .filter((o) => {
-          try { return new Date(getStartISO(o)) >= now; } catch (_) { return true; }
-        })
-        .sort((a, b) => new Date(getStartISO(a)) - new Date(getStartISO(b)));
+      let pivot = 0;
+      let foundFuture = false;
+      for (let i = 0; i < allSorted.length; i++) {
+        try {
+          if (new Date(getStartISO(allSorted[i])) >= now) { pivot = i; foundFuture = true; break; }
+        } catch (_) {}
+      }
+      let week;
+      if (foundFuture) {
+        week = allSorted.slice(pivot).concat(allSorted.slice(0, pivot));
+      } else {
+        // No future items in window: start from the most recent past (desc)
+        week = allSorted.slice().sort((a, b) => new Date(getStartISO(b)) - new Date(getStartISO(a)));
+      }
       const weekBlock = container.querySelector('#home-week-nets');
       if (!weekBlock) return;
 
@@ -620,7 +647,11 @@
         // Description
         const tdDesc = document.createElement('td');
         tdDesc.className = 'net-desc';
-        tdDesc.textContent = occ.description || '';
+        const meta = (typeof window !== 'undefined' && window.BHN_NET_META && window.BHN_NET_META.descriptions) ? window.BHN_NET_META.descriptions : null;
+        const descHTML = meta && occ && occ.id ? (meta[occ.id] || '') : '';
+        if (occ && occ.description) tdDesc.textContent = occ.description;
+        else if (descHTML) tdDesc.innerHTML = descHTML;
+        else tdDesc.textContent = '';
         tr.appendChild(tdDesc);
 
         // When
@@ -769,7 +800,11 @@
         art.appendChild(h5About);
         const desc = document.createElement('div');
         desc.className = 'week-net-description';
-        desc.textContent = occ.description || '';
+        const meta2 = (typeof window !== 'undefined' && window.BHN_NET_META && window.BHN_NET_META.descriptions) ? window.BHN_NET_META.descriptions : null;
+        const descHTML2 = meta2 && occ && occ.id ? (meta2[occ.id] || '') : '';
+        if (occ && occ.description) desc.textContent = occ.description;
+        else if (descHTML2) desc.innerHTML = descHTML2;
+        else desc.textContent = '';
         art.appendChild(desc);
 
         const h5Where = document.createElement('h5');
@@ -830,12 +865,23 @@
     const sections = document.querySelectorAll('.nets-section[data-next-net-json]');
     if (!sections.length) return;
     for (const section of sections) {
+      try {
       const SHOW_ABBR = String(section.dataset.tzShowAbbr || 'true') !== 'false';
       const SHOW_LABEL = String(section.dataset.tzShowLabel || 'true') !== 'false';
       if (DIAG) appendDiag(section, `Time-label config (category): label=${SHOW_LABEL ? 'on' : 'off'} abbr=${SHOW_ABBR ? 'on' : 'off'} · view=${TIME_VIEW} · utc=${SHOW_UTC ? 'on' : 'off'} · force=${section.dataset.tzForceIana ? section.dataset.tzForceIana : '—'}`);
       const url = section.getAttribute('data-next-net-json');
       if (!url) continue;
-      const data = await fetchJSON(url);
+      if (DIAG) appendDiag(section, `Fetching Category from: ${url}`);
+      if (DIAG) {
+        const slots0 = section.querySelectorAll('.net-next-when[data-net-id]');
+        appendDiag(section, `Category init: slots=${slots0.length}`);
+      }
+      let data = await fetchJSON(url);
+      if (!data) {
+        const purl = '/.netlify/functions/proxy-next-nets?url=' + encodeURIComponent(url);
+        if (DIAG) appendDiag(section, `Category fallback: ${purl}`);
+        data = await fetchJSON(purl);
+      }
       if (!data) {
         if (DIAG) appendDiag(section, 'Live data fetch failed for category nets.');
         continue;
@@ -845,15 +891,48 @@
         if (DIAG) appendDiag(section, 'Live data loaded but no weekly array found (category nets).');
         continue;
       }
+      if (DIAG) appendDiag(section, `Category items loaded: ${arr.length}`);
       const now = new Date();
-      const byId = new Map();
+      const normId = (s) => {
+        try {
+          return String(s || '')
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/_/g, '-')
+            .replace(/[^a-z0-9-]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+        } catch (_) { return String(s || ''); }
+      };
+      // Map to earliest upcoming occurrence per net id
+      const nextById = new Map();
+      // Map to most recent past occurrence per net id
+      const lastPastById = new Map();
       arr.forEach((occ) => {
         const sid = (occ && occ.id) || null;
         const siso = getStartISO(occ);
         if (!sid || !siso) return;
-        try { if (new Date(siso) < now) return; } catch (_) { return; }
-        const prev = byId.get(sid);
-        if (!prev || new Date(getStartISO(occ)) < new Date(getStartISO(prev))) byId.set(sid, occ);
+        let t;
+        try { t = new Date(siso).getTime(); } catch (_) { return; }
+        if (!(Number.isFinite(t))) return;
+        const nid = normId(sid);
+        if (t >= now.getTime()) {
+          const prevA = nextById.get(sid);
+          const prevB = nextById.get(nid);
+          const prev = prevA || prevB;
+          if (!prev || new Date(getStartISO(occ)) < new Date(getStartISO(prev))) {
+            nextById.set(sid, occ);
+            nextById.set(nid, occ);
+          }
+        } else {
+          const prevPA = lastPastById.get(sid);
+          const prevPB = lastPastById.get(nid);
+          const prevP = prevPA || prevPB;
+          if (!prevP || new Date(getStartISO(occ)) > new Date(getStartISO(prevP))) {
+            lastPastById.set(sid, occ);
+            lastPastById.set(nid, occ);
+          }
+        }
       });
       const SHOW_ABBR_CAT = String(section.dataset.tzShowAbbr || 'true') !== 'false';
       const SHOW_LABEL_CAT = String(section.dataset.tzShowLabel || 'true') !== 'false';
@@ -862,7 +941,7 @@
         const id = slot.getAttribute('data-net-id');
         if (!id) return;
         usedIds.add(id);
-        const occ = byId.get(id);
+        const occ = nextById.get(id) || nextById.get(normId(id));
         if (!occ) { slot.textContent = ''; return; }
         const start = getStartISO(occ);
         const label = (() => {
@@ -895,6 +974,97 @@
       });
       if (DIAG) appendDiag(section, 'Live data loaded. Category nets updated.');
 
+      // Reorder category lists to start with upcoming, then circle back to recent past
+      try {
+        const getTimes = (id) => {
+          const nid = normId(id);
+          const occNext = nextById.get(id) || nextById.get(nid);
+          const occPast = lastPastById.get(id) || lastPastById.get(nid);
+          let tNext = Number.POSITIVE_INFINITY;
+          let tPast = Number.NEGATIVE_INFINITY;
+          if (occNext) {
+            try { tNext = new Date(getStartISO(occNext)).getTime(); } catch (_) {}
+          }
+          if (occPast) {
+            try { tPast = new Date(getStartISO(occPast)).getTime(); } catch (_) {}
+          }
+          return { tNext, tPast };
+        };
+
+        // Table view rows
+        const tbody = section.querySelector('.view-table tbody');
+        if (tbody) {
+          const rows = Array.from(tbody.querySelectorAll('tr'));
+          const sorted = rows
+            .map((row, idx) => {
+              const slot = row.querySelector('.net-next-when[data-net-id]');
+              const id = slot ? slot.getAttribute('data-net-id') : '';
+              const ts = getTimes(id);
+              return { row, id, idx, tNext: ts.tNext, tPast: ts.tPast };
+            })
+            .sort((a, b) => {
+              const aHasNext = Number.isFinite(a.tNext) && a.tNext !== Number.POSITIVE_INFINITY;
+              const bHasNext = Number.isFinite(b.tNext) && b.tNext !== Number.POSITIVE_INFINITY;
+              if (aHasNext && bHasNext) return a.tNext - b.tNext;
+              if (aHasNext) return -1;
+              if (bHasNext) return 1;
+              // Neither has future: order by most recent past first
+              if (a.tPast !== b.tPast) return b.tPast - a.tPast;
+              return a.idx - b.idx;
+            });
+          sorted.forEach(({ row }) => tbody.appendChild(row));
+          if (DIAG) {
+            const diagList = document.createElement('p');
+            diagList.className = 'data-diag';
+            diagList.setAttribute('role','status');
+            const parts = sorted.map(({ id, tNext, tPast }) => {
+              const hasNext = Number.isFinite(tNext) && tNext !== Number.POSITIVE_INFINITY;
+              const t = hasNext ? new Date(tNext).toISOString() : (Number.isFinite(tPast) ? (new Date(tPast).toISOString() + ' (past)') : '—');
+              return id + ' → ' + t;
+            });
+            diagList.textContent = 'Order (table): ' + parts.join(' | ');
+            section.appendChild(diagList);
+          }
+        }
+
+        // Headings view articles
+        const headings = section.querySelector('.view-headings');
+        if (headings) {
+          const arts = Array.from(headings.querySelectorAll('.net-block'));
+          const sortedA = arts
+            .map((art, idx) => {
+              const slot = art.querySelector('.net-next-when[data-net-id]');
+              const id = slot ? slot.getAttribute('data-net-id') : '';
+              const ts = getTimes(id);
+              return { art, id, idx, tNext: ts.tNext, tPast: ts.tPast };
+            })
+            .sort((a, b) => {
+              const aHasNext = Number.isFinite(a.tNext) && a.tNext !== Number.POSITIVE_INFINITY;
+              const bHasNext = Number.isFinite(b.tNext) && b.tNext !== Number.POSITIVE_INFINITY;
+              if (aHasNext && bHasNext) return a.tNext - b.tNext;
+              if (aHasNext) return -1;
+              if (bHasNext) return 1;
+              if (a.tPast !== b.tPast) return b.tPast - a.tPast;
+              return a.idx - b.idx;
+            });
+          sortedA.forEach(({ art }) => headings.appendChild(art));
+          if (DIAG) {
+            const diagList = document.createElement('p');
+            diagList.className = 'data-diag';
+            diagList.setAttribute('role','status');
+            const parts = sortedA.map(({ id, tNext, tPast }) => {
+              const hasNext = Number.isFinite(tNext) && tNext !== Number.POSITIVE_INFINITY;
+              const t = hasNext ? new Date(tNext).toISOString() : (Number.isFinite(tPast) ? (new Date(tPast).toISOString() + ' (past)') : '—');
+              return id + ' → ' + t;
+            });
+            diagList.textContent = 'Order (headings): ' + parts.join(' | ');
+            section.appendChild(diagList);
+          }
+        }
+
+        if (DIAG) appendDiag(section, 'Category nets reordered chronologically.');
+      } catch (e) { if (DIAG) appendDiag(section, `Category reorder error: ${String(e && e.message || e)}`); }
+
       // Compute a unified tz (if any) across ONLY the ids present in this section, or respect forced tz
       try {
         const forceIana = section.dataset.tzForceIana || '';
@@ -909,7 +1079,7 @@
         const uniq = new Set();
         let sample = null;
         usedIds.forEach((id) => {
-          const occ = byId.get(id);
+          const occ = nextById.get(id) || lastPastById.get(id);
           const tz = (occ && occ.time_zone) || '';
           if (tz) {
             uniq.add(tz);
@@ -928,7 +1098,8 @@
           delete section.dataset.tzAbbr;
         }
         document.dispatchEvent(new CustomEvent('bhn:tzcontext-change'));
-      } catch (_) {}
+      } catch (e) { if (DIAG) appendDiag(section, `TZ context error: ${String(e && e.message || e)}`); }
+      } catch (outer) { if (DIAG) appendDiag(section, `Category block error: ${String(outer && outer.message || outer)}`); }
     }
   }
 
@@ -938,6 +1109,7 @@
     enhanceNcoTable();
     // Category nets (BHN/Disability/General pages)
     enhanceCategoryNets();
+    // If needed in the future we can re-run after layout settles.
 
   // Re-render on time view change
   document.addEventListener('bhn:timeview-change', () => {
