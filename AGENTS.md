@@ -18,7 +18,10 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 2) Hydration Model
 - Pages render a scaffold and hydrate from JSON when JS runs.
 - Supported shapes: legacy `week[]/start_local_iso` and current `items[]/start_iso(+end_iso)`.
-- NCO uses `items[]` with `{ date, nco, notes, unassigned }` (+ optional `time_local`, `tz_full`).
+- NCO uses `items[]` with `{ date, nco, notes, unassigned }`.
+  - Canonical: `date` (YYYY-MM-DD in the BHN net time zone), `notes`.
+  - Accepted aliases (back-compat): `local_date` for `date`, `note` for `notes`.
+  - Recommended top-level fields: `time_local` (HH:MM) and `tz_full` (e.g., "Eastern").
 - Diagnostics: add `?diag=1` to see SR-visible status lines.
 
 3) Time Handling
@@ -32,6 +35,7 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 
 5) JSON Output (Reference)
 - Prefer: `items[]` with `id,name,category,duration_min,start_iso(+offset),end_iso?,time_zone?`, `connections{}`; optional `next_net`, `updated_at`.
+  - NCO feed (12-week): `items[]` should include `date,nco,notes,unassigned`; also include top-level `time_local` and `tz_full` for display. Accept aliases `local_date`→`date`, `note`→`notes` during transition.
 - Backward compatible with `week[] + start_local_iso`.
 - See docs/live-data-hydration.md for details.
 
@@ -47,17 +51,6 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 - `bundle exec jekyll serve`; open `/?diag=1`.
 - Verify hydration, time toggle, headings/table toggle, and weekly filters.
 
-8.1) Branch Deploy URL config
-- `_config.yml` sets `url: https://www.blindhams.network` for production.
-- `_config_dev.yml` overrides `url: https://dev.blindhams.network`.
-- `netlify.toml` overrides the build command for the `dev` branch to use both configs: `bundle exec jekyll build --config _config.yml,_config_dev.yml`.
-
-8.2) Feature flags (widgets)
-- `site.widgets.visit_counter` gates the dev-only Site Stats block on the home page.
-  - `_config.yml`: `visit_counter: false` (production hidden)
-  - `_config_dev.yml`: `visit_counter: true` (dev visible)
-- When enabling in production, set `visit_counter: true` in `_config.yml` in the PR that merges the working code.
-
 9) Accessibility
 - Live status and toggles use `aria-live`; weekly table includes visible “(Live now!)” for SR table navigation.
 
@@ -65,29 +58,18 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 - docs/live-data-hydration.md — hydration behavior and formats
 - docs/nets-data.md — authoring nets + generator output spec
 
----
+11) Hydration & Sorting Updates (2025-10)
+- Weekly list ordering: starts at the next upcoming item, then wraps through remaining future items and finally shows recent past items within the feed window. Implemented in `assets/js/json-widgets.js`.
+- Category pages ordering: nets are ordered by their next upcoming occurrence (soonest → latest). Nets with no future occurrence in the window appear after, ordered by most recent past first. Robust ID normalization handles minor ID mismatches between YAML and the live feed.
+- Descriptions: when the live feed omits `description`, the UI hydrates description text from `_data/nets.yml` via a pre-rendered id→HTML map injected by `_includes/home_next_nets.html` and `_includes/next_net_card.html`.
+- Dev vs Prod data source:
+  - Dev (JEKYLL_ENV=development): `_includes/nets_page.html` points to `/.netlify/functions/proxy-next-nets` to avoid CORS on Branch Deploys.
+  - Fallback (all envs): if a direct fetch fails, `json-widgets.js` retries via `/.netlify/functions/proxy-next-nets?url=…`.
+- Time toggle initialization: `assets/js/time-view.js` applies the initial view silently (no initial `bhn:timeview-change` broadcast) to avoid duplicate hydration on load.
+- Script init guard: `assets/js/json-widgets.js` sets `window.BHN_JSON_WIDGETS_INIT` to prevent double-initialization when the script is included from multiple includes on the same page.
+- Diagnostics: with `?diag=1`, additional messages appear (fetch URLs, item counts, and computed ordering) to aid troubleshooting.
 
-11) Dev‑Only Visit Counter (Netlify Blobs)
-- Purpose: A small page visit counter shown only on the `dev` branch deploys and local dev to avoid any credits usage in production.
-- Gating:
-  - `index.md` renders the counter only when `jekyll.environment == 'development'`.
-  - `netlify.toml` sets `JEKYLL_ENV=development` only for `[context."dev".environment]`. Production and Deploy Previews stay `production`.
-  - On `main`, the Site Stats section is removed entirely.
-- Namespacing:
-  - `index.md` sets `window.BHN_COUNTER_NS = 'dev'` in dev; `assets/js/visit-counter.js` appends `ns=dev` so dev data is isolated from any future prod usage.
-- Functions:
-  - Path: `netlify/functions/counter-home.js` (ESM).
-  - Uses `@netlify/blobs` with automatic Netlify Function runtime credentials; no UI toggle or tokens required.
-  - Store defaults: `STORE_NAME=counters`, `DEFAULT_KEY=home`, monthly bucket uses `COUNTER_TZ` (default `America/New_York`).
-  - Modes:
-    - `mode=inc`: increments total and month and returns counts.
-    - `mode=get`: returns counts without incrementing.
-    - `mode=list` (diag only): lists blob keys; supports `ns` or `key` prefix.
-    - `mode=purge` (diag only): deletes keys by prefix; requires `ns` or `key`.
-  - Diagnostics: add `diag=1` to include extra fields and enable list/purge.
-- Verify on dev Branch Deploy:
-  - List keys: `/.netlify/functions/counter-home?mode=list&diag=1&ns=dev`
-  - Get counts: `/.netlify/functions/counter-home?mode=get&diag=1&ns=dev&key=home`
-  - Increment: `/.netlify/functions/counter-home?mode=inc&diag=1&ns=dev`
-  - Purge: `/.netlify/functions/counter-home?mode=purge&diag=1&ns=dev`
-- Local testing: `bundle exec jekyll serve` shows the section but functions are not available; use `netlify dev` to run functions locally if needed.
+12) Known Pages/Permalinks
+- Blind Hams: `/nets/blind-hams/`
+- Disabilities: `/nets/disabilities/` (permalink corrected from `/nets/disability/`)
+- General Interest: `/nets/general/`
