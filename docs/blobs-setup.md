@@ -1,7 +1,7 @@
-Netlify Blobs — Branch/Dev Setup
-================================
+Netlify Blobs — Visit Counter
+=============================
 
-This site ships a Netlify Function that uses Netlify Blobs for a simple visit counter: `/.netlify/functions/counter-home`. It is enabled only on development branch deploys (see `netlify.toml` contexts).
+This site ships a Netlify Function that uses Netlify Blobs for a simple visit counter: `/.netlify/functions/counter-home`. The widget is enabled on both main and dev. Dev uses a namespace so it does not mix with production totals.
 
 Quick checks
 - Verify function builds: open `/.netlify/functions/counter-home?mode=env&diag=1` on your deploy. You should see `netlify: true` and whether `blobs_context` is available.
@@ -19,8 +19,14 @@ Where to set variables
 - You can scope vars to specific branches. For example, add `NETLIFY_BLOBS_TOKEN` for branch `devb` if production already has Blobs auto‑binding.
 
 Branch contexts and the widget
-- `netlify.toml` includes contexts for `dev` and `devb`. Both set `JEKYLL_ENV=development` and build with `_config_dev.yml`, which enables the visit counter widget on the home page.
-- For other branches, add a matching `[context."branch".environment]` and command block if you want the widget and dev URL.
+- `netlify.toml` includes a `dev` context that builds with `_config_dev.yml`. The widget is on for both main and dev.
+- On dev only, `index.md` sets `window.BHN_COUNTER_NS = 'dev'`, so keys become `dev:home` and `dev:home:YYYY-MM`.
+- On main, no namespace is set; keys are `home` and `home:YYYY-MM`.
+
+Key format and reset
+- Keys: total → `home` (or `dev:home`), monthly → `home:YYYY-MM` (or `dev:home:YYYY-MM`).
+- Reset main: `/.netlify/functions/counter-home?mode=purge&diag=1&key=home`
+- Reset dev: `/.netlify/functions/counter-home?mode=purge&diag=1&ns=dev`
 
 Diagnostics endpoints
 - Env snapshot: `/.netlify/functions/counter-home?mode=env&diag=1`
@@ -30,6 +36,8 @@ Diagnostics endpoints
 
 Notes
 - Functions are bundled with `esbuild` so `@netlify/blobs` is included in the artifact; no extra install step is needed at runtime.
-- If you see build logs mentioning only “functions core,” that’s normal for the plugin. Lack of `blobs_context` is a runtime binding issue, not a bundling issue.
+- Runtime binding varies by context. The function supports these options automatically:
+  - Edge access: when the runtime provides `event.blobs` (url + token) and the `x-nf-site-id` header.
+  - API access: when `NETLIFY_SITE_ID` and `NETLIFY_BLOBS_TOKEN` are set.
+  - Auto-binding: when Netlify injects `NETLIFY_BLOBS_CONTEXT`.
 - The counter groups monthly tallies by the site time zone (`COUNTER_TZ`, default `America/New_York`).
-

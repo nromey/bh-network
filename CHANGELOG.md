@@ -14,6 +14,15 @@ All notable changes to this project are documented here.
   - No Ruby gems or third-party calls required; CountAPI was removed in favor of Netlify-native storage.
   - CQ Blind Hams page was not modified; if a counter appears live there, remove any Netlify “Snippet injection”.
 
+## 2025-10-12
+
+- Blobs counter stabilized and enabled on main
+  - Function now prefers Edge binding when available: uses `event.blobs` (edge URL + token) with `x-nf-site-id` header; falls back to API (`NETLIFY_SITE_ID` + `NETLIFY_BLOBS_TOKEN`) or auto-binding.
+  - Updated JSON reads for `@netlify/blobs` v10: replaced `getJSON` with `getWithMetadata(..., { type: 'json' })`.
+  - `list`/`purge` switched to the paginate iterator for compatibility across versions.
+  - Client always sends `key=home`; dev sets `ns=dev` so dev keys are isolated (`dev:home`, `dev:home:YYYY-MM`).
+  - Widget enabled on main (`_config.yml`), dev continues to namespace automatically.
+
 ## 2025-10-10
 
 - NCO hydration fixes and endpoint normalization

@@ -57,6 +57,7 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 10) Useful Links
 - docs/live-data-hydration.md — hydration behavior and formats
 - docs/nets-data.md — authoring nets + generator output spec
+ - docs/blobs-setup.md — Netlify Blobs visit counter, diagnostics, and reset
 
 11) Hydration & Sorting Updates (2025-10)
 - Weekly list ordering: starts at the next upcoming item, then wraps through remaining future items and finally shows recent past items within the feed window. Implemented in `assets/js/json-widgets.js`.
