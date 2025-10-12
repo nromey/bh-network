@@ -49,7 +49,7 @@ The **Blind Hams Digital Network** is a community built by and for blind and vis
 - Bored? Want to see something cool that took way too long to make but looks positively normal? Check the dynamically generated NCO rotation for our flagship Saturday morning net:
   **[The Blind Hams Digital Net — Nifty NER&trade;'s NCO Schedule](/nets/blind-hams/nco-schedule/)**
 
-{% if jekyll.environment == 'development' %}
+{% if site.widgets.visit_counter %}
 <section class="stats-section" role="region" aria-labelledby="site-stats-heading">
   <h2 id="site-stats-heading">Site Stats (dev only)</h2>
   <p class="visit-counter">

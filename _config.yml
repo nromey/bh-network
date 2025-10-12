@@ -39,6 +39,7 @@ header_pages:
 widgets:
   connect_banner: true
   news_preview: true
+  visit_counter: false
   
 include:
   - _redirects

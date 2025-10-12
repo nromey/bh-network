@@ -52,6 +52,12 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 - `_config_dev.yml` overrides `url: https://dev.blindhams.network`.
 - `netlify.toml` overrides the build command for the `dev` branch to use both configs: `bundle exec jekyll build --config _config.yml,_config_dev.yml`.
 
+8.2) Feature flags (widgets)
+- `site.widgets.visit_counter` gates the dev-only Site Stats block on the home page.
+  - `_config.yml`: `visit_counter: false` (production hidden)
+  - `_config_dev.yml`: `visit_counter: true` (dev visible)
+- When enabling in production, set `visit_counter: true` in `_config.yml` in the PR that merges the working code.
+
 9) Accessibility
 - Live status and toggles use `aria-live`; weekly table includes visible “(Live now!)” for SR table navigation.
 
