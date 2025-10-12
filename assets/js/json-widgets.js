@@ -983,6 +983,18 @@
               return a.idx - b.idx;
             });
           sorted.forEach(({ row }) => tbody.appendChild(row));
+          if (DIAG) {
+            const diagList = document.createElement('p');
+            diagList.className = 'data-diag';
+            diagList.setAttribute('role','status');
+            const parts = sorted.map(({ id, tNext, tPast }) => {
+              const hasNext = Number.isFinite(tNext) && tNext !== Number.POSITIVE_INFINITY;
+              const t = hasNext ? new Date(tNext).toISOString() : (Number.isFinite(tPast) ? (new Date(tPast).toISOString() + ' (past)') : '—');
+              return id + ' → ' + t;
+            });
+            diagList.textContent = 'Order (table): ' + parts.join(' | ');
+            section.appendChild(diagList);
+          }
         }
 
         // Headings view articles
@@ -1006,6 +1018,18 @@
               return a.idx - b.idx;
             });
           sortedA.forEach(({ art }) => headings.appendChild(art));
+          if (DIAG) {
+            const diagList = document.createElement('p');
+            diagList.className = 'data-diag';
+            diagList.setAttribute('role','status');
+            const parts = sortedA.map(({ id, tNext, tPast }) => {
+              const hasNext = Number.isFinite(tNext) && tNext !== Number.POSITIVE_INFINITY;
+              const t = hasNext ? new Date(tNext).toISOString() : (Number.isFinite(tPast) ? (new Date(tPast).toISOString() + ' (past)') : '—');
+              return id + ' → ' + t;
+            });
+            diagList.textContent = 'Order (headings): ' + parts.join(' | ');
+            section.appendChild(diagList);
+          }
         }
 
         if (DIAG) appendDiag(section, 'Category nets reordered chronologically.');
