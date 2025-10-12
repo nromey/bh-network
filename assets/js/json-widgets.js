@@ -1002,7 +1002,7 @@
         const uniq = new Set();
         let sample = null;
         usedIds.forEach((id) => {
-          const occ = byId.get(id);
+          const occ = nextById.get(id) || lastPastById.get(id);
           const tz = (occ && occ.time_zone) || '';
           if (tz) {
             uniq.add(tz);
