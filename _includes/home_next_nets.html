@@ -1,5 +1,9 @@
 {%- assign payload = site.data.next_net -%}
-{%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
+{%- if jekyll.environment == 'development' -%}
+  {%- assign json_src = "/.netlify/functions/proxy-next-nets" -%}
+{%- else -%}
+  {%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
+{%- endif -%}
 <section class="home-next-nets" aria-labelledby="next-net-heading" data-next-net-json="{{ json_src }}"
   data-tz-show-abbr="{%- if site.time_labels.show_abbr == false or site.time_labels.show_abbr == 'false' -%}false{%- elsif site.time_labels.show_abbr == true or site.time_labels.show_abbr == 'true' -%}true{%- else -%}true{%- endif -%}"
   data-tz-show-label="{%- if site.time_labels.show_label == false or site.time_labels.show_label == 'false' -%}false{%- elsif site.time_labels.show_label == true or site.time_labels.show_label == 'true' -%}true{%- else -%}true{%- endif -%}">
