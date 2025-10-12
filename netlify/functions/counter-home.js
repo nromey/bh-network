@@ -131,7 +131,30 @@ export const handler = async (event) => {
   } catch (err) {
     const tz = COUNTER_TZ;
     const ym = new Date().toISOString().slice(0, 7);
+    const runtime = {
+      node: process.version,
+      netlify: !!process.env.NETLIFY,
+      blobs_context: !!process.env.NETLIFY_BLOBS_CONTEXT,
+      site_id_present: !!(process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID),
+      token_present: !!(process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN),
+    };
     const body = { value: 0, total: 0, month: 0, ym, tz, source: 'fallback', error: 'server_error', error_message: String((err && err.message) || err) };
+    if (event && event.queryStringParameters && event.queryStringParameters.diag === '1') {
+      body.runtime = runtime;
+    }
     return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify(body) };
   }
 };
+    if (mode === 'env') {
+      if (!diag) {
+        return { statusCode: 400, headers: jsonHeaders, body: JSON.stringify({ error: 'diag_required' }) };
+      }
+      const runtime = {
+        node: process.version,
+        netlify: !!process.env.NETLIFY,
+        blobs_context: !!process.env.NETLIFY_BLOBS_CONTEXT,
+        site_id_present: !!(process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID),
+        token_present: !!(process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN),
+      };
+      return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ ok: true, runtime }) };
+    }
