@@ -1,6 +1,7 @@
 // Netlify Function: counter-home (Blobs-backed)
 // Increments or fetches a page view counter using Netlify Blobs.
 // No third-party calls; durable storage per site/environment.
+import { getStore } from '@netlify/blobs';
 
 // Configuration via env vars (optional):
 //   BLOBS_STORE: store name within Netlify Blobs (default: "counters")
@@ -30,10 +31,6 @@ function getYearMonth(tz) {
 
 export const handler = async (event) => {
   try {
-    // Lazy-load blobs SDK to avoid top-level import crashes
-    // if the runtime/bundler isn't ready. This allows us to return
-    // diagnostics instead of a 502 from a module load failure.
-    const { getStore } = await import('@netlify/blobs');
     const url = new URL(event.rawUrl || 'http://localhost');
     const mode = (url.searchParams.get('mode') || 'hit').toLowerCase();
     const diag = url.searchParams.get('diag') === '1';

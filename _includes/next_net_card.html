@@ -28,4 +28,22 @@
     <p>{%- if payload and payload.next_net -%}{{ payload.next_net.description }}{%- else -%}We’ll load details momentarily.{%- endif -%}</p>
   </article>
 </section>
+<script>
+  // Expose descriptions from `_data/nets.yml` for client hydration (used by the card)
+  (function(){
+    try {
+      var map = {
+        {%- assign first = true -%}
+        {%- for n in site.data.nets.nets -%}
+          {%- if n.description and n.id -%}
+            {%- if first -%}{%- assign first = false -%}{%- else -%},{%- endif -%}
+            {{ n.id | jsonify }}: {{ n.description | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip | jsonify }}
+          {%- endif -%}
+        {%- endfor -%}
+      };
+      window.BHN_NET_META = window.BHN_NET_META || {};
+      window.BHN_NET_META.descriptions = Object.assign({}, window.BHN_NET_META.descriptions || {}, map);
+    } catch (e) {}
+  })();
+  </script>
 <script defer src="{{ '/assets/js/json-widgets.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>

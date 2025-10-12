@@ -376,7 +376,13 @@
       }
 
       const desc = card.querySelector('.next-net-description') || card.querySelector('h4 ~ p');
-      if (desc) desc.textContent = next.description || '';
+      if (desc) {
+        const meta = (typeof window !== 'undefined' && window.BHN_NET_META && window.BHN_NET_META.descriptions) ? window.BHN_NET_META.descriptions : null;
+        const descHTML = meta && next && next.id ? (meta[next.id] || '') : '';
+        if (next && next.description) desc.textContent = next.description;
+        else if (descHTML) desc.innerHTML = descHTML;
+        else desc.textContent = '';
+      }
 
       // Connections block (if present)
       const pConn = card.querySelector('.next-net-connections');
@@ -569,12 +575,24 @@
         return;
       }
 
+      // Build chronologically, but rotate so we start at the next
+      // upcoming occurrence and then circle back to recently past ones.
+      const allSorted = arr.slice().sort((a, b) => new Date(getStartISO(a)) - new Date(getStartISO(b)));
       const now = new Date();
-      const week = arr
-        .filter((o) => {
-          try { return new Date(getStartISO(o)) >= now; } catch (_) { return true; }
-        })
-        .sort((a, b) => new Date(getStartISO(a)) - new Date(getStartISO(b)));
+      let pivot = 0;
+      let foundFuture = false;
+      for (let i = 0; i < allSorted.length; i++) {
+        try {
+          if (new Date(getStartISO(allSorted[i])) >= now) { pivot = i; foundFuture = true; break; }
+        } catch (_) {}
+      }
+      let week;
+      if (foundFuture) {
+        week = allSorted.slice(pivot).concat(allSorted.slice(0, pivot));
+      } else {
+        // No future items in window: start from the most recent past (desc)
+        week = allSorted.slice().sort((a, b) => new Date(getStartISO(b)) - new Date(getStartISO(a)));
+      }
       const weekBlock = container.querySelector('#home-week-nets');
       if (!weekBlock) return;
 
@@ -611,7 +629,11 @@
         // Description
         const tdDesc = document.createElement('td');
         tdDesc.className = 'net-desc';
-        tdDesc.textContent = occ.description || '';
+        const meta = (typeof window !== 'undefined' && window.BHN_NET_META && window.BHN_NET_META.descriptions) ? window.BHN_NET_META.descriptions : null;
+        const descHTML = meta && occ && occ.id ? (meta[occ.id] || '') : '';
+        if (occ && occ.description) tdDesc.textContent = occ.description;
+        else if (descHTML) tdDesc.innerHTML = descHTML;
+        else tdDesc.textContent = '';
         tr.appendChild(tdDesc);
 
         // When
@@ -760,7 +782,11 @@
         art.appendChild(h5About);
         const desc = document.createElement('div');
         desc.className = 'week-net-description';
-        desc.textContent = occ.description || '';
+        const meta2 = (typeof window !== 'undefined' && window.BHN_NET_META && window.BHN_NET_META.descriptions) ? window.BHN_NET_META.descriptions : null;
+        const descHTML2 = meta2 && occ && occ.id ? (meta2[occ.id] || '') : '';
+        if (occ && occ.description) desc.textContent = occ.description;
+        else if (descHTML2) desc.innerHTML = descHTML2;
+        else desc.textContent = '';
         art.appendChild(desc);
 
         const h5Where = document.createElement('h5');
@@ -837,14 +863,24 @@
         continue;
       }
       const now = new Date();
-      const byId = new Map();
+      // Map to earliest upcoming occurrence per net id
+      const nextById = new Map();
+      // Map to most recent past occurrence per net id
+      const lastPastById = new Map();
       arr.forEach((occ) => {
         const sid = (occ && occ.id) || null;
         const siso = getStartISO(occ);
         if (!sid || !siso) return;
-        try { if (new Date(siso) < now) return; } catch (_) { return; }
-        const prev = byId.get(sid);
-        if (!prev || new Date(getStartISO(occ)) < new Date(getStartISO(prev))) byId.set(sid, occ);
+        let t;
+        try { t = new Date(siso).getTime(); } catch (_) { return; }
+        if (!(Number.isFinite(t))) return;
+        if (t >= now.getTime()) {
+          const prev = nextById.get(sid);
+          if (!prev || new Date(getStartISO(occ)) < new Date(getStartISO(prev))) nextById.set(sid, occ);
+        } else {
+          const prevP = lastPastById.get(sid);
+          if (!prevP || new Date(getStartISO(occ)) > new Date(getStartISO(prevP))) lastPastById.set(sid, occ);
+        }
       });
       const SHOW_ABBR_CAT = String(section.dataset.tzShowAbbr || 'true') !== 'false';
       const SHOW_LABEL_CAT = String(section.dataset.tzShowLabel || 'true') !== 'false';
@@ -853,7 +889,7 @@
         const id = slot.getAttribute('data-net-id');
         if (!id) return;
         usedIds.add(id);
-        const occ = byId.get(id);
+        const occ = nextById.get(id);
         if (!occ) { slot.textContent = ''; return; }
         const start = getStartISO(occ);
         const label = (() => {
@@ -885,6 +921,72 @@
         }
       });
       if (DIAG) appendDiag(section, 'Live data loaded. Category nets updated.');
+
+      // Reorder category lists to start with upcoming, then circle back to recent past
+      try {
+        const getTimes = (id) => {
+          const occNext = nextById.get(id);
+          const occPast = lastPastById.get(id);
+          let tNext = Number.POSITIVE_INFINITY;
+          let tPast = Number.NEGATIVE_INFINITY;
+          if (occNext) {
+            try { tNext = new Date(getStartISO(occNext)).getTime(); } catch (_) {}
+          }
+          if (occPast) {
+            try { tPast = new Date(getStartISO(occPast)).getTime(); } catch (_) {}
+          }
+          return { tNext, tPast };
+        };
+
+        // Table view rows
+        const tbody = section.querySelector('.view-table tbody');
+        if (tbody) {
+          const rows = Array.from(tbody.querySelectorAll('tr'));
+          const sorted = rows
+            .map((row, idx) => {
+              const slot = row.querySelector('.net-next-when[data-net-id]');
+              const id = slot ? slot.getAttribute('data-net-id') : '';
+              const ts = getTimes(id);
+              return { row, id, idx, tNext: ts.tNext, tPast: ts.tPast };
+            })
+            .sort((a, b) => {
+              const aHasNext = Number.isFinite(a.tNext) && a.tNext !== Number.POSITIVE_INFINITY;
+              const bHasNext = Number.isFinite(b.tNext) && b.tNext !== Number.POSITIVE_INFINITY;
+              if (aHasNext && bHasNext) return a.tNext - b.tNext;
+              if (aHasNext) return -1;
+              if (bHasNext) return 1;
+              // Neither has future: order by most recent past first
+              if (a.tPast !== b.tPast) return b.tPast - a.tPast;
+              return a.idx - b.idx;
+            });
+          sorted.forEach(({ row }) => tbody.appendChild(row));
+        }
+
+        // Headings view articles
+        const headings = section.querySelector('.view-headings');
+        if (headings) {
+          const arts = Array.from(headings.querySelectorAll('.net-block'));
+          const sortedA = arts
+            .map((art, idx) => {
+              const slot = art.querySelector('.net-next-when[data-net-id]');
+              const id = slot ? slot.getAttribute('data-net-id') : '';
+              const ts = getTimes(id);
+              return { art, id, idx, tNext: ts.tNext, tPast: ts.tPast };
+            })
+            .sort((a, b) => {
+              const aHasNext = Number.isFinite(a.tNext) && a.tNext !== Number.POSITIVE_INFINITY;
+              const bHasNext = Number.isFinite(b.tNext) && b.tNext !== Number.POSITIVE_INFINITY;
+              if (aHasNext && bHasNext) return a.tNext - b.tNext;
+              if (aHasNext) return -1;
+              if (bHasNext) return 1;
+              if (a.tPast !== b.tPast) return b.tPast - a.tPast;
+              return a.idx - b.idx;
+            });
+          sortedA.forEach(({ art }) => headings.appendChild(art));
+        }
+
+        if (DIAG) appendDiag(section, 'Category nets reordered chronologically.');
+      } catch (_) {}
 
       // Compute a unified tz (if any) across ONLY the ids present in this section, or respect forced tz
       try {
