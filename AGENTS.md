@@ -57,3 +57,19 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 10) Useful Links
 - docs/live-data-hydration.md — hydration behavior and formats
 - docs/nets-data.md — authoring nets + generator output spec
+
+11) Hydration & Sorting Updates (2025-10)
+- Weekly list ordering: starts at the next upcoming item, then wraps through remaining future items and finally shows recent past items within the feed window. Implemented in `assets/js/json-widgets.js`.
+- Category pages ordering: nets are ordered by their next upcoming occurrence (soonest → latest). Nets with no future occurrence in the window appear after, ordered by most recent past first. Robust ID normalization handles minor ID mismatches between YAML and the live feed.
+- Descriptions: when the live feed omits `description`, the UI hydrates description text from `_data/nets.yml` via a pre-rendered id→HTML map injected by `_includes/home_next_nets.html` and `_includes/next_net_card.html`.
+- Dev vs Prod data source:
+  - Dev (JEKYLL_ENV=development): `_includes/nets_page.html` points to `/.netlify/functions/proxy-next-nets` to avoid CORS on Branch Deploys.
+  - Fallback (all envs): if a direct fetch fails, `json-widgets.js` retries via `/.netlify/functions/proxy-next-nets?url=…`.
+- Time toggle initialization: `assets/js/time-view.js` applies the initial view silently (no initial `bhn:timeview-change` broadcast) to avoid duplicate hydration on load.
+- Script init guard: `assets/js/json-widgets.js` sets `window.BHN_JSON_WIDGETS_INIT` to prevent double-initialization when the script is included from multiple includes on the same page.
+- Diagnostics: with `?diag=1`, additional messages appear (fetch URLs, item counts, and computed ordering) to aid troubleshooting.
+
+12) Known Pages/Permalinks
+- Blind Hams: `/nets/blind-hams/`
+- Disabilities: `/nets/disabilities/` (permalink corrected from `/nets/disability/`)
+- General Interest: `/nets/general/`
