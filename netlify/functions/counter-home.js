@@ -58,6 +58,7 @@ export const handler = async (event) => {
         token_present: !!(process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN),
         site_id_header_present: !!siteIdHeader,
         event_blobs_present: !!blobsDecoded,
+        event_blobs_url_present: !!(blobsDecoded && blobsDecoded.url),
       };
       return { statusCode: 200, headers: jsonHeaders, body: JSON.stringify({ ok: true, runtime }) };
     }
@@ -72,17 +73,27 @@ export const handler = async (event) => {
     // 3) Token from event.blobs (edge access payload), if present
     const siteIdHeader = (event && event.headers && (event.headers['x-nf-site-id'] || event.headers['X-Nf-Site-Id'])) || undefined;
     let siteID = process.env.BLOBS_SITE_ID || process.env.NETLIFY_SITE_ID || siteIdHeader;
-    let token = process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN;
-    if (!token && event && event.blobs) {
+    let apiToken = process.env.BLOBS_TOKEN || process.env.NETLIFY_BLOBS_TOKEN; // Personal Access Token for API mode
+    let edgeData = null; // { url, token }
+    if (event && event.blobs) {
       try {
         const buf = Buffer.from(String(event.blobs), 'base64');
         const data = JSON.parse(buf.toString('utf8'));
-        if (data && typeof data.token === 'string' && data.token) token = data.token;
+        if (data && typeof data === 'object') edgeData = data;
       } catch (_) { /* ignore */ }
     }
-    const store = (siteID && token)
-      ? getStore({ name: STORE_NAME, siteID, token })
-      : getStore({ name: STORE_NAME });
+    // Choose best-available client:
+    // - Edge access if edgeData has url+token
+    // - API access if siteID + apiToken are present
+    // - Auto-binding fallback (may throw if no binding)
+    let store;
+    if (edgeData && edgeData.url && edgeData.token && siteID) {
+      store = getStore({ name: STORE_NAME, siteID, token: edgeData.token, edgeURL: edgeData.url });
+    } else if (siteID && apiToken) {
+      store = getStore({ name: STORE_NAME, siteID, token: apiToken });
+    } else {
+      store = getStore({ name: STORE_NAME });
+    }
     const baseKey = ns && keyParam ? `${ns}:${keyParam}` : (keyParam || DEFAULT_KEY);
     const ym = getYearMonth(COUNTER_TZ);
     const monthKey = `${baseKey}:${ym}`;
