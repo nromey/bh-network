@@ -552,6 +552,14 @@
       if (!url) return;
       const data = await fetchJSON(url);
       if (!data) {
+        // Visible fallback so the UI doesn't sit waiting
+        const weekBlock = container.querySelector('#home-week-nets');
+        if (weekBlock) {
+          let p = weekBlock.querySelector('.week-fallback');
+          if (!p) { p = document.createElement('p'); p.className = 'week-fallback'; }
+          p.textContent = 'Live data unavailable for weekly list.';
+          weekBlock.appendChild(p);
+        }
         if (DIAG) appendDiag(container, 'Live data fetch failed for weekly list.');
         return;
       }
