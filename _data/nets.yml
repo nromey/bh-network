@@ -76,7 +76,7 @@ nets:
     start_local: "12:00"     # 12:00 PM ET
     duration_min: 90
     rrule: "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"
-    allstar: "473760 (backup 473761)"
+    allstar: "473670"
     echolink: "N0BVE-L"
 
   - id: handi-hams-trivia
@@ -86,9 +86,9 @@ nets:
     start_local: "20:00"     # 8:00 PM ET (Wed)
     duration_min: 90
     rrule: "FREQ=WEEKLY;BYDAY=WE"
-    allstar: "473760 (backup 473761)"
+    allstar: "473670"
     echolink: "N0BVE-L"
-
+    
   - id: sfarc-coffee-break
     category: "general"
     name: "Sierra Foothills ARC Coffee Break Net"
