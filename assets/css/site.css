@@ -1,12 +1,13 @@
 .last-built {
   font-size: 0.8rem;
-  color: #666;
+  color: #aaa; /* ensure contrast against dark page background */
   text-align: center;
   margin-top: 1rem;
 }
 /* --- NCO table highlights & helpers --- */
 .nco-table tr.nco-unassigned {
   background: #fff3bf;            /* soft yellow */
+  color: #111;                    /* ensure legible text on light highlight */
 }
 .nco-table tr.nco-unassigned td {
   border-top: 1px solid #f1d98a;
@@ -46,5 +47,5 @@
 .connect-table { width: 100%; border-collapse: collapse; }
 .connect-table caption { text-align: left; font-weight: 600; margin-bottom: .4rem; }
 .connect-table th, .connect-table td { border: 1px solid #c9def3; padding: .5rem .6rem; vertical-align: top; }
-.connect-table thead th { background: #dbeaf8; }
-.connect-table tbody tr:nth-child(odd) td { background: #f6fbff; }
+.connect-table thead th { background: #dbeaf8; color: #111; }
+.connect-table tbody tr:nth-child(odd) td { background: #f6fbff; color: #111; }
