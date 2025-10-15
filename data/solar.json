@@ -1,0 +1,135 @@
+{
+  "updated": "2025-10-15T03:17:01.568103Z",
+  "ttl_seconds": 600,
+  "stale_minutes": 1637,
+  "sources": [
+    {
+      "id": "f10_7",
+      "url": "https://services.swpc.noaa.gov/json/f107_cm_flux.json"
+    },
+    {
+      "id": "kp",
+      "url": "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json"
+    },
+    {
+      "id": "boulder_k",
+      "url": "https://services.swpc.noaa.gov/json/boulder_k_index_1m.json"
+    },
+    {
+      "id": "solar_wind",
+      "url": "https://services.swpc.noaa.gov/json/ace/swepam/ace_swepam_1h.json"
+    },
+    {
+      "id": "xray",
+      "url": "https://services.swpc.noaa.gov/json/goes/primary/xrays-1-day.json"
+    },
+    {
+      "id": "sunspot",
+      "url": "https://services.swpc.noaa.gov/text/daily-solar-indices.txt"
+    },
+    {
+      "id": "flare_probs",
+      "url": "https://services.swpc.noaa.gov/json/solar_probabilities.json"
+    }
+  ],
+  "now": {
+    "sfi": {
+      "value": 156.0,
+      "ninety_day_mean": null,
+      "schedule": "Afternoon",
+      "source": "SWPC f107_cm_flux.json",
+      "time_tag": "2025-10-14T22:00:00Z"
+    },
+    "k_index": {
+      "value": 1.3333333333333333,
+      "kp_index": 1,
+      "kp_code": "1P",
+      "ap": 5,
+      "source": "SWPC planetary_k_index_1m.json",
+      "time_tag": "2025-10-15T03:13:00Z"
+    },
+    "a_index": 5,
+    "mid_latitude_k_index": {
+      "value": null,
+      "kp_index": null,
+      "kp_code": null,
+      "ap": null,
+      "source": "SWPC boulder_k_index_1m.json",
+      "time_tag": "2025-10-15T03:10:00Z"
+    },
+    "xray": {
+      "flux_wm2": 5.6910507737484295e-06,
+      "classification": "C5.7",
+      "energy": "0.1-0.8nm",
+      "satellite": 18,
+      "source": "SWPC goes/primary/xrays-1-day.json",
+      "secondary": {
+        "flux_wm2": 4.032720255509048e-07,
+        "classification": "B4.0",
+        "energy": "0.05-0.4nm",
+        "satellite": 18,
+        "time_tag": "2025-10-15T03:14:00Z"
+      },
+      "time_tag": "2025-10-15T03:14:00Z"
+    },
+    "solar_wind": {
+      "speed_kms": 549.0,
+      "density": 2.282,
+      "temperature": 151499.0,
+      "spacecraft": "ACE",
+      "quality_flag": 0,
+      "source": "SWPC ace_swepam_1h.json",
+      "time_tag": "2025-10-15T01:00:00Z"
+    },
+    "sunspot": {
+      "number": 108,
+      "area_10e6": 720,
+      "new_regions": 1,
+      "observation_date": "2025-10-14",
+      "source": "SWPC daily-solar-indices.txt"
+    },
+    "noise": {
+      "planetary": {
+        "s_units": 0,
+        "description": "Baseline noise floor",
+        "k_value": 1.3333333333333333
+      }
+    }
+  },
+  "forecast": {
+    "flare_probability": {
+      "c_class": {
+        "day1": 99,
+        "day2": 99,
+        "day3": 99
+      },
+      "m_class": {
+        "day1": 55,
+        "day2": 55,
+        "day3": 55
+      },
+      "x_class": {
+        "day1": 15,
+        "day2": 15,
+        "day3": 15
+      },
+      "proton_10mev": {
+        "day1": 10,
+        "day2": 10,
+        "day3": 10
+      },
+      "polar_cap_absorption": "green",
+      "source": "SWPC solar_probabilities.json",
+      "generated": "2025-10-14T00:00:00Z"
+    }
+  },
+  "diagnostics": {
+    "sfi_updated": "2025-10-14T22:00:00Z",
+    "kp_updated": "2025-10-15T03:13:00Z",
+    "mid_k_updated": "2025-10-15T03:10:00Z",
+    "solar_wind_updated": "2025-10-15T01:00:00Z",
+    "xray_updated": "2025-10-15T03:14:00Z",
+    "sunspot_updated": "2025-10-14T00:00:00Z",
+    "flare_probs_updated": "2025-10-14T00:00:00Z"
+  }
+}

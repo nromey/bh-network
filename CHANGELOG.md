@@ -2,6 +2,54 @@
 
 All notable changes to this project are documented here.
 
+## 2025-10-15
+
+- Solar snapshot and dashboard scaffolding
+  - Added `_includes/home_solar_card.html` and `assets/js/solar-card.js` to hydrate live solar indices with accessible headings/table views, a persistent hide toggle, time-view integration, and `?diag=1` diagnostics.
+  - Updated `index.md` and `assets/css/extra.css` so the home page surfaces the solar card with high-contrast styling alongside the nets widgets.
+  - Created the `/solar/` landing page plus plain-language reference pages for SFI, Kp/Ap, sunspots, X-ray flux, solar wind, and flare forecasts to backstop the new card.
+
+- Data utilities and sample payloads
+  - Added `scripts/build_solar_json.py` to fetch NOAA SWPC feeds (SFI, global & Boulder K, solar wind, X-ray, sunspot, flare probabilities) and emit `data/solar.json` plus a text-to-speech summary.
+  - Seeded `data/solar.json`, `data/solar_voice.txt`, and `solar/voice_report.txt` as development fixtures until the automated cron/hosting pipeline is wired up.
+  - Checked in `netlify/functions/manifest.json` stub to quiet Netlify CLI warnings while iterating on future serverless hooks.
+
+## 2025-10-11
+
+- Home page stats counter (Netlify Functions + Blobs)
+  - Added a serverless function `netlify/functions/counter-home.js` backed by Netlify Blobs that tracks both total visits and a month bucket (YYYY-MM in `COUNTER_TZ`, default `America/New_York`).
+  - New client helper `assets/js/visit-counter.js` updates a concise “Site Stats” section near the bottom of the home page (`index.md`).
+  - Display: “Home visits: X • This month: Y”. The section is a landmark region for easy skipping, and is static (no live announcements).
+  - Config: `netlify.toml` declares `[functions] directory = "netlify/functions"` and uses `esbuild`; function `package.json` depends on `@netlify/blobs` and sets `"type":"module"`.
+  - Fix: Converted functions to ESM and switched bundler to `esbuild` to resolve `@netlify/blobs` ESM/CJS errors.
+  - Fallback config: When Blobs isn’t auto‑configured for the site, the function can use manual credentials via env vars: set `BLOBS_TOKEN` (RW) and optionally `BLOBS_SITE_ID` (or rely on `NETLIFY_SITE_ID`).
+  - No Ruby gems or third-party calls required; CountAPI was removed in favor of Netlify-native storage.
+  - CQ Blind Hams page was not modified; if a counter appears live there, remove any Netlify “Snippet injection”.
+
+## 2025-10-12
+
+- Blobs counter stabilized and enabled on main
+  - Function now prefers Edge binding when available: uses `event.blobs` (edge URL + token) with `x-nf-site-id` header; falls back to API (`NETLIFY_SITE_ID` + `NETLIFY_BLOBS_TOKEN`) or auto-binding.
+  - Updated JSON reads for `@netlify/blobs` v10: replaced `getJSON` with `getWithMetadata(..., { type: 'json' })`.
+  - `list`/`purge` switched to the paginate iterator for compatibility across versions.
+  - Client always sends `key=home`; dev sets `ns=dev` so dev keys are isolated (`dev:home`, `dev:home:YYYY-MM`).
+  - Widget enabled on main (`_config.yml`), dev continues to namespace automatically.
+
+## 2025-10-10
+
+- NCO hydration fixes and endpoint normalization
+  - Switched NCO schedule to `https://data.blindhams.network/bhn_nco_12w.json` (was `.net`).
+  - Centralized data endpoints in `_config.yml` under `data_endpoints` with an optional `use_proxy` switch.
+  - Added visible diagnostics for NCO hydration failures and empty data; improved fallback UX.
+  - Guarded Liquid fallback date formatting to avoid epoch artifacts (no more “Dec 31, 1969”).
+- Proxy and headers
+  - Added Netlify rewrite `/data/* -> https://data.blindhams.network/:splat` to support same-origin fetch when enabled.
+  - Introduced CSP `connect-src 'self' https://data.blindhams.network`.
+  - Defaulted to direct endpoints after confirming CORS headers on the data host.
+- Docs
+  - Added `docs/data-server-setup.md` with Apache/NGINX/S3 examples for CORS and caching.
+  - Removed `docs/pr-dev-to-main.md` (obsolete dev note).
+
 ## 2025-10-09
 
 - JSON-powered nets (progressive enhancement)

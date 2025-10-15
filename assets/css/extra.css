@@ -112,6 +112,153 @@ caption { text-align:left; font-weight:600; margin-bottom:.5rem; }
   background: #000;
 }
 
+.home-solar-card-wrapper {
+  border: 2px solid #444;
+  background: #000;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+
+.home-solar-card[hidden] {
+  display: none !important;
+}
+
+.home-solar-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.solar-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.solar-card-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.solar-hide-form {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.solar-hide-form button {
+  background: #111;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: .25rem .75rem;
+  cursor: pointer;
+}
+
+.solar-hide-form button:hover {
+  background: #222;
+}
+
+.solar-hide-form button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.solar-card-summary {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.solar-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.solar-view dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1rem;
+}
+
+.solar-view dl > div {
+  border: 2px solid #444;
+  padding: 0.75rem;
+  background: #111;
+}
+
+.solar-view dt {
+  font-weight: 700;
+}
+
+.solar-view dd {
+  margin: 0.35rem 0 0;
+}
+
+.solar-note {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.solar-view-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #000;
+}
+
+.solar-view-table th,
+.solar-view-table td {
+  border: 2px solid #444;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.solar-hidden-message {
+  border: 2px dashed #0ff;
+  background: #001b1b;
+  color: #0ff;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.solar-hidden-message[hidden] {
+  display: none !important;
+}
+
+.solar-hidden-message button {
+  background: #111;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: .35rem .9rem;
+  cursor: pointer;
+}
+
+.solar-hidden-message button:hover {
+  background: #222;
+}
+
+.solar-hidden-message button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.solar-card-footer {
+  margin: 0;
+}
+
+.solar-card-footer a {
+  color: #0ff;
+  font-weight: 600;
+}
+
+.solar-card-footer a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 /* Live indicator for in-progress nets */
 .next-net-live {
   color: #26ff26; /* high-contrast green */

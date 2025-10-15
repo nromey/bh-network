@@ -1,0 +1,139 @@
+{%- if jekyll.environment == 'development' -%}
+  {%- assign solar_src = '/data/solar.json' -%}
+{%- else -%}
+  {%- assign solar_src = 'https://data.blindhams.network/solar.json' -%}
+{%- endif -%}
+<section class="home-solar-card-wrapper" data-solar-wrapper>
+  <div class="home-solar-card" data-solar-card data-solar-json="{{ solar_src }}" aria-labelledby="solar-card-heading">
+    <header class="solar-card-header">
+      <h2 id="solar-card-heading">Solar &amp; Geomagnetic Snapshot</h2>
+      <div class="solar-card-controls">
+        <fieldset class="view-toggle solar-view-toggle" aria-label="Display format">
+          <legend class="sr-only">Display format</legend>
+          <button type="button" data-solar-view-button="headings" aria-pressed="true">Headings view</button>
+          <button type="button" data-solar-view-button="table" aria-pressed="false">Table view</button>
+          <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-solar-view-status></span>
+        </fieldset>
+        <form class="solar-hide-form" data-solar-hide-form>
+          <label>
+            <input type="checkbox" data-solar-hide-checkbox>
+            Hide on home page
+          </label>
+          <button type="button" data-solar-hide-save>Save</button>
+          <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-solar-hide-status></span>
+        </form>
+      </div>
+    </header>
+    <p class="solar-card-summary" data-solar-summary role="status" aria-live="polite" aria-atomic="true">Latest solar indices load automatically when JavaScript is available.</p>
+    <div class="solar-card-body">
+      <div class="solar-view solar-view-headings" data-solar-view="headings">
+        <dl>
+          <div>
+            <dt>Solar Flux Index</dt>
+            <dd data-solar-heading="sfi">—</dd>
+          </div>
+          <div>
+            <dt>Sunspot Number</dt>
+            <dd data-solar-heading="sunspot">—</dd>
+          </div>
+          <div>
+            <dt>K-index</dt>
+            <dd data-solar-heading="kp">—</dd>
+          </div>
+          <div>
+            <dt>Mid-latitude K</dt>
+            <dd data-solar-heading="mid_k">—</dd>
+          </div>
+          <div>
+            <dt>Noise Estimate</dt>
+            <dd data-solar-heading="noise">—</dd>
+          </div>
+          <div>
+            <dt>A-index</dt>
+            <dd data-solar-heading="ap">—</dd>
+          </div>
+          <div>
+            <dt>Solar Wind</dt>
+            <dd data-solar-heading="wind">—</dd>
+          </div>
+          <div>
+            <dt>X-ray Flux</dt>
+            <dd data-solar-heading="xray">—</dd>
+          </div>
+          <div>
+            <dt>Flare Outlook</dt>
+            <dd data-solar-heading="flare">—</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="solar-view solar-view-table" data-solar-view="table" hidden>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Metric</th>
+              <th scope="col">Value</th>
+              <th scope="col">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Solar Flux Index</th>
+              <td data-solar-field="sfi">—</td>
+              <td class="solar-note" data-solar-note="sfi">—</td>
+            </tr>
+            <tr>
+              <th scope="row">Sunspot Number</th>
+              <td data-solar-field="sunspot">—</td>
+              <td class="solar-note" data-solar-note="sunspot">—</td>
+            </tr>
+            <tr>
+              <th scope="row">K-index</th>
+              <td data-solar-field="kp">—</td>
+              <td class="solar-note" data-solar-note="kp">—</td>
+            </tr>
+            <tr>
+              <th scope="row">Mid-latitude K</th>
+              <td data-solar-field="mid_k">—</td>
+              <td class="solar-note" data-solar-note="mid_k">—</td>
+            </tr>
+            <tr>
+              <th scope="row">Noise Estimate</th>
+              <td data-solar-field="noise">—</td>
+              <td class="solar-note" data-solar-note="noise">—</td>
+            </tr>
+            <tr>
+              <th scope="row">A-index</th>
+              <td data-solar-field="ap">—</td>
+              <td class="solar-note" data-solar-note="ap">—</td>
+            </tr>
+            <tr>
+              <th scope="row">Solar Wind</th>
+              <td data-solar-field="wind">—</td>
+              <td class="solar-note" data-solar-note="wind">—</td>
+            </tr>
+            <tr>
+              <th scope="row">X-ray Flux</th>
+              <td data-solar-field="xray">—</td>
+              <td class="solar-note" data-solar-note="xray">—</td>
+            </tr>
+            <tr>
+              <th scope="row">Flare Outlook</th>
+              <td data-solar-field="flare">—</td>
+              <td class="solar-note" data-solar-note="flare">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="data-updated" data-solar-updated>Updated times will appear once live data loads.</p>
+    <div class="data-diag" data-solar-diag hidden></div>
+    <p class="solar-card-footer">
+      <a href="{{ '/solar/' | relative_url }}">Visit Blind Hams Solar for definitions and propagation tools →</a>
+    </p>
+  </div>
+  <div class="solar-hidden-message" data-solar-hidden hidden>
+    <p>You’ve hidden the solar snapshot on this device.</p>
+    <button type="button" data-solar-show>Show solar data</button>
+  </div>
+</section>
+<script defer src="{{ '/assets/js/solar-card.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}"></script>

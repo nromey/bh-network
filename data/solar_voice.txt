@@ -1,0 +1,12 @@
+The Solar Flux Index is 156 (reported during the afternoon reading).
+The sunspot number is 108, covering roughly 720 millionths of the solar hemisphere, with 1 new region observed, as of 14 October 2025 UTC.
+The planetary K index at 03:13 UTC is 1.33, indicating quiet conditions.
+The planetary A index is 5.
+Planetary noise estimate: Baseline noise floor.
+Mid-latitude Boulder K index data is unavailable.
+Solar wind speed 549 kilometers per second, density 2.282 particles per cubic centimeter, temperature 151,499 Kelvin according to ACE.
+X-ray flux on the 0.1 to 0.8 nanometres band is 5.69 times 10 to the minus 6 watts per square metre, class C5.7 from GOES-18.
+On the 0.05 to 0.4 nanometres band the flux is 4.03 times 10 to the minus 7 watts per square metre, class B4.0.
+Here is the 24 hour flare outlook: C-class 99 percent, M-class 55 percent, X-class 15 percent.
+The 10 mega-electron-volt proton event probability is 10 percent.
+Polar cap absorption level is green.
