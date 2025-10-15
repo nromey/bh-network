@@ -1,12 +1,25 @@
-The Solar Flux Index is 156 (reported during the afternoon reading).
-The sunspot number is 108, covering roughly 720 millionths of the solar hemisphere, with 1 new region observed, as of 14 October 2025 UTC.
-The planetary K index at 03:13 UTC is 1.33, indicating quiet conditions.
-The planetary A index is 5.
-Planetary noise estimate: Baseline noise floor.
-Mid-latitude Boulder K index data is unavailable.
-Solar wind speed 549 kilometers per second, density 2.282 particles per cubic centimeter, temperature 151,499 Kelvin according to ACE.
-X-ray flux on the 0.1 to 0.8 nanometres band is 5.69 times 10 to the minus 6 watts per square metre, class C5.7 from GOES-18.
-On the 0.05 to 0.4 nanometres band the flux is 4.03 times 10 to the minus 7 watts per square metre, class B4.0.
-Here is the 24 hour flare outlook: C-class 99 percent, M-class 55 percent, X-class 15 percent.
-The 10 mega-electron-volt proton event probability is 10 percent.
-Polar cap absorption level is green.
+The Solar Flux Index is one hundred sixty-eight (reported during the morning reading).
+The sunspot number is one hundred eight, covering roughly seven hundred twenty millionths of the solar hemisphere, with one new region observed, as of October fourteenth, twenty twenty-five based on UTC time.
+The planetary K index at eighteen oh six UTC is zero, indicating quiet conditions.
+The planetary A index is zero.
+The planetary noise estimate measures at the baseline.
+The mid-latitude Boulder K index data is unavailable.
+The Boulder noise estimate is unavailable.
+WWV reports the estimated planetary K index at eighteen hundred UTC is one.
+The WWV estimated planetary A index is eight.
+WWV lists solar flux at one hundred fifty-four.
+WWV reports the past day was minor.
+WWV forecasts the next day to be moderate.
+WWV observed R1-level radio blackouts.
+WWV expects R2-level radio blackouts are likely.
+The solar wind speed is four hundred ninety-two kilometers per second with solar density measuring two point eight five nine particles per cubic centimeter and temperature at eighty-eight thousand sixty-one Kelvin according to ACE.
+The X-ray flux on the zero point one to zero point eight nanometres band is eight point three four times ten to the negative sixth power watts per square metre, class C eight point three from GOES-18.
+On the zero point zero five to zero point four nanometres band the flux is eight point nine six times ten to the negative seventh power watts per square metre, class B nine.
+Here is the twenty-four hour flare outlook.
+There is a ninety-nine percent chance of a C-class flare, there is a sixty percent chance of an M-class flare, and there is a fifteen percent chance of an X-class flare.
+The ten mega-electron-volt proton event probability is ten percent.
+The polar cap absorption is green.
+G1-G2 (Minor-Moderate) geomagnetic storm conditions are likely over 16-17 Oct due to the arrival of multiple CMEs from 11-13 Oct.
+Minor to moderate (R1-R2) radio blackouts are likely for the next 3 days, with a slight chance for an isolated R3 (Strong) event, due to the current and potential flare activity of Regions 4246 and 4248.
+There is a slight chance for a greater than 10 MeV proton event above the S1 (Minor) levels through 17 Oct.
+Predicted Ap values are twelve, twenty-eight, and twenty-five from October fifteenth through October seventeenth.

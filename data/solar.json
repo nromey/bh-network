@@ -1,7 +1,7 @@
 {
-  "updated": "2025-10-15T03:17:01.568103Z",
+  "updated": "2025-10-15T18:11:05.845148Z",
   "ttl_seconds": 600,
-  "stale_minutes": 1637,
+  "stale_minutes": 2531,
   "sources": [
     {
       "id": "f10_7",
@@ -30,56 +30,68 @@
     {
       "id": "flare_probs",
       "url": "https://services.swpc.noaa.gov/json/solar_probabilities.json"
+    },
+    {
+      "id": "wwv",
+      "url": "https://services.swpc.noaa.gov/text/wwv.txt"
+    },
+    {
+      "id": "three_day",
+      "url": "https://services.swpc.noaa.gov/text/3-day-forecast.txt"
+    },
+    {
+      "id": "geomag_forecast",
+      "url": "https://services.swpc.noaa.gov/text/3-day-geomag-forecast.txt"
     }
   ],
   "now": {
     "sfi": {
-      "value": 156.0,
+      "value": 168.0,
       "ninety_day_mean": null,
-      "schedule": "Afternoon",
+      "schedule": "Morning",
       "source": "SWPC f107_cm_flux.json",
-      "time_tag": "2025-10-14T22:00:00Z"
+      "time_tag": "2025-10-15T17:00:00Z"
     },
     "k_index": {
-      "value": 1.3333333333333333,
-      "kp_index": 1,
-      "kp_code": "1P",
-      "ap": 5,
+      "value": 0.0,
+      "kp_index": 0,
+      "kp_code": "0Z",
+      "ap": 0,
       "source": "SWPC planetary_k_index_1m.json",
-      "time_tag": "2025-10-15T03:13:00Z"
+      "time_tag": "2025-10-15T18:06:00Z"
     },
-    "a_index": 5,
+    "a_index": 0,
     "mid_latitude_k_index": {
       "value": null,
       "kp_index": null,
       "kp_code": null,
       "ap": null,
       "source": "SWPC boulder_k_index_1m.json",
-      "time_tag": "2025-10-15T03:10:00Z"
+      "time_tag": "2025-10-15T18:00:00Z"
     },
     "xray": {
-      "flux_wm2": 5.6910507737484295e-06,
-      "classification": "C5.7",
+      "flux_wm2": 8.341433385794517e-06,
+      "classification": "C8.3",
       "energy": "0.1-0.8nm",
       "satellite": 18,
       "source": "SWPC goes/primary/xrays-1-day.json",
       "secondary": {
-        "flux_wm2": 4.032720255509048e-07,
-        "classification": "B4.0",
+        "flux_wm2": 8.964235576058854e-07,
+        "classification": "B9.0",
         "energy": "0.05-0.4nm",
         "satellite": 18,
-        "time_tag": "2025-10-15T03:14:00Z"
+        "time_tag": "2025-10-15T18:07:00Z"
       },
-      "time_tag": "2025-10-15T03:14:00Z"
+      "time_tag": "2025-10-15T18:07:00Z"
     },
     "solar_wind": {
-      "speed_kms": 549.0,
-      "density": 2.282,
-      "temperature": 151499.0,
+      "speed_kms": 492.5,
+      "density": 2.859,
+      "temperature": 88061.0,
       "spacecraft": "ACE",
       "quality_flag": 0,
       "source": "SWPC ace_swepam_1h.json",
-      "time_tag": "2025-10-15T01:00:00Z"
+      "time_tag": "2025-10-15T17:00:00Z"
     },
     "sunspot": {
       "number": 108,
@@ -92,7 +104,7 @@
       "planetary": {
         "s_units": 0,
         "description": "Baseline noise floor",
-        "k_value": 1.3333333333333333
+        "k_value": 0.0
       }
     }
   },
@@ -104,9 +116,9 @@
         "day3": 99
       },
       "m_class": {
-        "day1": 55,
-        "day2": 55,
-        "day3": 55
+        "day1": 60,
+        "day2": 60,
+        "day3": 60
       },
       "x_class": {
         "day1": 15,
@@ -120,16 +132,158 @@
       },
       "polar_cap_absorption": "green",
       "source": "SWPC solar_probabilities.json",
-      "generated": "2025-10-14T00:00:00Z"
+      "generated": "2025-10-15T00:00:00Z"
+    },
+    "three_day": {
+      "issued": "2025-10-15T12:30:00Z",
+      "geomagnetic": {
+        "max_observed_kp": 4.0,
+        "max_expected_kp": 5.67,
+        "max_expected_scale": "G2",
+        "rationale": "G1-G2 (Minor-Moderate) geomagnetic storm conditions are likely over 16-17 Oct due to the arrival of multiple CMEs from 11-13 Oct."
+      },
+      "solar_radiation": {
+        "probabilities": [
+          {
+            "label": "S1 or greater",
+            "values": [
+              {
+                "date": "2025-10-15",
+                "percent": 10
+              },
+              {
+                "date": "2025-10-16",
+                "percent": 10
+              },
+              {
+                "date": "2025-10-17",
+                "percent": 10
+              }
+            ]
+          }
+        ],
+        "rationale": "There is a slight chance for a greater than 10 MeV proton event above the S1 (Minor) levels through 17 Oct."
+      },
+      "radio_blackout": {
+        "probabilities": [
+          {
+            "label": "R1-R2",
+            "values": [
+              {
+                "date": "2025-10-15",
+                "percent": 55
+              },
+              {
+                "date": "2025-10-16",
+                "percent": 55
+              },
+              {
+                "date": "2025-10-17",
+                "percent": 55
+              }
+            ]
+          },
+          {
+            "label": "R3 or greater",
+            "values": [
+              {
+                "date": "2025-10-15",
+                "percent": 15
+              },
+              {
+                "date": "2025-10-16",
+                "percent": 15
+              },
+              {
+                "date": "2025-10-17",
+                "percent": 15
+              }
+            ]
+          }
+        ],
+        "days": [
+          {
+            "date": "2025-10-15",
+            "R1-R2": 55,
+            "R3 or greater": 15
+          },
+          {
+            "date": "2025-10-16",
+            "R1-R2": 55,
+            "R3 or greater": 15
+          },
+          {
+            "date": "2025-10-17",
+            "R1-R2": 55,
+            "R3 or greater": 15
+          }
+        ],
+        "rationale": "Minor to moderate (R1-R2) radio blackouts are likely for the next 3 days, with a slight chance for an isolated R3 (Strong) event, due to the current and potential flare activity of Regions 4246 and 4248."
+      }
+    },
+    "geomagnetic_outlook": {
+      "issued": "2025-10-14T22:05:00Z",
+      "ap": {
+        "observed": {
+          "date": "2025-10-13",
+          "value": 23
+        },
+        "estimated": {
+          "date": "2025-10-14",
+          "value": 8
+        },
+        "predicted": [
+          {
+            "date": "2025-10-15",
+            "value": 12
+          },
+          {
+            "date": "2025-10-16",
+            "value": 28
+          },
+          {
+            "date": "2025-10-17",
+            "value": 25
+          }
+        ]
+      }
+    }
+  },
+  "wwv": {
+    "issued": "2025-10-15T18:10:00Z",
+    "solar_flux": 154,
+    "estimated_planetary_a_index": 8,
+    "estimated_planetary_k_index": {
+      "value": 1.0,
+      "time_tag": "2025-10-15T18:00:00Z"
+    },
+    "space_weather": {
+      "past": "minor",
+      "next": "moderate"
+    },
+    "radio_blackouts": {
+      "past": {
+        "level": "R1",
+        "status": "occurred",
+        "text": "occurred"
+      },
+      "next": {
+        "level": "R2",
+        "status": "likely",
+        "text": "are likely"
+      }
     }
   },
   "diagnostics": {
-    "sfi_updated": "2025-10-14T22:00:00Z",
-    "kp_updated": "2025-10-15T03:13:00Z",
-    "mid_k_updated": "2025-10-15T03:10:00Z",
-    "solar_wind_updated": "2025-10-15T01:00:00Z",
-    "xray_updated": "2025-10-15T03:14:00Z",
+    "sfi_updated": "2025-10-15T17:00:00Z",
+    "kp_updated": "2025-10-15T18:06:00Z",
+    "mid_k_updated": "2025-10-15T18:00:00Z",
+    "solar_wind_updated": "2025-10-15T17:00:00Z",
+    "xray_updated": "2025-10-15T18:07:00Z",
     "sunspot_updated": "2025-10-14T00:00:00Z",
-    "flare_probs_updated": "2025-10-14T00:00:00Z"
+    "flare_probs_updated": "2025-10-15T00:00:00Z",
+    "wwv_issued": "2025-10-15T18:10:00Z",
+    "three_day_issued": "2025-10-15T12:30:00Z",
+    "geomag_issued": "2025-10-14T22:05:00Z"
   }
 }
