@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## 2025-10-16
+
+- MUF grid tooling revamp
+  - Replaced the single-thread builder with `solar/build_muf_grid.py` (parallel worker pool, mask-aware sampling, atomic writes, richer CLI).
+  - Added `solar/mask_utils.py`, `solar/mask_query.py`, and `docs/solar-muf-mask.md` so we can inspect mask coverage without visual tooling.
+  - Seeded `solar/land_mask.json` (hand-tuned) plus Natural Earth generator (`solar/generate_land_mask.py`) to emit `solar/land_mask_generated.json` with 5° ocean / 1° land cells.
+  - Bundled the updated scripts into the deployment archive alongside the IRI driver for onj3/Roarbox rollouts.
+
 ## 2025-10-15
 
 - Solar snapshot and dashboard scaffolding

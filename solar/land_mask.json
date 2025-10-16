@@ -1,0 +1,141 @@
+{
+  "default_step": 5.0,
+  "regions": [
+    {
+      "name": "north_america_land_2deg",
+      "lat_min": 5.0,
+      "lat_max": 75.0,
+      "lon_min": -170.0,
+      "lon_max": -40.0,
+      "step": 2.0
+    },
+    {
+      "name": "south_america_land_2deg",
+      "lat_min": -60.0,
+      "lat_max": 20.0,
+      "lon_min": -90.0,
+      "lon_max": -30.0,
+      "step": 2.0
+    },
+    {
+      "name": "europe_land_2deg",
+      "lat_min": 30.0,
+      "lat_max": 72.0,
+      "lon_min": -25.0,
+      "lon_max": 45.0,
+      "step": 2.0
+    },
+    {
+      "name": "africa_land_2deg",
+      "lat_min": -35.0,
+      "lat_max": 35.0,
+      "lon_min": -20.0,
+      "lon_max": 55.0,
+      "step": 2.0
+    },
+    {
+      "name": "asia_land_2deg",
+      "lat_min": -10.0,
+      "lat_max": 75.0,
+      "lon_min": 55.0,
+      "lon_max": 150.0,
+      "step": 2.0
+    },
+    {
+      "name": "oceania_land_2deg",
+      "lat_min": -50.0,
+      "lat_max": 5.0,
+      "lon_min": 110.0,
+      "lon_max": 180.0,
+      "step": 2.0
+    },
+    {
+      "name": "north_america_high_1deg",
+      "lat_min": 15.0,
+      "lat_max": 60.0,
+      "lon_min": -135.0,
+      "lon_max": -60.0,
+      "step": 1.0
+    },
+    {
+      "name": "europe_high_1deg",
+      "lat_min": 35.0,
+      "lat_max": 60.0,
+      "lon_min": -10.0,
+      "lon_max": 30.0,
+      "step": 1.0
+    },
+    {
+      "name": "east_asia_high_1deg",
+      "lat_min": 25.0,
+      "lat_max": 50.0,
+      "lon_min": 105.0,
+      "lon_max": 145.0,
+      "step": 1.0
+    },
+    {
+      "name": "south_asia_high_1deg",
+      "lat_min": -5.0,
+      "lat_max": 35.0,
+      "lon_min": 65.0,
+      "lon_max": 100.0,
+      "step": 1.0
+    },
+    {
+      "name": "south_america_high_1deg",
+      "lat_min": -30.0,
+      "lat_max": 10.0,
+      "lon_min": -80.0,
+      "lon_max": -50.0,
+      "step": 1.0
+    },
+    {
+      "name": "australia_high_1deg",
+      "lat_min": -45.0,
+      "lat_max": -10.0,
+      "lon_min": 112.0,
+      "lon_max": 154.0,
+      "step": 1.0
+    },
+    {
+      "name": "indonesia_high_1deg",
+      "lat_min": -12.0,
+      "lat_max": 7.0,
+      "lon_min": 95.0,
+      "lon_max": 141.0,
+      "step": 1.0
+    },
+    {
+      "name": "hawaii_high_1deg",
+      "lat_min": 18.0,
+      "lat_max": 23.0,
+      "lon_min": -162.0,
+      "lon_max": -153.0,
+      "step": 1.0
+    },
+    {
+      "name": "caribbean_high_1deg",
+      "lat_min": 10.0,
+      "lat_max": 28.0,
+      "lon_min": -90.0,
+      "lon_max": -60.0,
+      "step": 1.0
+    },
+    {
+      "name": "mediterranean_high_1deg",
+      "lat_min": 30.0,
+      "lat_max": 45.0,
+      "lon_min": -6.0,
+      "lon_max": 36.0,
+      "step": 1.0
+    },
+    {
+      "name": "antarctic_margin_5deg",
+      "lat_min": -90.0,
+      "lat_max": -60.0,
+      "lon_min": -180.0,
+      "lon_max": 180.0,
+      "step": 5.0
+    }
+  ]
+}
