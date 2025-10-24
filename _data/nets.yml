@@ -156,6 +156,7 @@ nets:
 
   - id: Beacon_net
     category: "general"
+    name: "Beacon Net"
     rrule: "FREQ=WEEKLY;BYDAY=WE,SU"
     duration_min: 60
     start_local: "22:00"
