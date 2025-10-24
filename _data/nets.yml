@@ -127,7 +127,7 @@ nets:
     time_zone: UTC
     rrule: "FREQ=WEEKLY;BYDAY=MO"
     allstar: "56870"
-    dstar: "XRF299S"
+    DStar: "XRF299S"
     peanut: "XRF299S"
     mode: "DMR"
     dmr_system: "BrandMeister"
@@ -143,3 +143,21 @@ nets:
     description: "Every Monday at 6:00 PM PT, this net is the place for discussions related to the setup, configuration, and operation of digital nodes and the associated hardware. A great place for noobies and experienced users alike."
     rrule: "FREQ=WEEKLY;BYDAY=MO"
     allstar: 51018
+    duration_min: 90
+
+  - id: Enoch_Bible
+    category: general
+    name: "Word of God Net"
+    start_local: "19:00"
+    rrule: "FREQ=WEEKLY;BYDAY=WE"
+    description: "Join us Wednesdays for a study of the Bieble, the word of god.  Every week we wioll cover a chapter in the Bible. Questions and discussion are welcome. We take prayer requests and general discussion after the study. All are welcome!"
+    DStar: XRF295A or REF291A
+        duration_min: 60
+        
+  - id: Beacon_net
+    category: "general"
+    rrule: "FREQ=WEEKLY;BYDAY=WE,SU"
+    duration_min: 60
+    start_local: "22:00"
+    Description: "Held on the W8WKY repeater.  They take checkins during each net and they have two trivia questions per net."
+    Allstar: "48496"
