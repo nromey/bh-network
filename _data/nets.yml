@@ -146,18 +146,18 @@ nets:
     duration_min: 90
 
   - id: Enoch_Bible
-    category: general
+    category: "general"
     name: "Word of God Net"
     start_local: "19:00"
+    duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=WE"
     description: "Join us Wednesdays for a study of the Bieble, the word of god.  Every week we wioll cover a chapter in the Bible. Questions and discussion are welcome. We take prayer requests and general discussion after the study. All are welcome!"
-    DStar: XRF295A or REF291A
-        duration_min: 60
-        
+    DStar: "XRF295A or REF291A"
+
   - id: Beacon_net
     category: "general"
     rrule: "FREQ=WEEKLY;BYDAY=WE,SU"
     duration_min: 60
     start_local: "22:00"
-    Description: "Held on the W8WKY repeater.  They take checkins during each net and they have two trivia questions per net."
-    Allstar: "48496"
+    description: "Held on the W8WKY repeater.  They take checkins during each net and they have two trivia questions per net."
+    allstar: "48496"
