@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Blind Hams Digital Net for 25 October 2025"
-date: 2025-10-25 0708:30:00 -0500
+date: 2025-10-25 07:30:00 -0500
 categories: [news, bhdn]
 tags: [net_announcements]
 ---
