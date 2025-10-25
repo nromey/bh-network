@@ -48,8 +48,7 @@ The **Blind Hams Digital Network** is a community built by and for blind and vis
 - Browse current nets on our network (and a few partner nets). If we’re missing one, let us know! The new system makes it super easy to add them so don't be shy, the sky's the limit!
 - Bored? Want to see something cool that took way too long to make but looks positively normal? Check the dynamically generated NCO rotation for our flagship Saturday morning net:
   **[The Blind Hams Digital Net — Nifty NER&trade;'s NCO Schedule](/nets/blind-hams/nco-schedule/)**
-
-{% if site.widgets.visit_counter %}
+- View nets in your time zone. Click the "My time" button on any net page and you'll see net times in you timezone. **Note: the my time code respects your time and day.** So if you're across the international dateline, the net schedules will tell you what time and day to join us.
 <section class="stats-section" role="region" aria-labelledby="site-stats-heading">
   <h2 id="site-stats-heading">Site Stats (dev only)</h2>
   <p class="visit-counter">
