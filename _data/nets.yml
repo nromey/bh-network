@@ -6,7 +6,8 @@
 # File should help togenerate nets no matter what category
 # Must include category when calling in Liquid
 # created by Noel Romey K5NER
-
+# Default time zone is below, global time zone will calculate nets based on Eastern time unless specified.
+# Use the IANA time format to describe correct time zone. If not denoted properly, "my time" functionality will berak spectacularly
 time_zone: America/New_York
 
 nets:
@@ -17,46 +18,70 @@ nets:
     start_local: "10:00"     # 10:00 AM ET
     duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=SA"
+    location: "[Blind Hams Digital Network](https://www.blindhams.network/nets/blind-hams) or see the home page for connection details."
+    mode: "DMR"
+    dmr_system: "TGIF"
+    dmr_tg: "31679"
 
   - id: absolute-tech
     category: "bhn"
     name: "Absolute Tech Net"
     description: "A net to discuss technical amateur radio topics and troubleshoot issues faced by hams around the world."
+    location: "[Absolute Tech Net Homepage](https://www.absolutetech.org/)"
     start_local: "19:00"     # 7:00 PM ET
     duration_min: 120
     rrule: "FREQ=WEEKLY;BYDAY=TU"
+    mode: "DMR"
+    dmr_system: "TGIF"
+    dmr_tg: "31679"
 
   - id: blind-hams-tech
     category: "bhn"
     name: "Blind Hams Tech Net"
     description: "Monthly technical deep-dive net."
+    location: "[Blind Hams Digital Network](https://www.blindhams.network/nets/blind-hams) or see the home page for connection details."
     start_local: "20:00"     # 8:00 PM ET
     duration_min: 60
     rrule: "FREQ=MONTHLY;BYDAY=TH;BYSETPOS=1"  # first Thursday of the month
+    mode: "DMR"
+    dmr_system: "TGIF"
+    dmr_tg: "31679"
 
   - id: look-at-this
     category: "bhn"
     name: "Look At This Net"
     description: "Smart glasses and assistive wearables from a blind/VI perspective, for amateur radio and daily life."
+    location: "[Blind Hams Digital Network](https://www.blindhams.network/nets/blind-hams) or see the home page for connection details."
     start_local: "20:00"     # 8:00 PM ET
     duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=WE"
+    mode: "DMR"
+    dmr_system: "TGIF"
+    dmr_tg: "31679"
 
   - id: visually-inconvenienced
     category: "bhn"
     name: "Visually Inconvenienced Hams Net"
     description: "Topical net for all hams from a visually ‘inconvenienced’ angle. Final net of the month highlights weather talk and Q&A."
+    location: "[Blind Hams Digital Network](https://www.blindhams.network/nets/blind-hams) or see the home page for connection details."
     start_local: "20:00"     # 8:00 PM ET
     duration_min: 60
     rrule: "FREQ=WEEKLY;BYDAY=SA"   # Saturday evening
+    mode: "DMR"
+    dmr_system: "TGIF"
+    dmr_tg: "31679"
 
   - id: sounds-good
     category: "bhn"
     name: "The Sounds Good Net"
     description: "For music fans and musicians, audio nerds and pros — anything to do with music and sound."
+    location: "[Blind Hams Digital Network](https://www.blindhams.network/nets/blind-hams) or see the home page for connection details."
     start_local: "20:00"     # 8:00 PM ET
     duration_min: 90
     rrule: "FREQ=WEEKLY;BYDAY=MO"
+    mode: "DMR"
+    dmr_system: "TGIF"
+    dmr_tg: "31679"
 
   - id: bh-cross-country-hf
     category: "bhn"
@@ -78,6 +103,9 @@ nets:
     rrule: "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"
     allstar: "473670"
     echolink: "N0BVE-L"
+    mode: "DMR"
+    dmr_system: "TGIF"
+    dmr_tg: "3141"
 
   - id: handi-hams-trivia
     category: "disability"
@@ -88,7 +116,10 @@ nets:
     rrule: "FREQ=WEEKLY;BYDAY=WE"
     allstar: "473670"
     echolink: "N0BVE-L"
-    
+    mode: "DMR"
+    dmr_system: "TGIF"
+    dmr_tg: "3141"
+  
   - id: sfarc-coffee-break
     category: "general"
     name: "Sierra Foothills ARC Coffee Break Net"
@@ -97,8 +128,9 @@ nets:
     duration_min: 150
     rrule: "FREQ=DAILY"
     # Provide a link so we don't default to the Bridge:
-    location: "[SFARC repeater system](https://www.w6ek.org) or allstar 51018"
-
+    location: "[Sierra Foothills Amateur Radio Club Repeater System](https://www.w6ek.org) or AllStar 51018"
+    echolink: "4128"
+  
   - id: friday-night-net
     category: "bhn"
     name: "The Friday Night Blind Hams Allstar and Echolink Net"
@@ -124,7 +156,7 @@ nets:
     description: "Weekly UK digital net."
     start_local: "20:00" # 20:00 UTC
     duration_min: 60
-    time_zone: UTC
+    time_zone: Europe/London
     rrule: "FREQ=WEEKLY;BYDAY=MO"
     allstar: "56870"
     DStar: "XRF299S"
@@ -136,13 +168,13 @@ nets:
 
   - id: all-nodes
     category: "general"
-    location: "Sierra Foothills ARC Repeater System"
     name: "All Nodes Net"
     time_zone: America/Los_Angeles
     start_local: "18:00"
     description: "Every Monday at 6:00 PM PT, this net is the place for discussions related to the setup, configuration, and operation of digital nodes and the associated hardware. A great place for noobies and experienced users alike."
     rrule: "FREQ=WEEKLY;BYDAY=MO"
     allstar: 51018
+    location: "[Sierra Foothills Amateur Radio Club Repeater System](https://www.w6ek.org) or AllStar 51018"
     duration_min: 90
 
   - id: Enoch_Bible
@@ -160,5 +192,30 @@ nets:
     rrule: "FREQ=WEEKLY;BYDAY=WE,SU"
     duration_min: 60
     start_local: "22:00"
-    description: "Held on the W8WKY repeater.  They take checkins during each net and they have two trivia questions per net."
+    description: "Net presented by the Silver Creek Amateur Radio Association in Northeast Ohio.  The net takes normal checkins and ask for answers to two trivia questions per net."
     allstar: "48496"
+    location: "[Silver Creek Amateur Radio Association](https://w8wky.org/repeaters/)"
+
+  - id: elements_hfw
+    category: "disability"
+    name: "Active Elements Wednesday HF Net"
+    description: "Mid-week HF roundtable for the Active Elements community."
+    time_zone: Europe/London
+    start_local: "14:00"
+    duration_min: 60
+    rrule: "FREQ=WEEKLY;BYDAY=WE"
+    mode: "LSB"
+    frequency: "7.103 MHz"
+    location: "40 meters"
+
+  - id: elements_hff
+    category: "disability"
+    name: "Active Elements Friday Night HF Net"
+    description: "Friday evening HF gathering for Active Elements operators."
+    time_zone: Europe/London
+    start_local: "20:00"
+    duration_min: 60
+    rrule: "FREQ=WEEKLY;BYDAY=FR"
+    mode: "LSB"
+    frequency: "7.103 MHz"
+    location: "40 meters"

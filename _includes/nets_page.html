@@ -224,10 +224,6 @@ This block is duplicated in both views (scoped to each n).
             {%- elsif _dmr_val -%}
               {%- assign _other = _other | push: "DMR " | push: _dmr_val -%}
             {%- endif -%}
-            {%- assign _mode_up = n.mode | upcase -%}
-            {%- if _has_dmr_struct == '' and (_dmr_val == nil or _dmr_val == '') and _mode_up == "DMR" -%}
-              {%- assign _other = _other | push: "DMR" -%}
-            {%- endif -%}
             {%- assign _dstar = n.dstar | default: n.DStar -%}
             {%- if _dstar -%}
               {%- assign _other = _other | push: "D-STAR " | push: _dstar -%}

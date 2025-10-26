@@ -77,10 +77,6 @@
     {%- if _p25 -%}{%- assign _other = _other | push: "P25 " | push: _p25 -%}{%- endif -%}
     {%- assign _nxdn = nc.nxdn | default: next_net_def.nxdn -%}
     {%- if _nxdn -%}{%- assign _other = _other | push: "NXDN " | push: _nxdn -%}{%- endif -%}
-    {%- assign _mode_up = nc.mode | default: next_net_def.mode | upcase -%}
-    {%- if _dmr == nil and _mode_up == "DMR" -%}
-      {%- assign _other = _other | push: "DMR" -%}
-    {%- endif -%}
     {%- assign _other_joined = _other | join: ", " | strip -%}
 
     <p class="next-net-connections">
@@ -234,10 +230,6 @@
                     {%- elsif _dmr -%}
                       {%- assign _other = _other | push: "DMR " | push: _dmr -%}
                     {%- endif -%}
-                    {%- assign _mode_up = oc.mode | default: net.mode | upcase -%}
-                    {%- if _has_dmr_struct == '' and _dmr == nil and _mode_up == "DMR" -%}
-                      {%- assign _other = _other | push: "DMR" -%}
-                    {%- endif -%}
                     {%- assign _other_joined = _other | join: ", " | strip -%}
                     {%- if _other_joined == "" and net and net.location -%}
                       {%- assign _loc = net.location | markdownify | replace: "<p>", "" | replace: "</p>", "" | strip -%}
@@ -317,10 +309,6 @@
                 {%- assign _other = _other | push: "DMR " | push: _dmr_sys | push: " TG " | push: _dmr_tg -%}
               {%- elsif _dmr -%}
                 {%- assign _other = _other | push: "DMR " | push: _dmr -%}
-              {%- endif -%}
-              {%- assign _mode_up = oc.mode | default: net.mode | upcase -%}
-              {%- if _has_dmr_struct == '' and _dmr == nil and _mode_up == "DMR" -%}
-                {%- assign _other = _other | push: "DMR" -%}
               {%- endif -%}
               {%- assign _other_joined = _other | join: " · " | strip -%}
 

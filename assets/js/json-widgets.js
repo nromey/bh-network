@@ -550,7 +550,6 @@
     const dmr = getConn(occ, 'dmr');
     if (dmr_sys && dmr_tg) out.push(`DMR ${dmr_sys} TG ${dmr_tg}`);
     else if (dmr) out.push(`DMR ${dmr}`);
-    else if ((mode || '').toString().toUpperCase() === 'DMR') out.push('DMR');
     const tg = getConn(occ, 'talkgroup');
     if (tg && !(dmr_sys && dmr_tg)) out.push(`Talkgroup ${tg}`);
     const dstar = getConn(occ, 'dstar'); if (dstar) out.push(`D-STAR ${dstar}`);
