@@ -1,0 +1,2206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Blind Hams Nets Helper</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 1.5rem;
+        line-height: 1.5;
+        max-width: 60rem;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      fieldset {
+        border: 1px solid #888;
+        border-radius: 0.5rem;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      legend {
+        font-weight: 600;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-top: 0.75rem;
+      }
+      input[type="text"],
+      input[type="time"],
+      input[type="number"],
+      textarea,
+      select {
+        width: min(100%, 32rem);
+        padding: 0.5rem;
+        font-size: 1rem;
+        margin-top: 0.25rem;
+      }
+      textarea {
+        min-height: 6rem;
+      }
+      .actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      button {
+        padding: 0.65rem 1.25rem;
+        font-size: 1rem;
+        border-radius: 0.4rem;
+        border: 1px solid #666;
+        cursor: pointer;
+      }
+      button.primary {
+        background: #2a6ad1;
+        color: #fff;
+        border-color: #1d4fa0;
+      }
+      button.danger {
+        background: #b3261e;
+        color: #fff;
+        border-color: #7f1b15;
+      }
+      .status {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border-radius: 0.4rem;
+      }
+      .status.error {
+        background: #fee;
+        border: 1px solid #d22;
+      }
+      .status.success {
+        background: #ecf8ed;
+        border: 1px solid #2b7a2e;
+      }
+      #yamlPreview {
+        background: #111;
+        color: #fafafa;
+        padding: 1rem;
+        border-radius: 0.4rem;
+        overflow-x: auto;
+        font-family: "Fira Code", "SFMono-Regular", ui-monospace, monospace;
+      }
+      .hint {
+        font-size: 0.9rem;
+        color: #555;
+      }
+      .optional-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      }
+      .custom-field {
+        border: 1px dashed #666;
+        padding: 0.75rem;
+        border-radius: 0.4rem;
+        margin-bottom: 0.75rem;
+      }
+      .sr-only {
+        position: absolute;
+        left: -10000px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      }
+      .rrule-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: flex-end;
+      }
+      .rrule-actions input[type="text"] {
+        flex: 1 1 18rem;
+      }
+      details.rrule-builder {
+        margin-top: 1rem;
+        border: 1px solid #666;
+        border-radius: 0.4rem;
+        padding: 0.75rem 1rem;
+      }
+      details.rrule-builder summary {
+        font-weight: 600;
+        cursor: pointer;
+        list-style: none;
+      }
+      details.rrule-builder summary::-webkit-details-marker {
+        display: none;
+      }
+      details.rrule-builder[open] summary {
+        margin-bottom: 0.5rem;
+      }
+      .rrule-builder-grid {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+        margin-bottom: 0.75rem;
+      }
+      .weekday-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+        gap: 0.5rem;
+      }
+      .weekday-options label {
+        display: flex;
+        align-items: center;
+        font-weight: 400;
+        gap: 0.4rem;
+        margin: 0;
+      }
+      .rrule-description {
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+        color: #444;
+      }
+      .pending-status {
+        border: 1px solid #2a6ad1;
+        border-radius: 0.5rem;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        background: rgba(42, 106, 209, 0.08);
+      }
+      .pending-status strong {
+        font-weight: 700;
+      }
+      .pending-status .pending-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+        align-items: center;
+      }
+      .pending-status select {
+        min-width: 18rem;
+        flex: 0 1 auto;
+      }
+      .draft-banner {
+        border: 1px solid #2a6ad1;
+        background: rgba(42, 106, 209, 0.1);
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+      }
+      .draft-banner p {
+        margin: 0;
+      }
+      .draft-banner h2 {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+      .draft-banner .draft-actions {
+        margin-top: 0.75rem;
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      .draft-banner button {
+        padding: 0.5rem 1rem;
+        border-radius: 0.4rem;
+        border: 1px solid #2a6ad1;
+        background: #fff;
+        cursor: pointer;
+      }
+      .draft-banner button.restore {
+        background: #2a6ad1;
+        color: #fff;
+      }
+      .autosave-status {
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        color: #555;
+      }
+      .section-heading {
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin: 1.75rem 0 0.75rem;
+      }
+      .section-heading:first-of-type {
+        margin-top: 0;
+      }
+      .connections-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1rem;
+        margin-top: 0.5rem;
+      }
+      .connection-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-weight: 600;
+      }
+      .connection-toggle input[type="checkbox"] {
+        transform: scale(1.1);
+      }
+      .connection-section {
+        margin-top: 0.75rem;
+        padding: 0.75rem 1rem;
+        border: 1px dashed #666;
+        border-radius: 0.5rem;
+        background: rgba(17, 17, 17, 0.05);
+      }
+      .connection-section label {
+        display: block;
+        font-weight: 600;
+        margin-top: 0.5rem;
+      }
+      .connection-section input,
+      .connection-section select {
+        width: min(100%, 28rem);
+        padding: 0.5rem;
+        font-size: 1rem;
+        margin-top: 0.25rem;
+      }
+      .existing-ids {
+        margin-top: 0.35rem;
+      }
+      .existing-ids ul {
+        margin: 0.25rem 0 0;
+        padding-left: 1.25rem;
+        columns: auto;
+        column-gap: 1.5rem;
+      }
+      .existing-ids ul li {
+        margin-bottom: 0.1rem;
+      }
+      .field-header {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .help-button {
+        border: none;
+        background: #2a6ad1;
+        color: #fff;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 0.95rem;
+      }
+      .help-button:focus-visible {
+        outline: 2px solid #ffbf47;
+        outline-offset: 2px;
+      }
+      .help-button[aria-expanded="true"] {
+        background: #1d4fa0;
+      }
+      .help-text {
+        display: none;
+        margin-top: 0.25rem;
+      }
+      .help-text[data-show="true"] {
+        display: block;
+      }
+      .time-toggle {
+        margin-top: 0.35rem;
+      }
+      .time-toggle button {
+        font-size: 0.9rem;
+        padding: 0.35rem 0.75rem;
+      }
+      .field-input {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .field-error {
+        outline: 2px solid #d22;
+        outline-offset: 2px;
+      }
+      #categoryOptions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.5rem;
+        margin-top: 0.5rem;
+      }
+      .category-option {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 0.35rem;
+        font-weight: 500;
+      }
+      .category-option input[type="radio"] {
+        transform: scale(1.15);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Blind Hams Nets Helper</h1>
+      <p>Welcome to the Net Helper — your accessible workspace for drafting nets that will appear on the Blind Hams Digital Network home page and nets listings.</p>
+      <p>Fill in the form below to add nets to the queue. When you've reviewed your entries, save them and a webmaster can handle final edits, approvals, and publishing. If you spot anything that needs tweaking, just edit your draft before saving — no worries.</p>
+      <p>Need to change details on a published net later on? No problem — updates will flow through the same review path so everything stays tidy and consistent.</p>
+      <p class="hint">
+        Fields marked with <span aria-hidden="true">*</span><span class="sr-only">required</span> are required. Snapshot controls live near the bottom of the page if you need to review or switch files.
+      </p>
+    </header>
+
+    <main>
+      <div id="srAnnounce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+      <section id="pendingStatus" class="pending-status" aria-live="polite">
+        <h2>Working snapshot</h2>
+        {% if pending_context.has_pending %}
+        <p><strong>Unpublished nets were found.</strong> Keep appending to the latest pending file below, or switch to a different snapshot if you need to review older work.</p>
+        {% else %}
+        <p><strong>No pending files yet.</strong> The next save will create a fresh pending copy from <code>{{ canonical_file.name }}</code>.</p>
+        {% endif %}
+        <div class="pending-actions">
+          <label for="sourcePicker"><span class="sr-only">Working snapshot</span></label>
+          <select id="sourcePicker" name="sourcePicker" aria-label="Select working snapshot">
+            {% for option in source_options %}
+            <option value="{{ option.key }}" data-is-pending="{{ 'true' if option.is_pending else 'false' }}" data-name="{{ option.name }}" {% if option.active %}selected{% endif %}>
+              {{ option.label }}
+            </option>
+            {% endfor %}
+          </select>
+          <button type="button" id="deleteSelected" class="danger" {% if not pending_context.has_pending %}disabled{% endif %}>Delete selected pending</button>
+          <button type="button" id="deleteAllPending" class="danger" {% if not pending_context.has_pending %}disabled{% endif %}>Delete all pending</button>
+        </div>
+        <p class="hint" id="currentSnapshot">Currently editing: <code>{{ working_file.name }}</code></p>
+        <p class="hint" id="pendingStatusHint">
+          {% if pending_context.has_pending %}
+          Default selection is the newest pending file. Pick another to review an older snapshot, or choose “Start fresh from {{ canonical_file.name }}” to begin a new list.
+          {% else %}
+          Submissions will be based on {{ canonical_file.name }} until a pending copy exists.
+          {% endif %}
+        </p>
+      </section>
+
+      <form id="netsForm" novalidate>
+        <section id="draftBanner" class="draft-banner" hidden aria-live="polite" aria-atomic="true">
+          <h2 id="draftBannerMessage">We found an unpublished draft from a previous session.</h2>
+          <div class="draft-actions">
+            <button type="button" id="draftRestoreBtn" class="restore">Restore draft</button>
+            <button type="button" id="draftDiscardBtn">Discard</button>
+          </div>
+          <div id="draftConfirm" class="draft-actions" hidden aria-live="polite" aria-atomic="true">
+            <span>Discard this draft?</span>
+            <button type="button" id="draftConfirmDiscard">Yes, discard</button>
+            <button type="button" id="draftCancelDiscard">Keep</button>
+          </div>
+        </section>
+        <input type="hidden" name="source_key" id="source_key" value="{{ active_source_key }}">
+        <h2 class="section-heading">Net details</h2>
+        <fieldset>
+          <legend>Net details</legend>
+
+          <div class="field-header">
+            <label for="id">Unique ID <span aria-hidden="true">*</span></label>
+          </div>
+          <p class="hint">Letters, numbers, hyphen, or underscore. Example: <code>blind-hams-digital</code>.</p>
+          <div class="field-input">
+            <input type="text" id="id" name="id" required pattern="^[A-Za-z0-9][A-Za-z0-9_\-]*$">
+            <button type="button" class="help-button" data-help="id" data-field-id="id" data-field-label="Unique ID" aria-expanded="false" aria-controls="help-id" aria-label="What does the Unique ID field mean?">?</button>
+          </div>
+          {% if existing_ids %}
+          <section class="hint existing-ids" role="region" aria-labelledby="existingIdsHeading" aria-describedby="existingIdsNote">
+            <p id="existingIdsHeading" class="sr-only">Existing net IDs</p>
+            <p id="existingIdsNote" class="sr-only">Exit Forms Mode or Browse Mode to review this list.</p>
+            <p aria-hidden="true">Existing IDs ({{ existing_ids|length }}):</p>
+            <ul>
+              {% for eid in existing_ids %}
+              <li>{{ eid }}</li>
+              {% endfor %}
+            </ul>
+          </section>
+          {% endif %}
+          <p class="hint help-text" id="help-id"></p>
+
+          <div class="field-header">
+            <label for="name">Net name <span aria-hidden="true">*</span></label>
+          </div>
+          <div class="field-input">
+            <input type="text" id="name" name="name" required>
+            <button type="button" class="help-button" data-help="name" data-field-id="name" data-field-label="Net name" aria-expanded="false" aria-controls="help-name" aria-label="What does the Net name field mean?">?</button>
+          </div>
+          <p class="hint help-text" id="help-name"></p>
+
+          <div class="field-header">
+            <span id="categoryLegend">Category <span aria-hidden="true">*</span></span>
+          </div>
+          <div class="field-input">
+            <div id="categoryOptions" role="radiogroup" aria-labelledby="categoryLegend">
+              {% for cat in categories %}
+              <label class="category-option">
+                <input type="radio" name="categoryChoice" value="{{ cat }}" {% if loop.first %}checked{% endif %}>
+                <span>{{ cat }}</span>
+              </label>
+              {% endfor %}
+              <label class="category-option">
+                <input type="radio" name="categoryChoice" value="__new__">
+                <span>New category…</span>
+              </label>
+            </div>
+            <button type="button" class="help-button" data-help="category" data-field-id="categoryOptions" data-field-label="Category" aria-expanded="false" aria-controls="help-category" aria-label="What does the Category field mean?">?</button>
+          </div>
+          <p class="hint help-text" id="help-category"></p>
+          <input type="hidden" id="category" name="category" required>
+          <div class="field-header" id="newCategoryHeader" hidden>
+            <label for="newCategory" id="newCategoryLabel">New category name</label>
+          </div>
+          <div class="field-input" id="newCategoryInputGroup" hidden>
+            <input type="text" id="newCategory" name="newCategory">
+            <button type="button" class="help-button" data-help="newCategory" data-field-id="newCategory" data-field-label="New category name" aria-expanded="false" aria-controls="help-newCategory" aria-label="What does the New category field mean?">?</button>
+          </div>
+          <p class="hint help-text" id="help-newCategory" hidden></p>
+
+          <div class="field-header">
+            <label for="description">Description <span aria-hidden="true">*</span></label>
+          </div>
+          <div class="field-input">
+            <textarea id="description" name="description" required></textarea>
+            <button type="button" class="help-button" data-help="description" data-field-id="description" data-field-label="Description" aria-expanded="false" aria-controls="help-description" aria-label="What does the Description field mean?">?</button>
+          </div>
+          <p class="hint help-text" id="help-description"></p>
+
+          <div class="field-header">
+            <label for="start_local">Start time (net time) <span aria-hidden="true">*</span></label>
+          </div>
+          <div class="time-toggle">
+            <button type="button" id="toggleTimeMode" aria-expanded="false" aria-controls="start_local_manual">Use 24-hour entry</button>
+          </div>
+          <div class="field-input" id="startTimeInputGroup">
+            <input type="time" id="start_local" name="start_local" required aria-describedby="startTimeHint">
+            <input type="text" id="start_local_manual" name="start_local_manual" placeholder="HH:MM" inputmode="numeric" pattern="^\\d{2}:\\d{2}$" hidden aria-hidden="true">
+            <button type="button" class="help-button" data-help="start_local" data-field-id="start_local" data-field-label="Start time" aria-expanded="false" aria-controls="help-start_local" aria-label="What does the Start time field mean?">?</button>
+          </div>
+          <p class="hint" id="startTimeHint"></p>
+          <p class="hint help-text" id="help-start_local"></p>
+
+          <div class="field-header">
+            <label for="time_zone">Time zone</label>
+          </div>
+          <div class="field-input">
+            <select id="time_zone" name="time_zone" aria-describedby="tzHelp">
+              <option value="">Use default ({{ default_time_zone }})</option>
+              {% for tz in time_zones %}
+              <option value="{{ tz }}">{{ tz }}</option>
+              {% endfor %}
+              <option value="__custom__">Custom…</option>
+            </select>
+            <button type="button" class="help-button" data-help="time_zone" data-field-id="time_zone" data-field-label="Time zone" aria-expanded="false" aria-controls="help-time_zone" aria-label="What does the Time zone field mean?">?</button>
+          </div>
+          <p class="hint help-text" id="help-time_zone"></p>
+          <div id="tzHelp" class="hint">Provide only when the net is not in {{ default_time_zone }}.</div>
+          <div class="field-header" id="customTimeZoneHeader" hidden>
+            <label for="custom_time_zone" id="customTimeZoneLabel">Custom time zone (IANA)</label>
+          </div>
+          <div class="field-input" id="customTimeZoneInputGroup" hidden>
+            <input type="hidden" id="custom_time_zone" name="custom_time_zone" data-visible-type="text" placeholder="e.g., Europe/London">
+            <button type="button" class="help-button" data-help="custom_time_zone" data-field-id="custom_time_zone" data-field-label="Custom time zone" aria-expanded="false" aria-controls="help-custom_time_zone" aria-label="What does the Custom time zone field mean?" hidden disabled tabindex="-1">?</button>
+          </div>
+          <p class="hint help-text" id="help-custom_time_zone" hidden></p>
+
+          <div class="field-header">
+            <label for="duration_min">Duration (minutes) <span aria-hidden="true">*</span></label>
+          </div>
+          <div class="field-input">
+            <input type="number" id="duration_min" name="duration_min" min="1" step="5" required>
+            <button type="button" class="help-button" data-help="duration_min" data-field-id="duration_min" data-field-label="Duration" aria-expanded="false" aria-controls="help-duration_min" aria-label="What does the Duration field mean?">?</button>
+          </div>
+          <p class="hint help-text" id="help-duration_min"></p>
+
+          <div class="field-header">
+            <label for="rrule">RRULE <span aria-hidden="true">*</span></label>
+          </div>
+          <div class="field-input rrule-actions">
+            <input type="text" id="rrule" name="rrule" placeholder="FREQ=WEEKLY;BYDAY=MO" required aria-describedby="rruleHint rruleDescription">
+            <button type="button" class="help-button" data-help="rrule" data-field-id="rrule" data-field-label="RRULE" aria-expanded="false" aria-controls="help-rrule" aria-label="What does the RRULE field mean?">?</button>
+            <button type="button" id="buildRruleBtn">Open RRULE builder</button>
+          </div>
+          <p class="hint help-text" id="help-rrule"></p>
+          <p class="hint" id="rruleHint">Use the builder or paste a rule (RFC 5545). The description below updates automatically.</p>
+          <p class="rrule-description" id="rruleDescription" aria-live="polite">No RRULE provided yet.</p>
+          <details class="rrule-builder" id="rruleBuilder">
+            <summary>RRULE builder (optional)</summary>
+            <div class="rrule-builder-grid">
+              <label for="builderFreq">Frequency
+                <select id="builderFreq">
+                  <option value="WEEKLY">Weekly</option>
+                  <option value="DAILY">Daily</option>
+                  <option value="MONTHLY">Monthly</option>
+                </select>
+              </label>
+              <label for="builderInterval">Repeat every
+                <input type="number" id="builderInterval" min="1" value="1">
+                <span class="hint">Interval in frequency units</span>
+              </label>
+            </div>
+
+            <div id="weeklyOptions" class="weekday-options" aria-live="polite">
+              <label><input type="checkbox" value="MO">Monday</label>
+              <label><input type="checkbox" value="TU">Tuesday</label>
+              <label><input type="checkbox" value="WE">Wednesday</label>
+              <label><input type="checkbox" value="TH">Thursday</label>
+              <label><input type="checkbox" value="FR">Friday</label>
+              <label><input type="checkbox" value="SA">Saturday</label>
+              <label><input type="checkbox" value="SU">Sunday</label>
+            </div>
+
+            <div id="monthlyOptions" hidden>
+              <label for="monthlyMode">Monthly pattern
+                <select id="monthlyMode">
+                  <option value="day">Specific day of month</option>
+                  <option value="weekday">Nth weekday</option>
+                </select>
+              </label>
+              <div id="monthlyDayContainer">
+                <label for="monthlyDay">Day of month
+                  <input type="number" id="monthlyDay" min="1" max="31" value="1">
+                </label>
+              </div>
+              <div id="monthlyWeekdayContainer" hidden>
+                <label for="monthlySetPos">Week
+                  <select id="monthlySetPos">
+                    <option value="1">First</option>
+                    <option value="2">Second</option>
+                    <option value="3">Third</option>
+                    <option value="4">Fourth</option>
+                    <option value="-1">Last</option>
+                  </select>
+                </label>
+                <label for="monthlyWeekday">Weekday
+                  <select id="monthlyWeekday">
+                    <option value="MO">Monday</option>
+                    <option value="TU">Tuesday</option>
+                    <option value="WE">Wednesday</option>
+                    <option value="TH">Thursday</option>
+                    <option value="FR">Friday</option>
+                    <option value="SA">Saturday</option>
+                    <option value="SU">Sunday</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div class="actions" style="margin-top: 0.75rem;">
+              <button type="button" id="applyRrule">Apply to RRULE field</button>
+            </div>
+          </details>
+        </fieldset>
+
+        <h2 class="section-heading">Connections</h2>
+        <fieldset>
+          <legend>Connections</legend>
+          <p class="hint">Select the connection types that apply to this net. Fields appear once you check a box.</p>
+          <div class="connections-list">
+            <label class="connection-toggle">
+              <input type="checkbox" id="connAllStar" data-connection-label="AllStar">
+              <span>AllStar</span>
+            </label>
+            <label class="connection-toggle">
+              <input type="checkbox" id="connEchoLink" data-connection-label="EchoLink">
+              <span>EchoLink</span>
+            </label>
+            <label class="connection-toggle">
+              <input type="checkbox" id="connDMR" data-connection-label="DMR">
+              <span>DMR</span>
+            </label>
+            <label class="connection-toggle">
+              <input type="checkbox" id="connDStar" data-connection-label="DStar">
+              <span>DStar</span>
+            </label>
+            <label class="connection-toggle">
+              <input type="checkbox" id="connHF" data-connection-label="HF">
+              <span>HF (frequency &amp; mode)</span>
+            </label>
+          </div>
+
+          <div id="connection-allstar" class="connection-section" hidden aria-hidden="true" inert>
+            <label for="allstar">AllStar node(s)</label>
+            <input type="text" id="allstar" name="allstar" placeholder="e.g., 50631, 42726" disabled tabindex="-1">
+          </div>
+
+          <div id="connection-echolink" class="connection-section" hidden aria-hidden="true" inert>
+            <label for="echolink">EchoLink node(s)</label>
+            <input type="text" id="echolink" name="echolink" placeholder="e.g., *KV3T-L" disabled tabindex="-1">
+          </div>
+
+          <div id="connection-dmr" class="connection-section" hidden aria-hidden="true" inert>
+            <p class="hint">Provide the DMR network and talkgroup used during the net.</p>
+            <label for="dmr_system">DMR system</label>
+            <input type="text" id="dmr_system" name="dmr_system" placeholder="e.g., BrandMeister" disabled tabindex="-1">
+            <label for="dmr_tg">DMR talkgroup</label>
+            <input type="text" id="dmr_tg" name="dmr_tg" placeholder="e.g., 31672" disabled tabindex="-1">
+          </div>
+
+          <div id="connection-dstar" class="connection-section" hidden aria-hidden="true" inert>
+            <p class="hint">Provide the DStar reflector/module the net uses.</p>
+            <label for="DStar">DStar connection</label>
+            <input type="text" id="DStar" name="DStar" placeholder="e.g., XLX123A" disabled tabindex="-1">
+          </div>
+
+          <div id="connection-hf" class="connection-section" hidden aria-hidden="true" inert>
+            <p class="hint">Record the HF frequency and mode used for this net.</p>
+            <label for="frequency">Frequency</label>
+            <input type="text" id="frequency" name="frequency" placeholder="e.g., 14.200" disabled tabindex="-1">
+            <label for="mode">Mode</label>
+            <select id="mode" name="mode" disabled tabindex="-1">
+              <option value="">Select a mode</option>
+              <option value="USB">Upper Sideband (USB)</option>
+              <option value="LSB">Lower Sideband (LSB)</option>
+              <option value="AM">AM</option>
+              <option value="FM">FM</option>
+              <option value="Digital">Digital</option>
+              <option value="CW">CW</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <h2 class="section-heading">Optional fields</h2>
+        <fieldset>
+          <legend>Optional fields</legend>
+          <p class="hint">Fill in only what applies to this net.</p>
+          <div class="optional-grid">
+            {% for key in ["location", "peanut", "zoom", "notes"] %}
+            <div>
+              <label for="{{ key }}">{{ key | replace("_", " ") | title }}</label>
+              <div class="field-input">
+                <input type="text" id="{{ key }}" name="{{ key }}">
+                <button type="button" class="help-button" data-help="{{ key|lower }}" data-field-id="{{ key }}" data-field-label="{{ key | replace('_', ' ') | title }}" aria-expanded="false" aria-controls="help-{{ key|lower|replace('_', '-') }}" aria-label="What does the {{ key | replace('_', ' ') | title }} field mean?">?</button>
+              </div>
+              <p class="hint help-text" id="help-{{ key|lower|replace('_', '-') }}"></p>
+            </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <h2 class="section-heading">Custom YAML fields</h2>
+        <fieldset>
+          <legend>Custom YAML fields</legend>
+          <p class="hint">Need a field that is not listed above? Add it here.</p>
+          <div id="customFields"></div>
+          <button type="button" id="addCustomField">Add custom field</button>
+        </fieldset>
+
+        <div class="actions">
+          <button type="button" id="previewBtn" class="primary">Preview YAML</button>
+          <button type="button" id="saveBtn">Create pending file</button>
+        </div>
+        <p id="autosaveStatus" class="autosave-status" hidden aria-live="polite"></p>
+      </form>
+
+      <div aria-live="polite" id="liveStatus" class="status" hidden></div>
+
+      <section aria-live="polite" aria-atomic="true">
+        <h2>Preview</h2>
+        <pre id="yamlPreview">Preview will appear here after you press “Preview YAML”.</pre>
+      </section>
+    </main>
+
+    <template id="customFieldTemplate">
+      <div class="custom-field">
+        <label>Key
+          <input type="text" data-field="key" placeholder="e.g., hubnet_channel">
+        </label>
+        <label>Value
+          <input type="text" data-field="value" placeholder="Text to store">
+        </label>
+        <button type="button" data-action="remove">Remove</button>
+      </div>
+    </template>
+
+    <script>
+      const pendingContext = {{ pending_context|tojson }};
+      const form = document.getElementById('netsForm');
+      const previewBtn = document.getElementById('previewBtn');
+      const saveBtn = document.getElementById('saveBtn');
+      const statusBox = document.getElementById('liveStatus');
+      const yamlPreview = document.getElementById('yamlPreview');
+      const sourceInput = document.getElementById('source_key');
+      const sourcePicker = document.getElementById('sourcePicker');
+      const deleteSelectedBtn = document.getElementById('deleteSelected');
+      const deleteAllBtn = document.getElementById('deleteAllPending');
+      const currentSnapshot = document.getElementById('currentSnapshot');
+      const pendingStatusHint = document.getElementById('pendingStatusHint');
+      const categoryField = document.getElementById('category');
+      const categoryRadios = Array.from(document.querySelectorAll('input[name="categoryChoice"]'));
+      const categoryOptionsContainer = document.getElementById('categoryOptions');
+      const newCategoryInput = document.getElementById('newCategory');
+      const newCategoryLabel = document.getElementById('newCategoryLabel');
+      const newCategoryHeader = document.getElementById('newCategoryHeader');
+      const newCategoryInputGroup = document.getElementById('newCategoryInputGroup');
+      const timeZoneSelect = document.getElementById('time_zone');
+      const customTimeZoneInput = document.getElementById('custom_time_zone');
+      const customTimeZoneVisibleType = customTimeZoneInput ? (customTimeZoneInput.dataset.visibleType || 'text') : 'text';
+      const customTimeZoneLabel = document.getElementById('customTimeZoneLabel');
+      const customTimeZoneHeader = document.getElementById('customTimeZoneHeader');
+      const customTimeZoneInputGroup = document.getElementById('customTimeZoneInputGroup');
+      const customFieldsContainer = document.getElementById('customFields');
+      const customFieldTemplate = document.getElementById('customFieldTemplate');
+      const addCustomFieldButton = document.getElementById('addCustomField');
+      const helpButtons = Array.from(document.querySelectorAll('.help-button'));
+      const helpButtonMap = {};
+      const helpTargets = {};
+      const helpLabels = new Map();
+      const srAnnounce = document.getElementById('srAnnounce');
+      const newCategoryHelpButton = document.querySelector('[data-help="newCategory"]');
+      const customTimeZoneHelpButton = document.querySelector('[data-help="custom_time_zone"]');
+      const customTimeZoneHelpText = document.getElementById('help-custom_time_zone');
+      const helpTexts = {{ help_texts|tojson }};
+      const predefinedLabels = {{ help_labels|tojson }};
+      const draftBanner = document.getElementById('draftBanner');
+      const draftBannerMessage = document.getElementById('draftBannerMessage');
+      const draftRestoreBtn = document.getElementById('draftRestoreBtn');
+      const draftDiscardBtn = document.getElementById('draftDiscardBtn');
+      const draftConfirm = document.getElementById('draftConfirm');
+      const draftConfirmDiscard = document.getElementById('draftConfirmDiscard');
+      const draftCancelDiscard = document.getElementById('draftCancelDiscard');
+      const autosaveStatus = document.getElementById('autosaveStatus');
+      const connectionConfigs = [
+        {
+          key: 'allstar',
+          label: 'AllStar',
+          checkbox: document.getElementById('connAllStar'),
+          section: document.getElementById('connection-allstar'),
+          fields: ['allstar'],
+        },
+        {
+          key: 'echolink',
+          label: 'EchoLink',
+          checkbox: document.getElementById('connEchoLink'),
+          section: document.getElementById('connection-echolink'),
+          fields: ['echolink'],
+        },
+        {
+          key: 'dmr',
+          label: 'DMR',
+          checkbox: document.getElementById('connDMR'),
+          section: document.getElementById('connection-dmr'),
+          fields: ['dmr_system', 'dmr_tg'],
+        },
+        {
+          key: 'dstar',
+          label: 'DStar',
+          checkbox: document.getElementById('connDStar'),
+          section: document.getElementById('connection-dstar'),
+          fields: ['DStar'],
+        },
+        {
+          key: 'hf',
+          label: 'HF',
+          checkbox: document.getElementById('connHF'),
+          section: document.getElementById('connection-hf'),
+          fields: ['frequency', 'mode'],
+        },
+      ];
+      const AUTO_SAVE_KEY_ACTIVE = 'bhn:nets-helper:draft:active';
+      const AUTO_SAVE_KEY_PENDING = 'bhn:nets-helper:draft:pending';
+      const AUTO_SAVE_DEBOUNCE_MS = 3000;
+      const AUTO_SAVE_ANNOUNCE_MS = 60000;
+      let autoSaveTimer = null;
+      let lastAutoSaveAnnounce = 0;
+      let applyingDraft = false;
+      let draftBannerVisible = false;
+      let activeDraftPayload = null;
+
+      function escapeSelector(value) {
+        if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+          return CSS.escape(value);
+        }
+        return String(value).replace(/[ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~]/g, '\\$&');
+      }
+
+      function sanitizeLabel(text) {
+        if (!text) return '';
+        let cleaned = text.replace(/\s+/g, ' ').trim();
+        cleaned = cleaned.replace(/^What does the\s+/i, '');
+        cleaned = cleaned.replace(/\s+field(?:s)? mean\??$/i, '');
+        cleaned = cleaned.replace(/\s+\?$/, '');
+        cleaned = cleaned.replace(/\s*\*+$/, '');
+        return cleaned.trim();
+      }
+
+      function deriveHelpLabel(button, fieldId) {
+        let labelText = button.dataset.fieldLabel || '';
+        if (!labelText) {
+          const key = button.dataset.help;
+          if (key && predefinedLabels && Object.prototype.hasOwnProperty.call(predefinedLabels, key)) {
+            labelText = predefinedLabels[key] || '';
+          }
+        }
+        if (!labelText && fieldId) {
+          if (fieldId === 'categoryOptions') {
+            const legend = document.getElementById('categoryLegend');
+            if (legend) {
+              labelText = legend.textContent || '';
+            }
+          } else {
+            const labelEl = document.querySelector(`label[for="${escapeSelector(fieldId)}"]`);
+            if (labelEl) {
+              labelText = labelEl.textContent || '';
+            }
+            if (!labelText) {
+              const legendEl = document.getElementById(`${fieldId}Legend`);
+              if (legendEl) {
+                labelText = legendEl.textContent || '';
+              }
+            }
+          }
+        }
+        if (!labelText) {
+          labelText = button.getAttribute('aria-label') || '';
+        }
+        return sanitizeLabel(labelText);
+      }
+
+      function speak(message) {
+        if (!srAnnounce || !message) return;
+        srAnnounce.textContent = '';
+        srAnnounce.textContent = message;
+      }
+
+      function announceHelp(targetId, isOpen, target) {
+        const labelText = helpLabels.get(targetId) || 'Field';
+        if (isOpen) {
+          const helpText = target ? sanitizeLabel(target.textContent || '') : '';
+          if (helpText) {
+            speak(`${labelText} help expanded. ${helpText}`);
+          } else {
+            speak(`${labelText} help expanded.`);
+          }
+        } else {
+          speak(`${labelText} help collapsed.`);
+        }
+      }
+
+      const hasPending = Boolean(pendingContext && pendingContext.has_pending);
+      let askedDeleteForFresh = false;
+      if (sourcePicker) {
+        updateSourceSelectionUI();
+        sourcePicker.addEventListener('change', handleSourceChange);
+      }
+      if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', handleDeleteSelected);
+      }
+      if (deleteAllBtn) {
+        deleteAllBtn.addEventListener('click', handleDeleteAll);
+      }
+      const rruleInput = document.getElementById('rrule');
+      const rruleDescription = document.getElementById('rruleDescription');
+      const buildRruleBtn = document.getElementById('buildRruleBtn');
+      const rruleBuilderDetails = document.getElementById('rruleBuilder');
+      const builderFreq = document.getElementById('builderFreq');
+      const builderInterval = document.getElementById('builderInterval');
+      const weeklyOptions = document.getElementById('weeklyOptions');
+      const monthlyOptions = document.getElementById('monthlyOptions');
+      const monthlyMode = document.getElementById('monthlyMode');
+      const monthlyDayContainer = document.getElementById('monthlyDayContainer');
+      const monthlyWeekdayContainer = document.getElementById('monthlyWeekdayContainer');
+      const monthlyDay = document.getElementById('monthlyDay');
+      const monthlySetPos = document.getElementById('monthlySetPos');
+      const monthlyWeekday = document.getElementById('monthlyWeekday');
+      const applyRruleButton = document.getElementById('applyRrule');
+      const netNameInput = document.getElementById('name');
+      const startTimePicker = document.getElementById('start_local');
+      const startTimeManual = document.getElementById('start_local_manual');
+      const toggleTimeModeBtn = document.getElementById('toggleTimeMode');
+      const startTimeInputGroup = document.getElementById('startTimeInputGroup');
+      const startTimeHint = document.getElementById('startTimeHint');
+      let manualTimeMode = false;
+      const errorFields = new Set();
+
+      function findField(name) {
+        switch (name) {
+          case 'category':
+            return categoryOptionsContainer;
+          case 'newCategory':
+            return newCategoryInput;
+          case 'custom_time_zone':
+            return customTimeZoneInput;
+          case 'start_local':
+            return manualTimeMode ? startTimeManual : startTimePicker;
+          default:
+            return form.elements[name] || document.getElementById(name) || null;
+        }
+      }
+
+      function markFieldError(name) {
+        const field = findField(name);
+        if (!field) {
+          return null;
+        }
+        errorFields.add(field);
+        field.setAttribute('aria-invalid', 'true');
+        if (field.classList) {
+          field.classList.add('field-error');
+        }
+        const wrapper = field.closest ? field.closest('.field-input') : null;
+        if (wrapper) {
+          wrapper.classList.add('field-error');
+        }
+        const current = field.getAttribute('aria-describedby') || '';
+        if (!current.includes('liveStatus')) {
+          field.dataset.prevDescribedby = current;
+          const next = `${current} liveStatus`.trim();
+          field.setAttribute('aria-describedby', next);
+        }
+        if (field === categoryOptionsContainer) {
+          return categoryRadios[0] || null;
+        }
+        return field;
+      }
+
+      function clearFieldError(field) {
+        if (!field || !errorFields.has(field)) {
+          return;
+        }
+        field.removeAttribute('aria-invalid');
+        if (field.classList) {
+          field.classList.remove('field-error');
+        }
+        if (Object.prototype.hasOwnProperty.call(field.dataset, 'prevDescribedby')) {
+          const previous = field.dataset.prevDescribedby;
+          if (previous) {
+            field.setAttribute('aria-describedby', previous);
+          } else {
+            field.removeAttribute('aria-describedby');
+          }
+          delete field.dataset.prevDescribedby;
+        }
+        errorFields.delete(field);
+        const wrapper = field.closest ? field.closest('.field-input') : null;
+        if (wrapper) {
+          wrapper.classList.remove('field-error');
+        }
+      }
+
+      function clearFieldErrors() {
+        Array.from(errorFields).forEach((field) => clearFieldError(field));
+      }
+
+      categoryRadios.forEach((radio) => {
+        radio.addEventListener('change', () => {
+          handleCategoryChange(radio.value);
+        });
+      });
+      const preselectedCategory = categoryRadios.find((radio) => radio.checked);
+      if (preselectedCategory) {
+        handleCategoryChange(preselectedCategory.value);
+      } else {
+        handleCategoryChange(categoryField.value || '');
+      }
+
+      function toggleFieldGroup(group, input, show, extras = []) {
+        const APPLY_STYLE = (el, visible) => {
+          if (!el) return;
+          if (visible) {
+            el.removeAttribute('hidden');
+            el.removeAttribute('aria-hidden');
+            el.style.display = '';
+            el.removeAttribute('inert');
+            if ('disabled' in el) {
+              el.disabled = false;
+            }
+            el.removeAttribute('tabindex');
+          } else {
+            el.setAttribute('hidden', '');
+            el.setAttribute('aria-hidden', 'true');
+            el.style.display = 'none';
+            el.setAttribute('inert', '');
+            if ('disabled' in el) {
+              el.disabled = true;
+            }
+            el.setAttribute('tabindex', '-1');
+          }
+        };
+
+        APPLY_STYLE(group, show);
+        APPLY_STYLE(input, show);
+        extras.forEach((element) => APPLY_STYLE(element, show));
+      }
+
+      function resolveConnectionFields(config) {
+        config.fieldElements = config.fields
+          .map((name) => form.elements[name])
+          .filter(Boolean);
+        return config.fieldElements;
+      }
+
+      function connectionHasData(config) {
+        const fields = resolveConnectionFields(config);
+        return fields.some((el) => {
+          if (!el) return false;
+          if (el.tagName === 'SELECT') {
+            return Boolean(el.value);
+          }
+          return Boolean(String(el.value || '').trim());
+        });
+      }
+
+      function clearConnectionFields(config) {
+        const fields = resolveConnectionFields(config);
+        fields.forEach((el) => {
+          if (!el) return;
+          if (el.tagName === 'SELECT') {
+            el.selectedIndex = 0;
+          } else {
+            el.value = '';
+          }
+        });
+      }
+
+      function setConnectionSectionVisibility(config, visible, { focusFirst = false } = {}) {
+        const section = config.section;
+        if (!section) return;
+        section.hidden = !visible;
+        section.setAttribute('aria-hidden', visible ? 'false' : 'true');
+        if (visible) {
+          section.removeAttribute('inert');
+          section.style.display = '';
+        } else {
+          section.setAttribute('inert', '');
+          section.style.display = 'none';
+        }
+        const focusTargets = [];
+        section.querySelectorAll('input, select, textarea, button').forEach((el) => {
+          if (!el || el === config.checkbox) return;
+          if (visible) {
+            if (el.dataset.visibleType) {
+              el.type = el.dataset.visibleType;
+            }
+            el.disabled = false;
+            el.removeAttribute('tabindex');
+            focusTargets.push(el);
+          } else {
+            if (el.dataset.visibleType) {
+              el.type = 'hidden';
+            }
+            el.disabled = true;
+            el.setAttribute('tabindex', '-1');
+          }
+        });
+        if (visible && focusFirst) {
+          const first = focusTargets.find((el) => el.tagName !== 'BUTTON');
+          if (first) {
+            setTimeout(() => {
+              if (typeof first.focus === 'function') {
+                first.focus({ preventScroll: true });
+              }
+            }, 0);
+            announce(`${config.label} connection fields ready.`);
+          }
+        }
+      }
+
+      function setConnectionState(config, enable, { announceChanges = true, allowPrompt = true, initialize = false } = {}) {
+        const hasData = connectionHasData(config);
+        if (enable) {
+          setConnectionSectionVisibility(config, true, { focusFirst: !initialize });
+          if (!initialize && announceChanges) {
+            announce(`${config.label} connection expanded.`);
+          }
+          if (!initialize) {
+            queueAutosave();
+          }
+          return;
+        }
+
+        if (!initialize && allowPrompt && hasData) {
+          const confirmDrop = window.confirm(`Remove ${config.label} connection details?`);
+          if (!confirmDrop) {
+            config.checkbox.checked = true;
+            if (announceChanges) {
+              announce(`${config.label} connection kept.`);
+            }
+            return;
+          }
+          clearConnectionFields(config);
+        }
+
+        setConnectionSectionVisibility(config, false);
+        if (!initialize && announceChanges) {
+          announce(`${config.label} connection collapsed.`);
+        }
+        if (!initialize) {
+          queueAutosave();
+        }
+      }
+
+      function cancelAutosave() {
+        if (autoSaveTimer) {
+          clearTimeout(autoSaveTimer);
+          autoSaveTimer = null;
+        }
+      }
+
+      function queueAutosave() {
+        if (applyingDraft) {
+          return;
+        }
+        if (typeof localStorage === 'undefined') {
+          return;
+        }
+        cancelAutosave();
+        autoSaveTimer = setTimeout(() => {
+          autoSaveTimer = null;
+          saveDraftToStorage();
+        }, AUTO_SAVE_DEBOUNCE_MS);
+      }
+
+      function clearDraft() {
+        cancelAutosave();
+        try {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem(AUTO_SAVE_KEY_ACTIVE);
+            localStorage.removeItem(AUTO_SAVE_KEY_PENDING);
+          }
+        } catch (_err) {}
+        lastAutoSaveAnnounce = 0;
+        draftBannerVisible = false;
+        activeDraftPayload = null;
+        hideDraftBanner();
+        updateAutosaveStatus(null);
+      }
+
+      function collectDraftPayload() {
+        const payload = {
+          version: 1,
+          timestamp: Date.now(),
+          values: {},
+          customFields: [],
+          connections: [],
+          meta: {
+            manualTimeMode,
+            startPicker: startTimePicker.value,
+            startManual: startTimeManual.value,
+            categoryChoice: '',
+            sourceKey: sourceInput ? sourceInput.value : '',
+          },
+        };
+
+        const formData = new FormData(form);
+        formData.forEach((value, name) => {
+          if (name === 'categoryChoice' || name === 'start_local_manual') {
+            return;
+          }
+          payload.values[name] = value;
+        });
+
+        const selectedCategory = categoryRadios.find((radio) => radio.checked);
+        if (selectedCategory) {
+          payload.meta.categoryChoice = selectedCategory.value;
+          payload.values.category = selectedCategory.value;
+        }
+
+        payload.customFields = Array.from(customFieldsContainer.querySelectorAll('.custom-field')).map((block) => {
+          const keyInput = block.querySelector('[data-field="key"]');
+          const valueInput = block.querySelector('[data-field="value"]');
+          return {
+            key: keyInput ? keyInput.value : '',
+            value: valueInput ? valueInput.value : '',
+          };
+        });
+
+        payload.connections = connectionConfigs.map((config) => ({
+          key: config.key,
+          enabled: !!(config.checkbox && config.checkbox.checked),
+        }));
+
+        return payload;
+      }
+
+      function saveDraftToStorage() {
+        if (applyingDraft) {
+          return;
+        }
+        if (typeof localStorage === 'undefined') {
+          return;
+        }
+        try {
+          const payload = collectDraftPayload();
+          const key = draftBannerVisible ? AUTO_SAVE_KEY_PENDING : AUTO_SAVE_KEY_ACTIVE;
+          localStorage.setItem(key, JSON.stringify(payload));
+          if (!draftBannerVisible) {
+            localStorage.removeItem(AUTO_SAVE_KEY_PENDING);
+          }
+          updateAutosaveStatus(payload.timestamp);
+          const now = Date.now();
+          if (now - lastAutoSaveAnnounce > AUTO_SAVE_ANNOUNCE_MS) {
+            announce('Draft saved automatically.');
+            lastAutoSaveAnnounce = now;
+          }
+        } catch (error) {
+          console.warn('Unable to save draft', error);
+        }
+      }
+
+      function updateAutosaveStatus(timestamp) {
+        if (!autosaveStatus) {
+          return;
+        }
+        if (!timestamp) {
+          autosaveStatus.hidden = true;
+          autosaveStatus.textContent = '';
+          return;
+        }
+        const savedAt = new Date(timestamp);
+        const formatter = new Intl.DateTimeFormat(undefined, {
+          hour: 'numeric',
+          minute: '2-digit',
+        });
+        autosaveStatus.hidden = false;
+        autosaveStatus.textContent = `Draft saved at ${formatter.format(savedAt)}.`;
+      }
+
+      function showDraftBanner(payload) {
+        if (!draftBanner) {
+          applyDraft(payload);
+          return;
+        }
+        draftBannerVisible = true;
+        activeDraftPayload = payload;
+        const savedAt = new Date(payload.timestamp || Date.now());
+        const formatter = new Intl.DateTimeFormat(undefined, {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        });
+        if (draftBannerMessage) {
+          draftBannerMessage.textContent = `We found an unpublished draft from ${formatter.format(savedAt)}.`;
+        }
+        draftBanner.hidden = false;
+        draftBanner.setAttribute('aria-hidden', 'false');
+        if (draftConfirm) {
+          draftConfirm.hidden = true;
+          draftConfirm.setAttribute('aria-hidden', 'true');
+        }
+      }
+
+      function hideDraftBanner() {
+        if (!draftBanner) {
+          return;
+        }
+        draftBanner.hidden = true;
+        draftBanner.setAttribute('aria-hidden', 'true');
+        draftBannerVisible = false;
+        activeDraftPayload = null;
+        if (draftConfirm) {
+          draftConfirm.hidden = true;
+          draftConfirm.setAttribute('aria-hidden', 'true');
+        }
+      }
+
+      function loadDraftFromStorage() {
+        if (typeof localStorage === 'undefined') {
+          return;
+        }
+        let rawActive = null;
+        try {
+          rawActive = localStorage.getItem(AUTO_SAVE_KEY_ACTIVE);
+        } catch (error) {
+          console.warn('Unable to read active draft', error);
+          return;
+        }
+        if (!rawActive) {
+          try {
+            localStorage.removeItem(AUTO_SAVE_KEY_PENDING);
+          } catch (_err) {}
+          return;
+        }
+        let draft = null;
+        try {
+          draft = JSON.parse(rawActive);
+        } catch (error) {
+          console.warn('Unable to parse draft', error);
+          clearDraft();
+          return;
+        }
+        if (!draft || typeof draft !== 'object') {
+          clearDraft();
+          return;
+        }
+        showDraftBanner(draft);
+      }
+
+      function isRadioGroup(field) {
+        return field && typeof field.length === 'number' && typeof field.item === 'function' && !field.tagName;
+      }
+
+      function applyDraft(draft) {
+        applyingDraft = true;
+        cancelAutosave();
+        try {
+          const values = draft.values || {};
+          const meta = draft.meta || {};
+
+          customFieldsContainer.innerHTML = '';
+          (draft.customFields || []).forEach(({ key, value }) => {
+            const fragment = customFieldTemplate.content.cloneNode(true);
+            const keyInput = fragment.querySelector('[data-field="key"]');
+            const valueInput = fragment.querySelector('[data-field="value"]');
+            if (keyInput) keyInput.value = key || '';
+            if (valueInput) valueInput.value = value || '';
+            customFieldsContainer.appendChild(fragment);
+          });
+
+          const connectionState = new Map((draft.connections || []).map((entry) => [entry.key, entry.enabled]));
+          connectionConfigs.forEach((config) => {
+            if (!config.checkbox) return;
+            const enabled = connectionState.has(config.key)
+              ? Boolean(connectionState.get(config.key))
+              : connectionHasData(config);
+            config.checkbox.checked = enabled;
+            setConnectionState(config, enabled, {
+              announceChanges: false,
+              allowPrompt: false,
+              initialize: true,
+            });
+          });
+
+          const connectionFieldNames = new Set(connectionConfigs.flatMap((cfg) => cfg.fields));
+
+          Object.entries(values).forEach(([name, value]) => {
+            if (connectionFieldNames.has(name)) {
+              return;
+            }
+            if (name === 'category') {
+              categoryField.value = value;
+              const radio = categoryRadios.find((r) => r.value === value);
+              if (radio) {
+                radio.checked = true;
+              }
+              handleCategoryChange(value);
+              return;
+            }
+            if (name === 'time_zone') {
+              timeZoneSelect.value = value || '';
+              applyTimeZoneSelection(value || '', { focusCustom: false });
+              return;
+            }
+            if (name === 'start_local') {
+              startTimePicker.value = value || '';
+              return;
+            }
+            const field = form.elements[name];
+            if (!field) {
+              return;
+            }
+            if (isRadioGroup(field)) {
+              Array.from(field).forEach((node) => {
+                node.checked = node.value === value;
+              });
+            } else if (field.type === 'checkbox') {
+              field.checked = value === 'on' || value === true || value === 'true';
+            } else {
+              field.value = value;
+            }
+          });
+
+          connectionConfigs.forEach((config) => {
+            const fields = resolveConnectionFields(config);
+            fields.forEach((field) => {
+              if (!field) return;
+              const storedValue = values[field.name];
+              if (storedValue !== undefined) {
+                field.value = storedValue;
+              }
+            });
+          });
+
+          if (meta.categoryChoice) {
+            const radio = categoryRadios.find((r) => r.value === meta.categoryChoice);
+            if (radio) {
+              radio.checked = true;
+              categoryField.value = meta.categoryChoice;
+              handleCategoryChange(meta.categoryChoice);
+            }
+          }
+
+          manualTimeMode = Boolean(meta.manualTimeMode);
+          startTimePicker.value = meta.startPicker || startTimePicker.value;
+          startTimeManual.value = meta.startManual || '';
+          updateTimeMode();
+          updateRruleDescription();
+
+          if (meta.sourceKey && sourceInput) {
+            sourceInput.value = meta.sourceKey;
+          }
+
+          updateAutosaveStatus(payload.timestamp || Date.now());
+          announce('Draft restored.');
+        } catch (error) {
+          console.warn('Unable to apply draft', error);
+        } finally {
+          applyingDraft = false;
+          lastAutoSaveAnnounce = Date.now();
+          queueAutosave();
+        }
+      }
+
+      function handleCategoryChange(value) {
+        categoryField.value = value || '';
+        const useCustom = value === '__new__';
+        toggleFieldGroup(newCategoryInputGroup, newCategoryInput, useCustom, [newCategoryHelpButton]);
+        newCategoryInput.required = useCustom;
+        newCategoryLabel.hidden = !useCustom;
+        newCategoryHeader.hidden = !useCustom;
+        setHelpVisibility('help-newCategory', false, { silent: true });
+        if (useCustom) {
+          newCategoryInput.focus();
+        } else {
+          newCategoryInput.value = '';
+        }
+        clearFieldError(newCategoryInput);
+        clearFieldError(categoryOptionsContainer);
+      }
+
+      function applyTimeZoneSelection(value, { focusCustom = false } = {}) {
+        const custom = value === '__custom__';
+        const extras = [customTimeZoneHelpButton, customTimeZoneHelpText, customTimeZoneHeader, customTimeZoneLabel].filter(Boolean);
+        toggleFieldGroup(customTimeZoneInputGroup, customTimeZoneInput, custom, extras);
+        customTimeZoneInput.required = custom;
+        customTimeZoneInput.type = custom ? customTimeZoneVisibleType : 'hidden';
+        customTimeZoneLabel.hidden = !custom;
+        customTimeZoneHeader.hidden = !custom;
+        setHelpVisibility('help-custom_time_zone', false, { silent: true });
+        if (custom) {
+          if (focusCustom) {
+            customTimeZoneInput.focus();
+          }
+        } else {
+          customTimeZoneInput.value = '';
+          customTimeZoneInput.blur();
+        }
+        clearFieldError(customTimeZoneInput);
+        clearFieldError(timeZoneSelect);
+      }
+
+      timeZoneSelect.addEventListener('change', () => {
+        applyTimeZoneSelection(timeZoneSelect.value, { focusCustom: timeZoneSelect.value === '__custom__' });
+      });
+
+      connectionConfigs.forEach((config) => {
+        if (!config.checkbox || !config.section) {
+          return;
+        }
+        resolveConnectionFields(config);
+        const initialEnabled = config.checkbox.checked || connectionHasData(config);
+        config.checkbox.checked = initialEnabled;
+        setConnectionState(config, initialEnabled, {
+          announceChanges: false,
+          allowPrompt: false,
+          initialize: true,
+        });
+        config.checkbox.addEventListener('change', () => {
+          setConnectionState(config, config.checkbox.checked, {
+            announceChanges: true,
+            allowPrompt: true,
+            initialize: false,
+          });
+        });
+      });
+
+      addCustomFieldButton.addEventListener('click', () => {
+        const fragment = customFieldTemplate.content.cloneNode(true);
+        customFieldsContainer.appendChild(fragment);
+        queueAutosave();
+      });
+
+      customFieldsContainer.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-action="remove"]');
+        if (!button) return;
+        const block = button.closest('.custom-field');
+        if (block) {
+          block.remove();
+          queueAutosave();
+        }
+      });
+
+      toggleTimeModeBtn.addEventListener('click', () => {
+        manualTimeMode = !manualTimeMode;
+        clearFieldError(startTimePicker);
+        clearFieldError(startTimeManual);
+        updateTimeMode({ focus: true });
+        updateRruleDescription();
+      });
+
+      startTimePicker.addEventListener('input', () => {
+        updateRruleDescription();
+      });
+      startTimeManual.addEventListener('input', () => {
+        updateRruleDescription();
+      });
+      startTimeManual.addEventListener('blur', () => {
+        const normalized = normalizeTime(startTimeManual.value);
+        if (normalized) {
+          startTimeManual.value = normalized;
+        }
+      });
+
+      buildRruleBtn.addEventListener('click', () => {
+        rruleBuilderDetails.open = true;
+        builderFreq.focus();
+        rruleBuilderDetails.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+
+      builderFreq.addEventListener('change', () => {
+        updateBuilderVisibility();
+      });
+
+      monthlyMode.addEventListener('change', () => {
+        const useWeekday = monthlyMode.value === 'weekday';
+        monthlyDayContainer.hidden = useWeekday;
+        monthlyWeekdayContainer.hidden = !useWeekday;
+      });
+
+      applyRruleButton.addEventListener('click', () => {
+        const freq = builderFreq.value;
+        const parts = [`FREQ=${freq}`];
+        const interval = Math.max(parseInt(builderInterval.value, 10) || 1, 1);
+        if (interval > 1) {
+          parts.push(`INTERVAL=${interval}`);
+        }
+
+        if (freq === 'WEEKLY') {
+          const selected = Array.from(weeklyOptions.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+          if (!selected.length) {
+            showStatus('Select at least one weekday for a weekly pattern.', 'error');
+            weeklyOptions.querySelector('input')?.focus();
+            return;
+          }
+          parts.push(`BYDAY=${selected.join(',')}`);
+        } else if (freq === 'MONTHLY') {
+          if (monthlyMode.value === 'day') {
+            const day = Math.min(Math.max(parseInt(monthlyDay.value, 10) || 1, 1), 31);
+            parts.push(`BYMONTHDAY=${day}`);
+          } else {
+            parts.push(`BYDAY=${monthlyWeekday.value}`);
+            parts.push(`BYSETPOS=${monthlySetPos.value}`);
+          }
+        }
+
+        rruleInput.value = parts.join(';');
+        updateRruleDescription();
+        announce('RRULE updated from builder.');
+      });
+
+      rruleInput.addEventListener('input', () => {
+        updateRruleDescription();
+      });
+
+      netNameInput.addEventListener('input', updateRruleDescription);
+
+      function setHelpVisibility(targetId, show, options = {}) {
+        const { silent = false } = options;
+        const target = helpTargets[targetId] || document.getElementById(targetId);
+        if (!target) return;
+        helpTargets[targetId] = target;
+        target.dataset.show = show ? 'true' : 'false';
+        target.hidden = !show;
+        const button = helpButtonMap[targetId];
+        if (button) {
+          button.setAttribute('aria-expanded', show ? 'true' : 'false');
+        }
+        const alreadyInitialized = target.dataset.helpInit === 'true';
+        target.dataset.helpInit = 'true';
+        if (!silent && alreadyInitialized) {
+          announceHelp(targetId, show, target);
+        }
+      }
+
+      helpButtons.forEach((button) => {
+        const key = button.dataset.help;
+        const targetId = button.getAttribute('aria-controls');
+        const target = document.getElementById(targetId);
+        if (target) {
+          if (helpTexts && Object.prototype.hasOwnProperty.call(helpTexts, key) && helpTexts[key]) {
+            target.textContent = helpTexts[key];
+          }
+        }
+        if (target) {
+          helpTargets[targetId] = target;
+          helpButtonMap[targetId] = button;
+          const fieldId = button.dataset.fieldId || '';
+          const labelText = deriveHelpLabel(button, fieldId);
+          if (labelText) {
+            button.dataset.fieldLabel = labelText;
+            helpLabels.set(targetId, labelText);
+          }
+          const initialShow = target.dataset.show === 'true';
+          setHelpVisibility(targetId, initialShow, { silent: true });
+        } else {
+          button.setAttribute('aria-disabled', 'true');
+        }
+        button.addEventListener('click', () => {
+          if (!target) return;
+          const show = target.dataset.show !== 'true';
+          setHelpVisibility(targetId, show);
+          if (show && typeof target.focus === 'function') {
+            target.focus({ preventScroll: true });
+          }
+        });
+      });
+
+      updateAutosaveStatus(null);
+      updateBuilderVisibility();
+      updateTimeMode();
+      monthlyMode.dispatchEvent(new Event('change'));
+      updateRruleDescription();
+      applyTimeZoneSelection(timeZoneSelect.value || '');
+      loadDraftFromStorage();
+
+      window.addEventListener('beforeunload', () => {
+        saveDraftToStorage();
+      });
+
+      if (draftRestoreBtn) {
+        draftRestoreBtn.addEventListener('click', () => {
+          if (!activeDraftPayload) {
+            hideDraftBanner();
+            return;
+          }
+          const payload = activeDraftPayload;
+          hideDraftBanner();
+          try {
+            localStorage.removeItem(AUTO_SAVE_KEY_PENDING);
+          } catch (_err) {}
+          applyDraft(payload);
+        });
+      }
+
+      if (draftDiscardBtn) {
+        draftDiscardBtn.addEventListener('click', () => {
+          if (!draftConfirm) {
+            clearDraft();
+            announce('Saved draft discarded.');
+            return;
+          }
+          draftConfirm.hidden = false;
+          draftConfirm.setAttribute('aria-hidden', 'false');
+          draftConfirmDiscard?.focus({ preventScroll: true });
+        });
+      }
+
+      if (draftConfirmDiscard) {
+        draftConfirmDiscard.addEventListener('click', () => {
+          clearDraft();
+          announce('Saved draft discarded.');
+        });
+      }
+
+      if (draftCancelDiscard) {
+        draftCancelDiscard.addEventListener('click', () => {
+          if (draftConfirm) {
+            draftConfirm.hidden = true;
+            draftConfirm.setAttribute('aria-hidden', 'true');
+          }
+          announce('Draft kept.');
+        });
+      }
+
+      previewBtn.addEventListener('click', async () => {
+        clearStatus();
+        const payload = collectFormData();
+        try {
+          const response = await fetch('/api/preview', requestOptions(payload));
+          const body = await parseResponse(response);
+          if (!response.ok) {
+            renderErrors(body.errors || {});
+            return;
+          }
+          yamlPreview.textContent = body.snippet;
+          announce('Preview ready.');
+        } catch (error) {
+          renderErrors({ general: error.message });
+        }
+      });
+
+      form.addEventListener('input', (event) => {
+        clearFieldError(event.target);
+        queueAutosave();
+      });
+
+      form.addEventListener('change', (event) => {
+        if (event.target.name === 'categoryChoice') {
+          clearFieldError(categoryOptionsContainer);
+        } else {
+          clearFieldError(event.target);
+        }
+        queueAutosave();
+      });
+
+      saveBtn.addEventListener('click', async () => {
+        clearStatus();
+        const payload = collectFormData();
+        try {
+          const response = await fetch('/api/save', requestOptions(payload));
+          const body = await parseResponse(response);
+          if (!response.ok) {
+            renderErrors(body.errors || {});
+            return;
+          }
+          yamlPreview.textContent = body.snippet;
+          showStatus(`Success — pending file saved to ${body.pending_path}`, 'success');
+          updateActiveSource(body.active_source);
+          resetFormAfterSave();
+        } catch (error) {
+          renderErrors({ general: error.message });
+        }
+      });
+
+      function collectFormData() {
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        payload.custom_fields = Array.from(customFieldsContainer.querySelectorAll('.custom-field')).map(block => {
+          return {
+            key: block.querySelector('[data-field="key"]').value,
+            value: block.querySelector('[data-field="value"]').value,
+          };
+        });
+
+        payload.start_local = getCurrentStartTime();
+        if (sourceInput) {
+          payload.source_key = sourceInput.value || (pendingContext && pendingContext.active_source) || 'nets';
+        } else if (pendingContext && pendingContext.active_source) {
+          payload.source_key = pendingContext.active_source;
+        }
+        delete payload.categoryChoice;
+        delete payload.start_local_manual;
+
+        return payload;
+      }
+
+      function requestOptions(payload) {
+        return {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        };
+      }
+
+      async function parseResponse(response) {
+        const text = await response.text();
+        try {
+          return JSON.parse(text);
+        } catch (_err) {
+          throw new Error('Server returned an unexpected response.');
+        }
+      }
+
+      function updateActiveSource(sourceKey) {
+        if (!sourceKey) return;
+        if (sourceInput) {
+          sourceInput.value = sourceKey;
+          sourceInput.defaultValue = sourceKey;
+        }
+        if (sourcePicker) {
+          const option = Array.from(sourcePicker.options).find((opt) => opt.value === sourceKey);
+          if (option) {
+            sourcePicker.value = sourceKey;
+            updateSourceSelectionUI();
+          }
+        }
+        if (pendingContext) {
+          pendingContext.active_source = sourceKey;
+        }
+      }
+
+      function handleSourceChange() {
+        const option = selectedSourceOption();
+        if (!option) {
+          return;
+        }
+        const value = option.value;
+        sourceInput.value = value;
+        if (pendingContext) {
+          pendingContext.active_source = value;
+        }
+        updateSourceSelectionUI();
+        const url = new URL(window.location.href);
+        url.searchParams.set('source', value);
+        window.history.replaceState({}, '', url);
+        const isPending = option.dataset.isPending === 'true';
+        if (!isPending && hasPending && !askedDeleteForFresh) {
+          askedDeleteForFresh = true;
+          const deleteNow = window.confirm('Start fresh from the canonical list? Delete existing pending files first?');
+          if (deleteNow) {
+            deletePending('all', null, 'nets');
+          }
+        }
+      }
+
+      function handleDeleteSelected() {
+        const option = selectedSourceOption();
+        if (!option || option.dataset.isPending !== 'true') {
+          showStatus('Select a pending file before deleting.', 'error');
+          return;
+        }
+        const label = option.dataset.name || option.textContent.trim() || option.value;
+        if (!window.confirm(`Delete pending file “${label}”? This cannot be undone.`)) {
+          return;
+        }
+        deletePending('single', option.value, 'nets');
+      }
+
+      function handleDeleteAll() {
+        if (!hasPending) {
+          return;
+        }
+        if (!window.confirm('Delete all pending files? This cannot be undone.')) {
+          return;
+        }
+        deletePending('all', null, 'nets');
+      }
+
+      async function deletePending(mode, key, nextSource) {
+        clearStatus();
+        const payload = { mode };
+        if (mode === 'single' && key) {
+          payload.key = key;
+        }
+        try {
+          const response = await fetch('/api/pending', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const body = await parseResponse(response);
+          if (!response.ok) {
+            showStatus(body.error || 'Unable to delete pending file.', 'error');
+            return;
+          }
+          announce('Pending files removed.');
+          reloadWithSource(nextSource);
+        } catch (error) {
+          showStatus(error.message, 'error');
+        }
+      }
+
+      function reloadWithSource(sourceKey) {
+        const url = new URL(window.location.href);
+        if (!sourceKey) {
+          url.searchParams.delete('source');
+          url.searchParams.delete('pending');
+        }
+        if (sourceKey) {
+          url.searchParams.set('source', sourceKey);
+        } else {
+          url.searchParams.delete('source');
+        }
+        window.location.href = url.toString();
+      }
+
+      function updateSourceSelectionUI() {
+        const option = selectedSourceOption();
+        if (!option) {
+          return;
+        }
+        const isPending = option.dataset.isPending === 'true';
+        if (deleteSelectedBtn) {
+          deleteSelectedBtn.disabled = !isPending;
+        }
+        if (currentSnapshot) {
+          const label = option.dataset.name || option.textContent.trim() || option.value;
+          currentSnapshot.innerHTML = `Currently editing: <code>${escapeHtml(label)}</code>`;
+        }
+        if (sourceInput && sourceInput.value !== option.value) {
+          sourceInput.value = option.value;
+        }
+        if (pendingContext) {
+          pendingContext.active_source = option.value;
+        }
+      }
+
+      function selectedSourceOption() {
+        if (!sourcePicker) {
+          return null;
+        }
+        return sourcePicker.selectedOptions[0] || null;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => {
+          switch (char) {
+            case '&':
+              return '&amp;';
+            case '<':
+              return '&lt;';
+            case '>':
+              return '&gt;';
+            case '"':
+              return '&quot;';
+            case "'":
+              return '&#39;';
+            default:
+              return char;
+          }
+        });
+      }
+
+      function clearStatus() {
+        statusBox.hidden = true;
+        statusBox.textContent = '';
+        statusBox.className = 'status';
+        statusBox.removeAttribute('role');
+        statusBox.setAttribute('aria-live', 'polite');
+        clearFieldErrors();
+      }
+
+      function resetFormAfterSave() {
+        form.reset();
+        manualTimeMode = false;
+        customFieldsContainer.innerHTML = '';
+        clearDraft();
+        const defaultCategory = categoryRadios.find((radio) => radio.checked) || categoryRadios[0];
+        if (defaultCategory) {
+          handleCategoryChange(defaultCategory.value);
+        } else {
+          handleCategoryChange('');
+        }
+        applyTimeZoneSelection(timeZoneSelect.value || '');
+        updateTimeMode();
+        updateBuilderVisibility();
+        updateRruleDescription();
+        connectionConfigs.forEach((config) => {
+          if (!config.checkbox) return;
+          config.checkbox.checked = false;
+          clearConnectionFields(config);
+          setConnectionState(config, false, {
+            announceChanges: false,
+            allowPrompt: false,
+            initialize: true,
+          });
+        });
+        announce('Form cleared for the next net entry.');
+        focusIdField();
+      }
+
+      function focusIdField() {
+        const idField = document.getElementById('id');
+        if (idField) {
+          idField.focus({ preventScroll: true });
+        }
+      }
+
+      function renderErrors(errorMap) {
+        const entries = Object.entries(errorMap || {});
+        if (!entries.length) {
+          showStatus('There was a problem — please try again.', 'error');
+          return;
+        }
+        let firstField = null;
+        const messages = [];
+        clearFieldErrors();
+        for (const [name, message] of entries) {
+          const field = markFieldError(name);
+          if (!firstField && field && typeof field.focus === 'function') {
+            firstField = field;
+          }
+          messages.push(message);
+        }
+        showStatus(messages.join(' '), 'error');
+        if (firstField) {
+          firstField.focus({ preventScroll: true });
+          if (typeof firstField.scrollIntoView === 'function') {
+            firstField.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          }
+        }
+      }
+
+      function showStatus(message, type = 'success') {
+        statusBox.hidden = false;
+        statusBox.textContent = message;
+        statusBox.className = `status ${type}`;
+        if (type === 'error') {
+          statusBox.setAttribute('role', 'alert');
+          statusBox.setAttribute('aria-live', 'assertive');
+        } else {
+          statusBox.setAttribute('role', 'status');
+          statusBox.setAttribute('aria-live', 'polite');
+        }
+      }
+
+      function announce(message) {
+        showStatus(message, 'success');
+      }
+
+      function updateTimeMode(options = {}) {
+        const { focus = false } = options;
+        clearFieldError(startTimePicker);
+        clearFieldError(startTimeManual);
+        if (manualTimeMode) {
+          const normalized = normalizeTime(startTimePicker.value);
+          if (normalized) {
+            startTimeManual.value = normalized;
+          }
+          startTimePicker.hidden = true;
+          startTimePicker.setAttribute('aria-hidden', 'true');
+          startTimePicker.required = false;
+          startTimeManual.hidden = false;
+          startTimeManual.removeAttribute('aria-hidden');
+          startTimeManual.required = true;
+          toggleTimeModeBtn.textContent = 'Use time picker';
+          startTimeHint.textContent = 'Manual 24-hour entry is active. Type HH:MM such as 23:30.';
+          toggleTimeModeBtn.setAttribute('aria-expanded', 'true');
+          if (focus) {
+            startTimeManual.focus();
+          }
+        } else {
+          const normalizedManual = normalizeTime(startTimeManual.value);
+          if (normalizedManual) {
+            startTimePicker.value = normalizedManual;
+          }
+          startTimePicker.hidden = false;
+          startTimePicker.removeAttribute('aria-hidden');
+          startTimePicker.required = true;
+          startTimeManual.hidden = true;
+          startTimeManual.setAttribute('aria-hidden', 'true');
+          startTimeManual.required = false;
+          toggleTimeModeBtn.textContent = 'Use 24-hour entry';
+          startTimeHint.textContent = 'Using the browser time picker. Your browser may show AM/PM or 24-hour format.';
+          toggleTimeModeBtn.setAttribute('aria-expanded', 'false');
+          if (focus) {
+            startTimePicker.focus();
+          }
+        }
+      }
+
+      function updateBuilderVisibility() {
+        const freq = builderFreq.value;
+        weeklyOptions.hidden = freq !== 'WEEKLY';
+        monthlyOptions.hidden = freq !== 'MONTHLY';
+      }
+
+      function updateRruleDescription() {
+        const rule = rruleInput.value.trim();
+        const netName = netNameInput.value.trim() || 'This net';
+        const startTime = getCurrentStartTime();
+        rruleDescription.textContent = describeRrule(rule, netName, startTime);
+      }
+
+      function getCurrentStartTime() {
+        if (manualTimeMode) {
+          return normalizeTime(startTimeManual.value) || '';
+        }
+        return normalizeTime(startTimePicker.value) || '';
+      }
+
+      function normalizeTime(value) {
+        if (!value) return '';
+        const trimmed = String(value).trim();
+        if (!trimmed) return '';
+        const match = trimmed.match(/^(\d{1,2})(:?)(\d{2})$/);
+        if (!match) return '';
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[3], 10);
+        if (Number.isNaN(hours) || Number.isNaN(minutes)) return '';
+        if (hours > 23 || minutes > 59) return '';
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+      }
+
+      function describeRrule(rule, netName, startTime) {
+        if (!rule) {
+          return 'No RRULE provided yet.';
+        }
+
+        const pairs = {};
+        for (const segment of rule.split(';')) {
+          if (!segment.includes('=')) {
+            return 'RRULE preview unavailable for this pattern.';
+          }
+          const [rawKey, rawValue] = segment.split('=');
+          if (!rawKey || !rawValue) {
+            return 'RRULE preview unavailable for this pattern.';
+          }
+          pairs[rawKey.toUpperCase()] = rawValue;
+        }
+
+        const freq = (pairs.FREQ || '').toUpperCase();
+        if (!freq) {
+          return 'RRULE preview unavailable for this pattern.';
+        }
+
+        const interval = Math.max(parseInt(pairs.INTERVAL, 10) || 1, 1);
+        const everyText = interval > 1 ? `every ${interval} ${freq.toLowerCase()}s` : `every ${freq.toLowerCase()}`;
+        const timeText = startTime ? ` at ${formatTime(startTime)}` : '';
+
+        if (freq === 'DAILY') {
+          return `${netName} repeats ${everyText}${timeText}.`;
+        }
+
+        if (freq === 'WEEKLY') {
+          const daysRaw = pairs.BYDAY ? pairs.BYDAY.split(',') : [];
+          if (!daysRaw.length) {
+            return `${netName} repeats ${everyText}${timeText}.`;
+          }
+          const dayNames = daysRaw.map(code => weekdayName(code)).filter(Boolean);
+          const list = formatList(dayNames);
+          return `${netName} repeats ${everyText} on ${list}${timeText}.`;
+        }
+
+        if (freq === 'MONTHLY') {
+          if (pairs.BYMONTHDAY) {
+            const day = pairs.BYMONTHDAY;
+            return `${netName} repeats ${everyText} on day ${day} of the month${timeText}.`;
+          }
+          if (pairs.BYDAY && pairs.BYSETPOS) {
+            const weekday = weekdayName(pairs.BYDAY);
+            const pos = positionName(parseInt(pairs.BYSETPOS, 10));
+            if (weekday && pos) {
+              return `${netName} repeats ${everyText} on the ${pos} ${weekday}${timeText}.`;
+            }
+          }
+          return `${netName} repeats ${everyText}${timeText}.`;
+        }
+
+        return 'RRULE preview unavailable for this pattern.';
+      }
+
+      function weekdayName(code) {
+        const map = {
+          MO: 'Monday',
+          TU: 'Tuesday',
+          WE: 'Wednesday',
+          TH: 'Thursday',
+          FR: 'Friday',
+          SA: 'Saturday',
+          SU: 'Sunday',
+        };
+        return map[code?.toUpperCase()] || '';
+      }
+
+      function positionName(value) {
+        const map = {
+          1: 'first',
+          2: 'second',
+          3: 'third',
+          4: 'fourth',
+          '-1': 'last',
+        };
+        return map[value] || null;
+      }
+
+      function formatList(items) {
+        if (!items.length) return '';
+        if (items.length === 1) return items[0];
+        return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+      }
+
+      function formatTime(value) {
+        const [h, m] = value.split(':').map(Number);
+        if (Number.isNaN(h) || Number.isNaN(m)) {
+          return value;
+        }
+        const period = h >= 12 ? 'PM' : 'AM';
+        const hour12 = ((h + 11) % 12) + 1;
+        const paddedMinutes = String(m).padStart(2, '0');
+        return `${hour12}:${paddedMinutes} ${period}`;
+      }
+    </script>
+  </body>
+</html>

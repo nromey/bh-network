@@ -1,0 +1,86 @@
+{
+  "id": {
+    "label": "Unique ID",
+    "help": "Provide a unique identifier using lowercase letters, numbers, hyphens, or underscores that will be used to describe a unique name for your net. IDs. Unique ID means that the ID cannot repeat."
+  },
+  "name": {
+    "label": "Net name",
+    "help": "Enter the friendly title that should appear on the Blind Hams listings."
+  },
+  "category": {
+    "label": "Category",
+    "help": "Pick the category that best matches the net. Only choose a new category when you have approval to add one."
+  },
+  "newCategory": {
+    "label": "New category name",
+    "help": "Type the name for the new category. Keep it short and consistent with existing options."
+  },
+  "description": {
+    "label": "Description",
+    "help": "Describe the focus of the net. One or two clear sentences is usually perfect."
+  },
+  "start_local": {
+    "label": "Start time",
+    "help": "Enter the official start time in the net’s local time zone."
+  },
+  "time_zone": {
+    "label": "Time zone",
+    "help": "Choose the net’s time zone when it differs from the site default."
+  },
+  "custom_time_zone": {
+    "label": "Custom time zone",
+    "help": "Supply a full IANA time zone, such as America/Denver or Europe/London."
+  },
+  "duration_min": {
+    "label": "Duration",
+    "help": "Set the length of the net in minutes so schedules and end times calculate correctly."
+  },
+  "rrule": {
+    "label": "RRULE",
+    "help": "Paste or build the recurrence rule that describes when the net meets."
+  },
+  "location": {
+    "label": "Location",
+    "help": "List where people join the net, including links or repeater details."
+  },
+  "mode": {
+    "label": "Mode",
+    "help": "Note the operating mode or platform such as FM, DMR, AllStar, or Zoom."
+  },
+  "dmr_system": {
+    "label": "DMR system",
+    "help": "If this net uses DMR, record the network name such as BrandMeister or TGIF."
+  },
+  "dmr_tg": {
+    "label": "DMR talkgroup",
+    "help": "Add the DMR talkgroup number or numbers used for the net."
+  },
+  "allstar": {
+    "label": "AllStar",
+    "help": "Provide the AllStar node numbers or hubs that host the net."
+  },
+  "echolink": {
+    "label": "EchoLink",
+    "help": "List the EchoLink conferences or node numbers listeners should call."
+  },
+  "frequency": {
+    "label": "Frequency",
+    "help": "Give the RF frequency, plus tone or offset if needed."
+  },
+  "dstar": {
+    "label": "D-STAR",
+    "help": "Identify the D-STAR reflectors or modules linked for the net."
+  },
+  "peanut": {
+    "label": "Peanut",
+    "help": "Include Peanut room information if the net is available there."
+  },
+  "zoom": {
+    "label": "Zoom",
+    "help": "Paste the Zoom meeting URL or ID if a Zoom room is offered."
+  },
+  "notes": {
+    "label": "Notes",
+    "help": "Capture any other details maintainers should know, such as temporary schedules or NCO rotations."
+  }
+}

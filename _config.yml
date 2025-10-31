@@ -26,6 +26,7 @@ mastodon:
     instance: "mastodon.hams.social"
 
 header_pages:
+  - nets/blind-hams/connect/index.md
   - nets/blind-hams/etiquette.md
   - index.md
   - nets/blind-hams/index.md
