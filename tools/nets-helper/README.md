@@ -4,9 +4,9 @@ Web helper for trusted schedulers to draft `_data/nets.yml` updates from a brows
 
 ## Overview
 
-- **Frontend:** Accessible form with live YAML preview.
-- **Backend:** Small Flask app that validates inputs, checks for duplicate IDs, and appends the new entry to a pending copy of `_data/nets.yml` (saved under `_data/pending/`).
-- **Security:** Protect the route with HTTP Basic Auth (Nginx `auth_basic`) so only designated editors can reach it.
+- **Frontend:** Accessible form with live YAML preview, edit mode, autosave drafts, and a pending-review dashboard.
+- **Backend:** Flask app that validates inputs, prevents ID collisions, writes timestamped pending copies in `_data/pending/`, and can promote approved bundles into `_data/nets.yml`.
+- **Security:** Keep HTTP Basic Auth in front, and have the web server forward the authenticated username so role-based permissions (review vs. promote) can be enforced.
 
 ## Local Development
 
@@ -24,6 +24,12 @@ flask --app app run --debug
 ```
 
 Load http://127.0.0.1:5000/ to try the form. Pending files will be created under `_data/pending/` with names like `nets.pending.20250317_153000.yml`.
+
+### Roles & Permissions
+
+- Roles are defined in `tools/nets-helper/roles.yml`. The sample file maps `publishers` (can promote pending files) and `reviewers` (can stage/edit but not promote).
+- The helper looks for the authenticated username in `X-Forwarded-User` or `REMOTE_USER`. Make sure your proxy forwards whichever header your web server populates.
+- Locally, you can set `export BHN_NETS_DEFAULT_USER=web-admin` to emulate a publisher account without Basic Auth.
 
 ## Deployment (Andre’s host)
 
@@ -74,6 +80,7 @@ Load http://127.0.0.1:5000/ to try the form. Pending files will be created under
        ProxyPass "unix:/run/bhn-nets-helper.sock|http://localhost/"
        ProxyPassReverse "unix:/run/bhn-nets-helper.sock|http://localhost/"
        RequestHeader set X-Forwarded-Proto "https"
+       RequestHeader set X-Forwarded-User "%{REMOTE_USER}e" env=REMOTE_USER
    </Location>
 
    RedirectMatch permanent "^/nets-helper$" "/nets-helper/"
@@ -90,6 +97,7 @@ Load http://127.0.0.1:5000/ to try the form. Pending files will be created under
        proxy_set_header Host $host;
        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
        proxy_set_header X-Forwarded-Proto $scheme;
+       proxy_set_header X-Forwarded-User $remote_user;
    }
    ```
 
@@ -101,15 +109,10 @@ Load http://127.0.0.1:5000/ to try the form. Pending files will be created under
    ```
 
 5. **Workflow for maintainers**
-   - Net Listing Manager submits a new net.
-   - The app writes `_data/pending/nets.pending.YYYYMMDD_HHMMSS.yml`.
-   - Review the file (diff against `_data/nets.yml`), then replace the canonical file:
-     ```bash
-     mv _data/pending/nets.pending.20250317_153000.yml _data/nets.yml
-     git add _data/nets.yml
-     git commit -m "Add <net name>"
-     ```
-   - Push or pull into other hosts as usual.
+   - A reviewer (e.g., `list-manager`) stages additions or edits. Each save produces/updates a pending snapshot under `_data/pending/` and the UI lists it under “Pending submissions”.
+   - Publishers (e.g., `web-admin`) see the same list. They review the change summary, optionally make further edits, then click **Promote to live** to atomically copy the snapshot into `_data/nets.yml`. A timestamped backup (e.g., `nets.backup.20241028_153000.yml`) is kept alongside the canonical file.
+   - If something goes wrong, publishers can still promote manually by copying a pending file over `_data/nets.yml`; the helper simply automates that workflow.
+   - After promoting, commit the updated `_data/nets.yml` to git as usual so other hosts stay in sync.
 
    Make sure the `_data/pending/` directory exists and is writable by the service account (`www-data` on Andre’s host):
    ```bash
@@ -120,14 +123,7 @@ Load http://127.0.0.1:5000/ to try the form. Pending files will be created under
 
 ## Future Enhancements
 
-- Edit existing entries (load by ID, update, and rewrite pending file).
-- Surface category management.
+- Diff preview for each pending bundle (so reviewers can see field-level changes inline).
+- Surface category management helpers.
 - Offer optional connection presets (AllStar, DMR, etc.) as reusable snippets.
-
-## Upcoming Workflow
-
-- Prefer an existing `_data/pending/nets.pending.*.yml` snapshot when loading context; fall back to `_data/nets.yml` if no pending file exists. That working snapshot powers previews and duplicate checks.
-- Let schedulers enter a net, click **Add**, and keep iterating so multiple nets can be staged in one session. Duplicate IDs only need to be checked against the working snapshot (pending file already contains the live data).
-- When the staged list is ready, write the working snapshot plus all queued additions to a timestamped pending file so maintainers can review before promoting to `nets.yml`.
-- Next phase will introduce edit mode against the same working snapshot (pending first, canonical as fallback) while keeping the append-only flow available.
-- Longer term, surface user-submitted nets for scheduler review so they can merge, edit, and submit the bundle for webmaster approval from the same interface.
+- Longer term, accept public “suggest a net” submissions and route them through the same review/promotion queue.

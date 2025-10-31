@@ -8,17 +8,10 @@
 - Add Able Player for live audio stream. this has been completed.
   - Optional: transcript link if available; test keyboard + screen reader flow
 
-- Nets helper edit mode
-  - Allow selecting an existing net ID, preload the form with its data, and write a pending file reflecting edits (dry-run preview first).
-  - Include collision detection if two people edit the same net concurrently.
-  - Preserve append-only workflow as a fallback.
-
-- Nets helper: staged additions
-  - Enable schedulers to queue multiple nets in a single session before saving.
-  - Stage additions against the selected working snapshot (latest pending or canonical).
-  - Provide a review screen showing all queued nets prior to writing the new pending file.
-  - Track source metadata so Rachel can see whether a pending file originated from her session or a user submission.
-  - Expose an approval step that lets the webmaster promote the staged changes into a final pending snapshot for publishing.
+- Nets helper review + publishing
+  - Provide a diff preview for each pending bundle (highlight field-level changes vs. live data).
+  - Surface who staged each pending file and when (pull from auth header and embed in the summary).
+  - Add a “reject/archive” action so reviewers can clear stale bundles without deleting backups.
   - Emit an optional Telegram notification when a new pending bundle is ready for review (later phase; wire up bot token + chat ID).
 - Nets helper UI polish
   - Replace free-form mode fields with checkbox-driven sections (DMR, AllStar, EchoLink, HF, etc.) that expose their inputs only when selected; validate/announce when data is removed.

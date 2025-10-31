@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## 2025-10-28
+
+- Nets helper edit & review flow
+  - Added role-aware permissions via `tools/nets-helper/roles.yml`; Basic-auth usernames are forwarded so publishers can promote pending bundles while reviewers stage edits.
+  - Introduced an “Edit existing net” picker with collision detection. Saves now replace the matching YAML block in a timestamped pending file and guard against concurrent edits.
+  - Expanded the JSON API (`/api/nets`, `/api/nets/:id`, `/api/pending/promote`) and the UI to summarise pending bundles, show change counts, and offer a one-click “Promote to live” action that keeps timestamped backups.
+- Navigation cleanup
+  - Moved `nets/blind-hams/connect/` (“How to connect”) to the front of the main header navigation.
+  - Retired the TODO entry for the old connect banner copy.
+
 ## 2025-10-11
 
 - Home page stats counter (Netlify Functions + Blobs)

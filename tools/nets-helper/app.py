@@ -7,8 +7,10 @@ import os
 import re
 from datetime import datetime, timezone
 import json
+import hashlib
+import shutil
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import yaml
 from flask import Flask, jsonify, render_template, request
@@ -54,6 +56,27 @@ OPTIONAL_FIELD_KEYS = [
 ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_\-]*$")
 PENDING_NAME_PATTERN = re.compile(r"^nets\.pending\.(\d{8})_(\d{6})\.yml$")
 
+BASE_FIELD_KEYS = [
+    "id",
+    "category",
+    "name",
+    "description",
+    "start_local",
+    "duration_min",
+    "rrule",
+    "time_zone",
+]
+
+CONNECTION_FIELD_MAP = {
+    "allstar": ["allstar"],
+    "echolink": ["echolink"],
+    "dmr": ["dmr_system", "dmr_tg"],
+    "dstar": ["DStar"],
+    "hf": ["frequency", "mode"],
+}
+
+ENTRY_BLOCK_TEMPLATE = r"(?ms)^  - id:\s*{id}\s*\n(?:^(?!  - id:).*[\r]?\n?)*"
+
 
 def load_help_texts_file() -> Tuple[Dict[str, str], Dict[str, str]]:
     path = BASE_DIR / "help_texts.json"
@@ -85,21 +108,68 @@ def load_help_texts_file() -> Tuple[Dict[str, str], Dict[str, str]]:
 HELP_TEXTS, HELP_LABELS = load_help_texts_file()
 
 
+def load_roles_file(path: Path) -> Dict[str, set]:
+    try:
+        with path.open("r", encoding="utf-8") as fh:
+            raw = yaml.safe_load(fh) or {}
+    except FileNotFoundError:
+        return {}
+    except yaml.YAMLError:
+        return {}
+
+    roles: Dict[str, set] = {}
+    if isinstance(raw, dict):
+        for role, users in raw.items():
+            if not isinstance(role, str):
+                continue
+            if isinstance(users, list):
+                roles[role] = {str(u) for u in users if isinstance(u, str)}
+    return roles
+
+
+def determine_user_roles(roles_data: Dict[str, Iterable[str]], user: Optional[str]) -> set:
+    if not user:
+        return set()
+    user_roles = set()
+    for role, members in roles_data.items():
+        if isinstance(members, Iterable) and user in members:
+            user_roles.add(role)
+    return user_roles
+
+
+def user_can_promote(roles_data: Dict[str, Iterable[str]], user: Optional[str]) -> bool:
+    return "publishers" in determine_user_roles(roles_data, user)
+
+
+def get_current_user(app: Flask) -> Optional[str]:
+    forwarded = request.headers.get("X-Forwarded-User")
+    if forwarded:
+        return forwarded.strip()
+    environ_user = request.environ.get("REMOTE_USER")
+    if environ_user:
+        return str(environ_user).strip()
+    default_user = app.config.get("DEFAULT_USER", "")
+    return default_user or None
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config.update(load_config())
+    app.config["ROLES_DATA"] = load_roles_file(app.config["ROLES_FILE"])
 
     @app.get("/")
     def index():
         source_key = request.args.get("source")
-        context = load_context(app.config, source_key)
+        current_user = get_current_user(app)
+        context = load_context(app.config, source_key, current_user)
         return render_template("index.html", **context)
 
     @app.post("/api/preview")
     def api_preview():
         data = request.get_json(force=True, silent=True) or {}
         source_key = data.get("source_key") or request.args.get("source")
-        context = load_context(app.config, source_key)
+        current_user = get_current_user(app)
+        context = load_context(app.config, source_key, current_user)
         normalized, errors = normalize_submission(data, context["existing_ids"], context["default_time_zone"])
         if errors:
             return jsonify({"errors": errors}), 400
@@ -110,18 +180,29 @@ def create_app() -> Flask:
     def api_save():
         data = request.get_json(force=True, silent=True) or {}
         source_key = data.get("source_key") or request.args.get("source")
-        context = load_context(app.config, source_key)
+        current_user = get_current_user(app)
+        context = load_context(app.config, source_key, current_user)
         normalized, errors = normalize_submission(data, context["existing_ids"], context["default_time_zone"])
         if errors:
             return jsonify({"errors": errors}), 400
 
+        mode = (data.get("mode") or "add").strip().lower()
+        original_id = (data.get("original_id") or "").strip()
+        source_hash = (data.get("source_hash") or "").strip()
         snippet = build_yaml_snippet(normalized)
-        pending_path = write_pending_file(
-            snippet,
-            app.config["NETS_FILE"],
-            app.config["OUTPUT_DIR"],
-            context["working_file"],
-        )
+        try:
+            pending_path = write_pending_file(
+                snippet,
+                app.config["NETS_FILE"],
+                app.config["OUTPUT_DIR"],
+                context["working_file"],
+                mode=mode,
+                original_id=original_id,
+                expected_hash=source_hash,
+            )
+        except ValueError as exc:
+            message = str(exc)
+            return jsonify({"errors": {"conflict": message, "original_id": message}}), 409
 
         return jsonify(
             {
@@ -129,18 +210,25 @@ def create_app() -> Flask:
                 "pending_path": str(pending_path),
                 "snippet": snippet,
                 "active_source": context["active_source_key"],
+                "mode": mode,
+                "net_id": normalized["id"],
+                "original_id": original_id,
             }
         )
 
     @app.get("/api/pending")
     def api_pending():
         source_key = request.args.get("source")
-        context = load_context(app.config, source_key)
+        current_user = get_current_user(app)
+        context = load_context(app.config, source_key, current_user)
+        summaries = summarize_pending_files(context["pending_files"], context["canonical_file"])
         return jsonify(
             {
                 "active_source": context["active_source_key"],
                 "options": context["source_options"],
-                "pending_files": context["pending_files"],
+                "pending_files": summaries,
+                "permissions": context["permissions"],
+                "user": context["current_user"],
             }
         )
 
@@ -165,6 +253,74 @@ def create_app() -> Flask:
 
         return jsonify({"deleted": deleted})
 
+    @app.post("/api/pending/promote")
+    def api_pending_promote():
+        current_user = get_current_user(app)
+        if not user_can_promote(app.config["ROLES_DATA"], current_user):
+            return jsonify({"error": "You do not have permission to promote pending files."}), 403
+
+        payload = request.get_json(force=True, silent=True) or {}
+        key = payload.get("key")
+        if not isinstance(key, str):
+            return jsonify({"error": "Specify which pending file to promote."}), 400
+
+        try:
+            result = promote_pending_file(
+                key,
+                app.config["OUTPUT_DIR"],
+                app.config["NETS_FILE"],
+                current_user=current_user,
+            )
+        except FileNotFoundError:
+            return jsonify({"error": "Pending file not found."}), 404
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+
+        return jsonify(result)
+
+    @app.get("/api/nets")
+    def api_nets():
+        source_key = request.args.get("source")
+        current_user = get_current_user(app)
+        context = load_context(app.config, source_key, current_user)
+        nets_summary = build_nets_summary(context["nets_data"])
+        return jsonify(
+            {
+                "nets": nets_summary,
+                "active_source": context["active_source_key"],
+                "permissions": context["permissions"],
+                "user": context["current_user"],
+            }
+        )
+
+    @app.get("/api/nets/<net_id>")
+    def api_net_detail(net_id: str):
+        source_key = request.args.get("source")
+        current_user = get_current_user(app)
+        context = load_context(app.config, source_key, current_user)
+        target_net, actual_id = find_net_by_id(context["nets_data"], net_id)
+        if not target_net:
+            return jsonify({"error": "Net not found in the current snapshot."}), 404
+
+        form_state = build_form_state(
+            target_net,
+            context["default_time_zone"],
+            context["active_source_key"],
+            context["working_file"],
+        )
+        label = build_edit_label(actual_id, target_net.get("name"))
+
+        return jsonify(
+            {
+                "net": form_state,
+                "original_id": actual_id,
+                "active_source": context["active_source_key"],
+                "label": label,
+                "permissions": context["permissions"],
+                "user": context["current_user"],
+            }
+        )
+
     return app
 
 
@@ -183,16 +339,25 @@ def load_config() -> Dict[str, Path]:
     else:
         output_dir = repo_root / "_data"
 
+    roles_env = os.environ.get("BHN_NETS_ROLES")
+    if roles_env:
+        roles_file = Path(roles_env).expanduser()
+    else:
+        roles_file = BASE_DIR / "roles.yml"
+
     nets_file = nets_file.resolve(strict=False)
     output_dir = output_dir.resolve(strict=False)
+    roles_file = roles_file.resolve(strict=False)
 
     return {
         "NETS_FILE": nets_file,
         "OUTPUT_DIR": output_dir,
+        "ROLES_FILE": roles_file,
+        "DEFAULT_USER": os.environ.get("BHN_NETS_DEFAULT_USER", "").strip(),
     }
 
 
-def load_context(config: Dict, source_key: Optional[str] = None) -> Dict:
+def load_context(config: Dict, source_key: Optional[str] = None, current_user: Optional[str] = None) -> Dict:
     nets_file: Path = config["NETS_FILE"]
     output_dir: Path = config["OUTPUT_DIR"]
     pending_files = list_pending_files(output_dir)
@@ -214,6 +379,8 @@ def load_context(config: Dict, source_key: Optional[str] = None) -> Dict:
     categories: List[str] = []
     existing_ids: List[str] = []
 
+    nets_data: List[Dict[str, Any]] = []
+
     if working_file.exists():
         try:
             with working_file.open("r", encoding="utf-8") as fh:
@@ -224,6 +391,7 @@ def load_context(config: Dict, source_key: Optional[str] = None) -> Dict:
         nets = data.get("nets", []) or []
         for net in nets:
             if isinstance(net, dict):
+                nets_data.append(net)
                 cat = net.get("category")
                 if cat and cat not in categories:
                     categories.append(cat)
@@ -239,6 +407,22 @@ def load_context(config: Dict, source_key: Optional[str] = None) -> Dict:
         time_zones.insert(0, default_time_zone)
 
     source_options = build_source_options(pending_files, nets_file, active_source_key)
+    roles_data = config.get("ROLES_DATA", {})
+    user_roles = determine_user_roles(roles_data, current_user)
+    permissions = {
+        "can_review": bool(user_roles),
+        "can_promote": "publishers" in user_roles,
+    }
+
+    pending_summary = [
+        {
+            "key": entry["key"],
+            "name": entry["name"],
+            "label": entry.get("label", ""),
+            "created_at": entry.get("created_at", ""),
+        }
+        for entry in pending_files
+    ]
 
     return {
         "categories": categories,
@@ -256,9 +440,16 @@ def load_context(config: Dict, source_key: Optional[str] = None) -> Dict:
             "has_pending": bool(pending_files),
             "active_source": active_source_key,
             "options": source_options,
+            "pending": pending_summary,
+            "permissions": permissions,
+            "user": current_user,
         },
         "help_texts": HELP_TEXTS,
         "help_labels": HELP_LABELS,
+        "nets_data": nets_data,
+        "current_user": current_user,
+        "roles": list(user_roles),
+        "permissions": permissions,
     }
 
 
@@ -367,8 +558,17 @@ def normalize_submission(
 ) -> Tuple[Dict, Dict[str, str]]:
     errors: Dict[str, str] = {}
 
+    mode = (data.get("mode") or "add").strip().lower()
+    original_id = (data.get("original_id") or "").strip()
+    existing_lower_map = {str(e).lower(): str(e) for e in existing_ids}
+    editing_existing = mode == "edit" and bool(original_id)
+    if editing_existing and original_id.lower() not in existing_lower_map:
+        errors["original_id"] = "Original net not found in the current snapshot."
+
     net_id = (data.get("id") or "").strip()
     existing_lower = {str(e).lower() for e in existing_ids}
+    if editing_existing:
+        existing_lower.discard(original_id.lower())
     if not net_id:
         errors["id"] = "ID is required."
     elif not ID_PATTERN.match(net_id):
@@ -459,6 +659,13 @@ def normalize_submission(
     if not record["time_zone"] and default_time_zone:
         record["time_zone"] = ""
 
+    if editing_existing:
+        record["original_id"] = original_id
+        record["mode"] = "edit"
+    else:
+        record["original_id"] = ""
+        record["mode"] = "add"
+
     return record, {}
 
 
@@ -526,7 +733,37 @@ def quote_value(value: str) -> str:
     return f'"{escaped}"'
 
 
-def write_pending_file(snippet: str, nets_file: Path, output_dir: Path, source_file: Optional[Path] = None) -> Path:
+def find_net_block_match(original_text: str, net_id: str) -> Optional[re.Match[str]]:
+    pattern = re.compile(ENTRY_BLOCK_TEMPLATE.format(id=re.escape(net_id)))
+    return pattern.search(original_text)
+
+
+def compute_block_hash(block_text: str) -> str:
+    return hashlib.sha256(block_text.encode("utf-8")).hexdigest()
+
+
+def extract_entry_block(path: Optional[Path], net_id: str) -> Optional[str]:
+    if not path or not path.exists():
+        return None
+    try:
+        original_text = path.read_text(encoding="utf-8")
+    except (FileNotFoundError, OSError):
+        return None
+    match = find_net_block_match(original_text, net_id)
+    if not match:
+        return None
+    return match.group(0)
+
+
+def write_pending_file(
+    snippet: str,
+    nets_file: Path,
+    output_dir: Path,
+    source_file: Optional[Path] = None,
+    mode: str = "add",
+    original_id: str = "",
+    expected_hash: Optional[str] = "",
+) -> Path:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     pending_dir = output_dir / "pending"
     pending_dir.mkdir(parents=True, exist_ok=True)
@@ -539,13 +776,272 @@ def write_pending_file(snippet: str, nets_file: Path, output_dir: Path, source_f
     if not original_text.endswith("\n"):
         original_text += "\n"
 
-    new_content = f"{original_text.rstrip()}\n\n{snippet}\n"
+    mode = (mode or "add").strip().lower()
+    if mode == "edit":
+        if not original_id:
+            raise ValueError("original_id required for edit mode")
+        updated_text, matched_block = replace_existing_entry(original_text, original_id, snippet)
+        if expected_hash:
+            current_hash = compute_block_hash(matched_block)
+            if current_hash != expected_hash:
+                raise ValueError("This net changed in the meantime. Reload the latest snapshot and try again.")
+        new_content = updated_text
+    else:
+        new_content = append_new_entry(original_text, snippet)
 
     with tmp_path.open("w", encoding="utf-8") as fh:
         fh.write(new_content)
     os.replace(tmp_path, pending_path)
 
     return pending_path
+
+
+def append_new_entry(original_text: str, snippet: str) -> str:
+    snippet_text = snippet.strip("\n")
+    combined = f"{original_text.rstrip()}\n\n{snippet_text}\n"
+    return combined
+
+
+def replace_existing_entry(original_text: str, original_id: str, snippet: str) -> Tuple[str, str]:
+    pattern = re.compile(
+        rf"(?ms)^  - id:\s*{re.escape(original_id)}\s*\n(?:^(?!  - id:).*\n?)*"
+    )
+    match = pattern.search(original_text)
+    if not match:
+        raise ValueError(f"Unable to locate net with id '{original_id}' in the current snapshot.")
+    matched_block = match.group(0)
+    trailing_newlines = "\n"
+    if matched_block.endswith("\n\n"):
+        trailing_newlines = "\n\n"
+    replacement = f"{snippet.strip()}{trailing_newlines}"
+    updated = original_text[: match.start()] + replacement + original_text[match.end() :]
+    return updated, matched_block
+
+
+def load_nets_map(path: Optional[Path]) -> Dict[str, Dict[str, Any]]:
+    if not path or not path.exists():
+        return {}
+    try:
+        with path.open("r", encoding="utf-8") as fh:
+            data = yaml.safe_load(fh) or {}
+    except (FileNotFoundError, yaml.YAMLError):
+        return {}
+    nets = data.get("nets", []) or []
+    results: Dict[str, Dict[str, Any]] = {}
+    for net in nets:
+        if not isinstance(net, dict):
+            continue
+        net_id = str(net.get("id") or "").strip()
+        if not net_id:
+            continue
+        results[net_id.lower()] = net
+    return results
+
+
+def net_signature(net: Dict[str, Any]) -> str:
+    try:
+        return json.dumps(net, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    except TypeError:
+        sanitized: Dict[str, Any] = {}
+        for key, value in net.items():
+            try:
+                json.dumps(value)
+                sanitized[key] = value
+            except TypeError:
+                sanitized[key] = str(value)
+        return json.dumps(sanitized, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def summarize_pending_files(pending_entries: List[Dict[str, str]], canonical_file: Path) -> List[Dict[str, Any]]:
+    canonical_map = load_nets_map(canonical_file)
+    canonical_signatures = {key: net_signature(net) for key, net in canonical_map.items()}
+
+    summaries: List[Dict[str, Any]] = []
+    for entry in pending_entries:
+        path = Path(entry["path"])
+        pending_map = load_nets_map(path)
+        pending_signatures = {key: net_signature(net) for key, net in pending_map.items()}
+
+        stats = {"added": 0, "updated": 0, "removed": 0, "unchanged": 0}
+        changes: List[Dict[str, str]] = []
+
+        seen = set()
+        for key, net in pending_map.items():
+            seen.add(key)
+            display_id = str(net.get("id") or "")
+            display_name = str(net.get("name") or "")
+            canonical_net = canonical_map.get(key)
+            if not canonical_net:
+                stats["added"] += 1
+                changes.append({"id": display_id, "name": display_name, "type": "added"})
+            else:
+                if pending_signatures[key] != canonical_signatures.get(key):
+                    stats["updated"] += 1
+                    changes.append({"id": display_id, "name": display_name, "type": "updated"})
+                else:
+                    stats["unchanged"] += 1
+
+        for key, canonical_net in canonical_map.items():
+            if key in pending_map:
+                continue
+            stats["removed"] += 1
+            changes.append(
+                {
+                    "id": str(canonical_net.get("id") or ""),
+                    "name": str(canonical_net.get("name") or ""),
+                    "type": "removed",
+                }
+            )
+
+        stats["total"] = len(pending_map)
+        stats["changed"] = len([c for c in changes if c["type"] != "unchanged"])
+
+        summary_entry = {
+            "key": entry["key"],
+            "name": entry["name"],
+            "label": entry.get("label", ""),
+            "created_at": entry.get("created_at", ""),
+            "changes": changes,
+            "stats": stats,
+        }
+        summaries.append(summary_entry)
+
+    return summaries
+
+
+def promote_pending_file(key: str, output_dir: Path, nets_file: Path, current_user: Optional[str] = None) -> Dict[str, Any]:
+    pending_lookup = {entry["key"]: entry for entry in list_pending_files(output_dir)}
+    if key not in pending_lookup:
+        raise FileNotFoundError(key)
+
+    pending_entry = pending_lookup[key]
+    pending_path = Path(pending_entry["path"])
+    if not pending_path.exists():
+        raise FileNotFoundError(pending_entry["path"])
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    backup_path = nets_file.with_name(f"{nets_file.stem}.backup.{timestamp}{nets_file.suffix}")
+
+    if nets_file.exists():
+        shutil.copy2(nets_file, backup_path)
+
+    pending_content = pending_path.read_text(encoding="utf-8")
+    tmp_path = nets_file.with_suffix(nets_file.suffix + ".tmp")
+    with tmp_path.open("w", encoding="utf-8") as fh:
+        fh.write(pending_content)
+    os.replace(tmp_path, nets_file)
+
+    pending_path.unlink()
+
+    return {
+        "message": "Pending file promoted",
+        "promoted": pending_entry["name"],
+        "backup": str(backup_path) if backup_path.exists() else "",
+        "user": current_user,
+    }
+
+
+def build_nets_summary(nets: Iterable[Dict[str, Any]]) -> List[Dict[str, str]]:
+    summary: List[Dict[str, str]] = []
+    for net in nets:
+        if not isinstance(net, dict):
+            continue
+        net_id = str(net.get("id") or "").strip()
+        if not net_id:
+            continue
+        summary.append(
+            {
+                "id": net_id,
+                "name": str(net.get("name") or "").strip(),
+                "category": str(net.get("category") or "").strip(),
+                "label": build_edit_label(net_id, net.get("name")),
+            }
+        )
+    summary.sort(key=lambda item: item["id"].lower())
+    return summary
+
+
+def build_edit_label(net_id: str, name: Optional[str]) -> str:
+    name_str = str(name or "").strip()
+    if name_str:
+        return f"{net_id} — {name_str}"
+    return net_id
+
+
+def find_net_by_id(nets: Iterable[Dict[str, Any]], net_id: str) -> Tuple[Optional[Dict[str, Any]], str]:
+    target_lower = str(net_id or "").lower()
+    for net in nets:
+        if not isinstance(net, dict):
+            continue
+        current_id = str(net.get("id") or "")
+        if current_id.lower() == target_lower:
+            return net, current_id
+    return None, ""
+
+
+def build_form_state(
+    net: Dict[str, Any],
+    default_time_zone: str,
+    active_source: str,
+    source_file: Optional[Path] = None,
+) -> Dict[str, Any]:
+    values: Dict[str, str] = {}
+    for key in BASE_FIELD_KEYS:
+        if key == "duration_min":
+            duration = net.get("duration_min")
+            values[key] = "" if duration is None else str(duration)
+        else:
+            values[key] = str(net.get(key) or "")
+
+    for key in OPTIONAL_FIELD_KEYS:
+        values[key] = str(net.get(key) or "")
+
+    custom_fields: List[Dict[str, str]] = []
+    known_keys = set(BASE_FIELD_KEYS) | set(OPTIONAL_FIELD_KEYS)
+    for key, value in net.items():
+        if key in known_keys:
+            continue
+        if value in (None, "", []):
+            continue
+        if isinstance(value, (dict, list)):
+            continue
+        custom_fields.append({"key": str(key), "value": str(value)})
+
+    connections = []
+    for conn_key, field_names in CONNECTION_FIELD_MAP.items():
+        enabled = any(str(net.get(field) or "").strip() for field in field_names)
+        connections.append({"key": conn_key, "enabled": enabled})
+
+    source_hash = ""
+    if source_file:
+        block_text = extract_entry_block(source_file, str(net.get("id") or ""))
+        if block_text:
+            source_hash = compute_block_hash(block_text)
+
+    meta = {
+        "manualTimeMode": False,
+        "startPicker": values.get("start_local", ""),
+        "startManual": "",
+        "categoryChoice": values.get("category", ""),
+        "sourceKey": active_source,
+        "editing": {
+            "isEditing": True,
+            "originalId": str(net.get("id") or ""),
+            "label": build_edit_label(str(net.get("id") or ""), net.get("name")),
+            "sourceHash": source_hash,
+        },
+    }
+
+    values["original_id"] = str(net.get("id") or "")
+    values["mode"] = "edit"
+    values["source_hash"] = source_hash
+
+    return {
+        "values": values,
+        "customFields": custom_fields,
+        "connections": connections,
+        "meta": meta,
+    }
 
 
 if __name__ == "__main__":

@@ -180,6 +180,162 @@
         min-width: 18rem;
         flex: 0 1 auto;
       }
+      .edit-controls {
+        border: 1px solid #2a6ad1;
+        border-radius: 0.5rem;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        background: rgba(42, 106, 209, 0.08);
+      }
+      .edit-controls h2 {
+        margin-top: 0;
+        font-size: 1.2rem;
+      }
+      .edit-controls .hint {
+        margin-bottom: 0.75rem;
+      }
+      .edit-controls .search-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: flex-end;
+        margin-bottom: 0.75rem;
+      }
+      .edit-controls .search-group label {
+        margin-top: 0;
+      }
+      .edit-controls .search-group input[type="text"] {
+        width: min(100%, 24rem);
+      }
+      .edit-controls .search-group button {
+        margin-top: 0;
+      }
+      .net-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        max-height: 18rem;
+        overflow: auto;
+        border: 1px solid #999;
+        border-radius: 0.5rem;
+      }
+      .net-list[aria-busy="true"] {
+        opacity: 0.65;
+      }
+      .net-list-item + .net-list-item {
+        border-top: 1px solid rgba(17, 17, 17, 0.1);
+      }
+      .net-item {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        width: 100%;
+        text-align: left;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.95rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+      }
+      .net-item:hover,
+      .net-item:focus-visible {
+        background: rgba(42, 106, 209, 0.15);
+        outline: none;
+      }
+      .net-item.selected,
+      .net-item[aria-selected="true"] {
+        background: rgba(42, 106, 209, 0.25);
+        border-left: 4px solid #2a6ad1;
+      }
+      .net-item .net-id {
+        font-weight: 600;
+      }
+      .net-item .net-category {
+        font-size: 0.85rem;
+        color: #444;
+      }
+      .net-list-empty {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        color: #555;
+      }
+      .edit-notice {
+        border: 1px solid #ffbf47;
+        background: rgba(255, 191, 71, 0.2);
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+      .edit-notice strong {
+        font-weight: 700;
+      }
+      .edit-notice button {
+        margin-left: auto;
+      }
+      .pending-review {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        background: rgba(17, 24, 39, 0.04);
+      }
+      .pending-review h2 {
+        margin-top: 0;
+        font-size: 1.2rem;
+      }
+      .pending-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 1rem;
+      }
+      .pending-card {
+        border: 1px solid #cbd5f5;
+        border-radius: 0.5rem;
+        padding: 0.9rem 1.1rem;
+        background: rgba(42, 106, 209, 0.05);
+      }
+      .pending-card h3 {
+        margin: 0 0 0.35rem;
+        font-size: 1.05rem;
+      }
+      .pending-card .meta {
+        font-size: 0.9rem;
+        color: #444;
+        margin-bottom: 0.5rem;
+      }
+      .pending-card ul {
+        margin: 0.5rem 0 0;
+        padding-left: 1.25rem;
+      }
+      .pending-card ul li {
+        margin-bottom: 0.25rem;
+      }
+      .pending-card .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+      }
+      .pending-empty {
+        margin: 0.5rem 0 0;
+        font-size: 0.95rem;
+        color: #555;
+      }
+      button.secondary {
+        background: #f3f4f6;
+        color: #111;
+        border-color: #9ca3af;
+      }
+      button.secondary:hover,
+      button.secondary:focus-visible {
+        background: #e5e7eb;
+      }
       .draft-banner {
         border: 1px solid #2a6ad1;
         background: rgba(42, 106, 209, 0.1);
@@ -376,7 +532,29 @@
           {% else %}
           Submissions will be based on {{ canonical_file.name }} until a pending copy exists.
           {% endif %}
-        </p>
+      </p>
+    </section>
+
+      <section id="editControls" class="edit-controls" aria-labelledby="editControlsHeading">
+        <h2 id="editControlsHeading">Edit an existing net</h2>
+        <p class="hint">Load a net from the current snapshot to update its details. Saving writes a pending file so a webmaster can review it before publishing.</p>
+        <div class="search-group">
+          <label for="netSearch">Filter by ID or name</label>
+          <input type="text" id="netSearch" name="netSearch" placeholder="Type to filter…" aria-describedby="netSearchHint">
+          <button type="button" id="netSearchLoadBtn" class="secondary">Load by ID</button>
+        </div>
+        <p class="hint" id="netSearchHint">Know the exact ID? Enter it and choose “Load by ID.” Otherwise, select from the list below.</p>
+        <ul id="netList" class="net-list" role="listbox" aria-label="Available nets for editing">
+          <li class="net-list-empty">Loading nets…</li>
+        </ul>
+      </section>
+
+      <section id="pendingReview" class="pending-review" aria-labelledby="pendingReviewHeading">
+        <h2 id="pendingReviewHeading">Pending submissions</h2>
+        <p class="hint" id="pendingReviewHint">Review queued changes before promoting them to the live nets file.</p>
+        <div id="pendingList" class="pending-list" aria-live="polite" aria-busy="false">
+          <p class="pending-empty">Loading pending files…</p>
+        </div>
       </section>
 
       <form id="netsForm" novalidate>
@@ -393,6 +571,13 @@
           </div>
         </section>
         <input type="hidden" name="source_key" id="source_key" value="{{ active_source_key }}">
+        <input type="hidden" name="mode" id="formMode" value="add">
+        <input type="hidden" name="original_id" id="original_id" value="">
+        <input type="hidden" name="source_hash" id="source_hash" value="">
+        <section id="editNotice" class="edit-notice" hidden aria-live="polite" aria-atomic="true">
+          <p id="editNoticeLabel"><strong>Editing:</strong> <span id="editNoticeValue"></span></p>
+          <button type="button" id="exitEditModeBtn" class="secondary">Exit edit mode</button>
+        </section>
         <h2 class="section-heading">Net details</h2>
         <fieldset>
           <legend>Net details</legend>
@@ -761,6 +946,18 @@
       const draftConfirmDiscard = document.getElementById('draftConfirmDiscard');
       const draftCancelDiscard = document.getElementById('draftCancelDiscard');
       const autosaveStatus = document.getElementById('autosaveStatus');
+      const modeInput = document.getElementById('formMode');
+      const originalIdInput = document.getElementById('original_id');
+      const editNotice = document.getElementById('editNotice');
+      const editNoticeValue = document.getElementById('editNoticeValue');
+      const exitEditModeBtn = document.getElementById('exitEditModeBtn');
+      const netList = document.getElementById('netList');
+      const netSearchInput = document.getElementById('netSearch');
+      const netSearchLoadBtn = document.getElementById('netSearchLoadBtn');
+      const editControlsSection = document.getElementById('editControls');
+      const pendingReviewSection = document.getElementById('pendingReview');
+      const pendingReviewHint = document.getElementById('pendingReviewHint');
+      const pendingListContainer = document.getElementById('pendingList');
       const connectionConfigs = [
         {
           key: 'allstar',
@@ -807,6 +1004,13 @@
       let applyingDraft = false;
       let draftBannerVisible = false;
       let activeDraftPayload = null;
+      let netIndex = [];
+      let filteredNetIndex = [];
+      const editingState = {
+        active: false,
+        originalId: '',
+        label: '',
+      };
 
       function escapeSelector(value) {
         if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
@@ -878,7 +1082,6 @@
         }
       }
 
-      const hasPending = Boolean(pendingContext && pendingContext.has_pending);
       let askedDeleteForFresh = false;
       if (sourcePicker) {
         updateSourceSelectionUI();
@@ -924,6 +1127,8 @@
             return customTimeZoneInput;
           case 'start_local':
             return manualTimeMode ? startTimeManual : startTimePicker;
+          case 'conflict':
+            return form.elements.id;
           default:
             return form.elements[name] || document.getElementById(name) || null;
         }
@@ -1174,14 +1379,19 @@
           values: {},
           customFields: [],
           connections: [],
-          meta: {
-            manualTimeMode,
-            startPicker: startTimePicker.value,
-            startManual: startTimeManual.value,
-            categoryChoice: '',
-            sourceKey: sourceInput ? sourceInput.value : '',
+        meta: {
+          manualTimeMode,
+          startPicker: startTimePicker.value,
+          startManual: startTimeManual.value,
+          categoryChoice: '',
+          sourceKey: sourceInput ? sourceInput.value : '',
+          editing: {
+            isEditing: editingState.active,
+            originalId: editingState.originalId,
+            label: editingState.label,
           },
-        };
+        },
+      };
 
         const formData = new FormData(form);
         formData.forEach((value, name) => {
@@ -1190,6 +1400,13 @@
           }
           payload.values[name] = value;
         });
+
+        if (modeInput && !payload.values.mode) {
+          payload.values.mode = modeInput.value;
+        }
+        if (originalIdInput && !payload.values.original_id) {
+          payload.values.original_id = originalIdInput.value;
+        }
 
         const selectedCategory = categoryRadios.find((radio) => radio.checked);
         if (selectedCategory) {
@@ -1259,7 +1476,7 @@
 
       function showDraftBanner(payload) {
         if (!draftBanner) {
-          applyDraft(payload);
+          applyFormState(payload, { announceMessage: 'Draft restored.', fromDraft: true });
           return;
         }
         draftBannerVisible = true;
@@ -1330,15 +1547,17 @@
         return field && typeof field.length === 'number' && typeof field.item === 'function' && !field.tagName;
       }
 
-      function applyDraft(draft) {
+      function applyFormState(state, { announceMessage = 'Draft restored.', fromDraft = false } = {}) {
         applyingDraft = true;
         cancelAutosave();
         try {
-          const values = draft.values || {};
-          const meta = draft.meta || {};
+          const values = state && typeof state === 'object' && state.values ? state.values : {};
+          const meta = state && typeof state === 'object' && state.meta ? state.meta : {};
+          const customFieldData = state && Array.isArray(state.customFields) ? state.customFields : [];
+          const connectionData = state && Array.isArray(state.connections) ? state.connections : [];
 
           customFieldsContainer.innerHTML = '';
-          (draft.customFields || []).forEach(({ key, value }) => {
+          customFieldData.forEach(({ key, value }) => {
             const fragment = customFieldTemplate.content.cloneNode(true);
             const keyInput = fragment.querySelector('[data-field="key"]');
             const valueInput = fragment.querySelector('[data-field="value"]');
@@ -1347,7 +1566,7 @@
             customFieldsContainer.appendChild(fragment);
           });
 
-          const connectionState = new Map((draft.connections || []).map((entry) => [entry.key, entry.enabled]));
+          const connectionState = new Map(connectionData.map((entry) => [entry.key, entry.enabled]));
           connectionConfigs.forEach((config) => {
             if (!config.checkbox) return;
             const enabled = connectionState.has(config.key)
@@ -1430,10 +1649,33 @@
             sourceInput.value = meta.sourceKey;
           }
 
-          updateAutosaveStatus(payload.timestamp || Date.now());
-          announce('Draft restored.');
+          const editingMeta = meta.editing || {};
+          const originalIdValue = values.original_id || editingMeta.originalId || '';
+          if (modeInput) {
+            const modeValue = values.mode || (editingMeta.isEditing ? 'edit' : modeInput.defaultValue || 'add');
+            modeInput.value = modeValue || 'add';
+          }
+          if (originalIdInput) {
+            originalIdInput.value = originalIdValue;
+          }
+          const shouldEdit = (modeInput && modeInput.value === 'edit' && originalIdValue) || editingMeta.isEditing;
+          if (shouldEdit) {
+            const label = editingMeta.label || originalIdValue || '';
+            enterEditMode(originalIdValue, label, { silent: true });
+          } else {
+            exitEditMode({ silent: true });
+          }
+
+          const timestamp = state && typeof state.timestamp === 'number' ? state.timestamp : Date.now();
+          updateAutosaveStatus(timestamp);
+          if (announceMessage) {
+            announce(announceMessage);
+          }
+          if (shouldEdit && !fromDraft) {
+            focusIdField();
+          }
         } catch (error) {
-          console.warn('Unable to apply draft', error);
+          console.warn('Unable to apply form state', error);
         } finally {
           applyingDraft = false;
           lastAutoSaveAnnounce = Date.now();
@@ -1509,6 +1751,85 @@
         customFieldsContainer.appendChild(fragment);
         queueAutosave();
       });
+
+      function enterEditMode(originalId, label = '', { silent = false } = {}) {
+        const normalizedId = String(originalId || '').trim();
+        if (!normalizedId) {
+          return;
+        }
+        editingState.active = true;
+        editingState.originalId = normalizedId;
+        editingState.label = label || normalizedId;
+        if (modeInput) {
+          modeInput.value = 'edit';
+        }
+        if (originalIdInput) {
+          originalIdInput.value = normalizedId;
+        }
+        if (editNotice) {
+          editNotice.hidden = false;
+          editNotice.setAttribute('aria-hidden', 'false');
+        }
+        if (editNoticeValue) {
+          editNoticeValue.textContent = editingState.label;
+        }
+        if (exitEditModeBtn) {
+          exitEditModeBtn.hidden = false;
+          exitEditModeBtn.disabled = false;
+        }
+        updateNetSelectionUI();
+        if (!silent) {
+          announce(`${editingState.label} ready for editing. Adjust the fields and save to queue changes.`);
+        }
+      }
+
+      function exitEditMode({ silent = false } = {}) {
+        editingState.active = false;
+        editingState.originalId = '';
+        editingState.label = '';
+        if (modeInput) {
+          modeInput.value = modeInput.defaultValue || 'add';
+        }
+        if (originalIdInput) {
+          originalIdInput.value = '';
+        }
+        const sourceHashInput = document.getElementById('source_hash');
+        if (sourceHashInput) {
+          sourceHashInput.value = '';
+        }
+        if (editNotice) {
+          editNotice.hidden = true;
+          editNotice.setAttribute('aria-hidden', 'true');
+        }
+        if (editNoticeValue) {
+          editNoticeValue.textContent = '';
+        }
+        updateNetSelectionUI();
+        if (!silent) {
+          announce('Edit mode cleared. Ready to add a new net.');
+        }
+      }
+
+      function updateNetSelectionUI() {
+        if (!netList) {
+          return;
+        }
+        const buttons = netList.querySelectorAll('.net-item');
+        buttons.forEach((button) => {
+          const netId = button.dataset.netId || '';
+          const isMatch =
+            editingState.active &&
+            netId &&
+            netId.toLowerCase() === editingState.originalId.toLowerCase();
+          if (isMatch) {
+            button.classList.add('selected');
+            button.setAttribute('aria-selected', 'true');
+          } else {
+            button.classList.remove('selected');
+            button.setAttribute('aria-selected', 'false');
+          }
+        });
+      }
 
       customFieldsContainer.addEventListener('click', (event) => {
         const button = event.target.closest('[data-action="remove"]');
@@ -1652,6 +1973,10 @@
       updateRruleDescription();
       applyTimeZoneSelection(timeZoneSelect.value || '');
       loadDraftFromStorage();
+      updatePendingStatusHint();
+      const initialSourceKey = (sourceInput && sourceInput.value) || (pendingContext && pendingContext.active_source) || 'nets';
+      loadNetIndex(initialSourceKey);
+      loadPendingOverview();
 
       window.addEventListener('beforeunload', () => {
         saveDraftToStorage();
@@ -1668,7 +1993,7 @@
           try {
             localStorage.removeItem(AUTO_SAVE_KEY_PENDING);
           } catch (_err) {}
-          applyDraft(payload);
+          applyFormState(payload, { announceMessage: 'Draft restored.', fromDraft: true });
         });
       }
 
@@ -1733,6 +2058,56 @@
         queueAutosave();
       });
 
+      if (netSearchInput) {
+        netSearchInput.addEventListener('input', () => applyNetSearch());
+        netSearchInput.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            handleNetSearchLoad();
+          }
+        });
+      }
+
+      if (netSearchLoadBtn) {
+        netSearchLoadBtn.addEventListener('click', () => {
+          handleNetSearchLoad();
+        });
+      }
+
+      if (netList) {
+        netList.addEventListener('click', (event) => {
+          const button = event.target.closest('.net-item');
+          if (!button) {
+            return;
+          }
+          const netId = button.dataset.netId;
+          loadNetForEdit(netId);
+        });
+      }
+
+      if (pendingListContainer) {
+        pendingListContainer.addEventListener('click', (event) => {
+          const promoteBtn = event.target.closest('button[data-action="promote"]');
+          if (promoteBtn && promoteBtn.dataset.key) {
+            promotePending(promoteBtn.dataset.key);
+          }
+        });
+      }
+
+      if (exitEditModeBtn) {
+        exitEditModeBtn.addEventListener('click', () => {
+          if (editingState.active) {
+            const confirmExit = window.confirm('Exit edit mode and clear the form? Unsaved changes will be discarded.');
+            if (!confirmExit) {
+              return;
+            }
+          }
+          exitEditMode({ silent: true });
+          clearDraft();
+          prepareFormForNewNet({ announceMessage: 'Edit mode cleared. Ready to add a new net.' });
+        });
+      }
+
       saveBtn.addEventListener('click', async () => {
         clearStatus();
         const payload = collectFormData();
@@ -1763,12 +2138,25 @@
           };
         });
 
+        payload.connections = connectionConfigs.map((config) => ({
+          key: config.key,
+          enabled: !!(config.checkbox && config.checkbox.checked),
+        }));
+
         payload.start_local = getCurrentStartTime();
         if (sourceInput) {
           payload.source_key = sourceInput.value || (pendingContext && pendingContext.active_source) || 'nets';
         } else if (pendingContext && pendingContext.active_source) {
           payload.source_key = pendingContext.active_source;
         }
+        const originalIdValue = (payload.original_id || editingState.originalId || '').trim();
+        payload.original_id = originalIdValue;
+        let modeValue = (payload.mode || (editingState.active ? 'edit' : 'add')).toLowerCase();
+        modeValue = modeValue === 'edit' ? 'edit' : 'add';
+        if (modeValue === 'edit' && !originalIdValue) {
+          modeValue = 'add';
+        }
+        payload.mode = modeValue;
         delete payload.categoryChoice;
         delete payload.start_local_manual;
 
@@ -1808,6 +2196,8 @@
         if (pendingContext) {
           pendingContext.active_source = sourceKey;
         }
+        exitEditMode({ silent: true });
+        loadNetIndex(sourceKey);
       }
 
       function handleSourceChange() {
@@ -1824,8 +2214,10 @@
         const url = new URL(window.location.href);
         url.searchParams.set('source', value);
         window.history.replaceState({}, '', url);
+        exitEditMode({ silent: true });
+        loadNetIndex(value);
         const isPending = option.dataset.isPending === 'true';
-        if (!isPending && hasPending && !askedDeleteForFresh) {
+        if (!isPending && pendingContext && pendingContext.has_pending && !askedDeleteForFresh) {
           askedDeleteForFresh = true;
           const deleteNow = window.confirm('Start fresh from the canonical list? Delete existing pending files first?');
           if (deleteNow) {
@@ -1848,7 +2240,7 @@
       }
 
       function handleDeleteAll() {
-        if (!hasPending) {
+        if (!pendingContext || !pendingContext.has_pending) {
           return;
         }
         if (!window.confirm('Delete all pending files? This cannot be undone.')) {
@@ -1875,24 +2267,12 @@
             return;
           }
           announce('Pending files removed.');
-          reloadWithSource(nextSource);
+          const next = nextSource || 'nets';
+          updateActiveSource(next);
+          await loadPendingOverview();
         } catch (error) {
           showStatus(error.message, 'error');
         }
-      }
-
-      function reloadWithSource(sourceKey) {
-        const url = new URL(window.location.href);
-        if (!sourceKey) {
-          url.searchParams.delete('source');
-          url.searchParams.delete('pending');
-        }
-        if (sourceKey) {
-          url.searchParams.set('source', sourceKey);
-        } else {
-          url.searchParams.delete('source');
-        }
-        window.location.href = url.toString();
       }
 
       function updateSourceSelectionUI() {
@@ -1913,6 +2293,20 @@
         }
         if (pendingContext) {
           pendingContext.active_source = option.value;
+        }
+        updatePendingStatusHint();
+      }
+
+      function updatePendingStatusHint() {
+        if (!pendingStatusHint) {
+          return;
+        }
+        if (pendingContext && pendingContext.has_pending) {
+          pendingStatusHint.textContent = pendingContext.options && pendingContext.options.length
+            ? 'Default selection is the newest pending file. Pick another to review an older snapshot, or choose “Start fresh from nets.yml” to begin a new list.'
+            : 'Pending files detected. Select one from the menu to review or edit.';
+        } else {
+          pendingStatusHint.textContent = 'Submissions will be based on nets.yml until a pending copy exists.';
         }
       }
 
@@ -1942,25 +2336,368 @@
         });
       }
 
-      function clearStatus() {
-        statusBox.hidden = true;
-        statusBox.textContent = '';
-        statusBox.className = 'status';
-        statusBox.removeAttribute('role');
-        statusBox.setAttribute('aria-live', 'polite');
-        clearFieldErrors();
+      function renderNetIndex(items) {
+        if (!netList) {
+          return;
+        }
+        netList.innerHTML = '';
+        if (!items.length) {
+          const empty = document.createElement('li');
+          empty.className = 'net-list-empty';
+          empty.textContent = 'No nets found.';
+          netList.appendChild(empty);
+          return;
+        }
+        items.forEach((item) => {
+          const li = document.createElement('li');
+          li.className = 'net-list-item';
+          li.setAttribute('role', 'presentation');
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'net-item';
+          button.dataset.netId = item.id;
+          button.dataset.label = item.label || item.id;
+          button.setAttribute('role', 'option');
+          button.setAttribute('aria-selected', 'false');
+          button.innerHTML = `
+            <span class="net-id">${escapeHtml(item.id)}</span>
+            <span class="net-name">${escapeHtml(item.name || '')}</span>
+            <span class="net-category">${escapeHtml(item.category || '')}</span>
+          `;
+          li.appendChild(button);
+          netList.appendChild(li);
+        });
+        updateNetSelectionUI();
       }
 
-      function resetFormAfterSave() {
+      function applyNetSearch({ announceResults = false } = {}) {
+        if (!netSearchInput) {
+          filteredNetIndex = netIndex.slice();
+          renderNetIndex(filteredNetIndex);
+          return;
+        }
+        const query = netSearchInput.value.trim().toLowerCase();
+        if (!query) {
+          filteredNetIndex = netIndex.slice();
+        } else {
+          filteredNetIndex = netIndex.filter((item) => {
+            const id = (item.id || '').toLowerCase();
+            const name = (item.name || '').toLowerCase();
+            return id.includes(query) || name.includes(query);
+          });
+        }
+        renderNetIndex(filteredNetIndex);
+        if (announceResults) {
+          const count = filteredNetIndex.length;
+          const message = count === 1 ? '1 net matches your filter.' : `${count} nets match your filter.`;
+          announce(message);
+        }
+      }
+
+      async function loadNetIndex(sourceKey) {
+        if (!netList) {
+          return;
+        }
+        netList.setAttribute('aria-busy', 'true');
+        try {
+          const url = new URL('/api/nets', window.location.origin);
+          if (sourceKey) {
+            url.searchParams.set('source', sourceKey);
+          }
+          const response = await fetch(url.toString());
+          const body = await parseResponse(response);
+          if (!response.ok) {
+            showStatus(body.error || 'Unable to load nets for editing.', 'error');
+            netIndex = [];
+            filteredNetIndex = [];
+            renderNetIndex([]);
+            return;
+          }
+          netIndex = Array.isArray(body.nets) ? body.nets : [];
+          applyNetSearch();
+        } catch (error) {
+          showStatus(error.message, 'error');
+          netIndex = [];
+          filteredNetIndex = [];
+          renderNetIndex([]);
+        } finally {
+          netList.removeAttribute('aria-busy');
+        }
+      }
+
+      async function loadPendingOverview() {
+        if (!pendingListContainer) {
+          return;
+        }
+        pendingListContainer.setAttribute('aria-busy', 'true');
+        try {
+          const url = new URL('/api/pending', window.location.origin);
+          const activeSource = sourceInput ? sourceInput.value : pendingContext && pendingContext.active_source;
+          if (activeSource) {
+            url.searchParams.set('source', activeSource);
+          }
+          const response = await fetch(url.toString());
+          const body = await parseResponse(response);
+          if (!response.ok) {
+            showStatus(body.error || 'Unable to load pending submissions.', 'error');
+            renderPendingOverview({ pending_files: [] });
+            return;
+          }
+          pendingContext.options = Array.isArray(body.options) ? body.options : pendingContext.options || [];
+          pendingContext.has_pending = Boolean(body.pending_files && body.pending_files.length);
+          pendingContext.permissions = body.permissions || pendingContext.permissions || {};
+          pendingContext.user = body.user || pendingContext.user || '';
+          if (body.active_source) {
+            pendingContext.active_source = body.active_source;
+          }
+          if (pendingReviewHint) {
+            if (pendingContext.permissions && pendingContext.permissions.can_promote) {
+              pendingReviewHint.textContent = 'Review queued changes and promote them when you are ready.';
+            } else {
+              pendingReviewHint.textContent = 'Review queued changes. A publisher will promote them after approval.';
+            }
+          }
+          renderPendingOverview(body);
+          refreshSourceOptions(pendingContext.options, pendingContext.active_source);
+          updatePendingStatusHint();
+          if (!pendingContext.has_pending) {
+            askedDeleteForFresh = false;
+          }
+        } catch (error) {
+          showStatus(error.message, 'error');
+        } finally {
+          pendingListContainer.removeAttribute('aria-busy');
+        }
+      }
+
+      function refreshSourceOptions(options, activeKey) {
+        if (!sourcePicker) {
+          return;
+        }
+        const fragment = document.createDocumentFragment();
+        let selectedKey = activeKey;
+        if (!selectedKey && sourceInput && sourceInput.value) {
+          selectedKey = sourceInput.value;
+        }
+        let hasSelected = false;
+        options.forEach((option) => {
+          const opt = document.createElement('option');
+          opt.value = option.key;
+          opt.textContent = option.label;
+          opt.dataset.isPending = option.is_pending ? 'true' : 'false';
+          opt.dataset.name = option.name || option.label || option.key;
+          if (!hasSelected && (option.active || option.key === selectedKey)) {
+            opt.selected = true;
+            hasSelected = true;
+            selectedKey = option.key;
+          }
+          fragment.appendChild(opt);
+        });
+        sourcePicker.innerHTML = '';
+        sourcePicker.appendChild(fragment);
+        if (sourceInput) {
+          if (hasSelected) {
+            sourceInput.value = selectedKey;
+          } else if (options.length) {
+            sourceInput.value = options[0].key;
+            selectedKey = options[0].key;
+          }
+        }
+        if (pendingContext) {
+          pendingContext.active_source = selectedKey || (options.length ? options[0].key : pendingContext.active_source);
+        }
+        updateSourceSelectionUI();
+      }
+
+      function renderPendingOverview(data) {
+        if (!pendingListContainer) {
+          return;
+        }
+        const files = Array.isArray(data.pending_files) ? data.pending_files : [];
+        const permissions = data.permissions || pendingContext.permissions || {};
+        const canPromote = Boolean(permissions.can_promote);
+        pendingListContainer.innerHTML = '';
+        if (!files.length) {
+          const empty = document.createElement('p');
+          empty.className = 'pending-empty';
+          empty.textContent = 'No pending submissions right now.';
+          pendingListContainer.appendChild(empty);
+          if (pendingReviewSection) {
+            pendingReviewSection.hidden = false;
+          }
+          return;
+        }
+        files.forEach((file) => {
+          const card = document.createElement('div');
+          card.className = 'pending-card';
+          card.dataset.key = file.key;
+
+          const title = document.createElement('h3');
+          title.textContent = file.label || file.name || file.key;
+          card.appendChild(title);
+
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          const statParts = [];
+          const stats = file.stats || {};
+          statParts.push(stats.added ? `${stats.added} added` : '0 added');
+          statParts.push(stats.updated ? `${stats.updated} updated` : '0 updated');
+          if (stats.removed) {
+            statParts.push(`${stats.removed} removed`);
+          }
+          let createdAt = 'Unknown time';
+          if (file.created_at) {
+            const createdDate = new Date(file.created_at);
+            if (!Number.isNaN(createdDate.valueOf())) {
+              createdAt = createdDate.toLocaleString();
+            }
+          }
+          meta.textContent = `${createdAt} • ${statParts.join(' • ')}`;
+          card.appendChild(meta);
+
+          const changes = Array.isArray(file.changes) ? file.changes : [];
+          if (changes.length) {
+            const list = document.createElement('ul');
+            changes.forEach((change) => {
+              const item = document.createElement('li');
+              const changeType = change.type || 'updated';
+              const changeLabel = change.name ? `${change.id} — ${change.name}` : change.id;
+              item.textContent = `${changeType.toUpperCase()}: ${changeLabel}`;
+              list.appendChild(item);
+            });
+            card.appendChild(list);
+          } else {
+            const noChanges = document.createElement('p');
+            noChanges.className = 'pending-empty';
+            noChanges.textContent = 'No differences detected in this pending file.';
+            card.appendChild(noChanges);
+          }
+
+          if (canPromote) {
+            const actions = document.createElement('div');
+            actions.className = 'actions';
+            const promoteBtn = document.createElement('button');
+            promoteBtn.type = 'button';
+            promoteBtn.className = 'primary';
+            promoteBtn.dataset.action = 'promote';
+            promoteBtn.dataset.key = file.key;
+            promoteBtn.textContent = 'Promote to live';
+            actions.appendChild(promoteBtn);
+            card.appendChild(actions);
+          }
+
+          pendingListContainer.appendChild(card);
+        });
+        if (pendingReviewSection) {
+          pendingReviewSection.hidden = false;
+        }
+      }
+
+      async function promotePending(key) {
+        if (!key) {
+          return;
+        }
+        clearStatus();
+        try {
+          const response = await fetch('/api/pending/promote', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key }),
+          });
+          const body = await parseResponse(response);
+          if (!response.ok) {
+            showStatus(body.error || 'Unable to promote pending file.', 'error');
+            return;
+          }
+          announce('Pending file promoted.');
+          updateActiveSource('nets');
+          await loadPendingOverview();
+        } catch (error) {
+          showStatus(error.message, 'error');
+        }
+      }
+
+      async function loadNetForEdit(netId) {
+        if (!netId) {
+          return;
+        }
+        clearStatus();
+        if (netList) {
+          netList.setAttribute('aria-busy', 'true');
+        }
+        try {
+          const url = new URL(`/api/nets/${encodeURIComponent(netId)}`, window.location.origin);
+          const sourceKey = sourceInput ? sourceInput.value : pendingContext && pendingContext.active_source;
+          if (sourceKey) {
+            url.searchParams.set('source', sourceKey);
+          }
+          const response = await fetch(url.toString());
+          const body = await parseResponse(response);
+          if (!response.ok) {
+            showStatus(body.error || 'Unable to load that net for editing.', 'error');
+            return;
+          }
+          const label = body.label || body.original_id || netId;
+          applyFormState(body.net, { announceMessage: `${label} ready for editing.` });
+        } catch (error) {
+          showStatus(error.message, 'error');
+      } finally {
+        if (netList) {
+          netList.removeAttribute('aria-busy');
+        }
+      }
+    }
+
+    function handleNetSearchLoad() {
+      if (!netSearchInput) {
+        return;
+      }
+      const value = netSearchInput.value.trim();
+      if (!value) {
+        announce('Enter a net ID to load.');
+        netSearchInput.focus({ preventScroll: true });
+        return;
+      }
+      loadNetForEdit(value);
+    }
+
+    function clearStatus() {
+      statusBox.hidden = true;
+      statusBox.textContent = '';
+      statusBox.className = 'status';
+      statusBox.removeAttribute('role');
+      statusBox.setAttribute('aria-live', 'polite');
+      clearFieldErrors();
+    }
+
+      function prepareFormForNewNet({ announceMessage = null, focus = true } = {}) {
         form.reset();
         manualTimeMode = false;
         customFieldsContainer.innerHTML = '';
-        clearDraft();
+        if (sourceInput) {
+          const activeSource =
+            (pendingContext && pendingContext.active_source) ||
+            (sourcePicker && sourcePicker.value) ||
+            sourceInput.value;
+          if (activeSource) {
+            sourceInput.value = activeSource;
+          }
+        }
+        if (modeInput) {
+          modeInput.value = modeInput.defaultValue || 'add';
+        }
+        if (originalIdInput) {
+          originalIdInput.value = '';
+        }
         const defaultCategory = categoryRadios.find((radio) => radio.checked) || categoryRadios[0];
         if (defaultCategory) {
           handleCategoryChange(defaultCategory.value);
         } else {
           handleCategoryChange('');
+        }
+        const sourceHashInput = document.getElementById('source_hash');
+        if (sourceHashInput) {
+          sourceHashInput.value = '';
         }
         applyTimeZoneSelection(timeZoneSelect.value || '');
         updateTimeMode();
@@ -1976,8 +2713,18 @@
             initialize: true,
           });
         });
-        announce('Form cleared for the next net entry.');
-        focusIdField();
+        if (announceMessage) {
+          announce(announceMessage);
+        }
+        if (focus) {
+          focusIdField();
+        }
+      }
+
+      function resetFormAfterSave() {
+        exitEditMode({ silent: true });
+        clearDraft();
+        prepareFormForNewNet({ announceMessage: 'Form cleared for the next net entry.' });
       }
 
       function focusIdField() {
