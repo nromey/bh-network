@@ -5,21 +5,25 @@
   - Add a lightweight health-check widget/page that surfaces data freshness and connectivity (shows `updated_at`/`generated_at`, CORS status, and endpoint in use). Expose at `/status/`.
   - Add a CI/Lint check that flags any lingering `data.blindhams.net` references; ensure all new code uses `site.data_endpoints`.
 
-- Add “How to connect” banner content
-  - Paste Patrick’s copy into `_includes/how_to_connect.md` (use Markdown table)
-  - Include a caption via kramdown IAL to aid accessibility
-    `{: .connect-table data-caption="How to connect to the Blind Hams Network" aria-label="How to connect to the Blind Hams Network" }`
-  - Verify banner renders on `index.md` and is dismissible; leave `site.widgets.connect_banner: true`
-  - Fine-tune CSS spacing/contrast after real copy is in
-
-- Add Able Player for live audio stream
-  - Decide stream type: MP3 (Icecast/Shoutcast, audio/mpeg) or HLS (.m3u8)
-  - Ensure HTTPS + CORS headers on the stream origin
-  - Include Able Player assets (CSS/JS) gated by `page.has_audio: true`
-  - Add `<audio data-able-player>` markup with `<source>` for stream URL
-  - If HLS: include hls.js and attach to the player for non‑Safari browsers
-  - Add a visible “Live” label and an external player fallback link
+- Add Able Player for live audio stream. this has been completed.
   - Optional: transcript link if available; test keyboard + screen reader flow
+
+- Nets helper edit mode
+  - Allow selecting an existing net ID, preload the form with its data, and write a pending file reflecting edits (dry-run preview first).
+  - Include collision detection if two people edit the same net concurrently.
+  - Preserve append-only workflow as a fallback.
+
+- Nets helper: staged additions
+  - Enable schedulers to queue multiple nets in a single session before saving.
+  - Stage additions against the selected working snapshot (latest pending or canonical).
+  - Provide a review screen showing all queued nets prior to writing the new pending file.
+  - Track source metadata so Rachel can see whether a pending file originated from her session or a user submission.
+  - Expose an approval step that lets the webmaster promote the staged changes into a final pending snapshot for publishing.
+  - Emit an optional Telegram notification when a new pending bundle is ready for review (later phase; wire up bot token + chat ID).
+- Nets helper UI polish
+  - Replace free-form mode fields with checkbox-driven sections (DMR, AllStar, EchoLink, HF, etc.) that expose their inputs only when selected; validate/announce when data is removed.
+  - Add polite announcements for key actions (saving pending file, expanding mode sections, clearing data) and improve RRULE prose (“repeats every day”, “second Thursday”, etc.).
+  - Continue RRULE prose polish and snapshot accessibility checks.
 
 - Connect page anchors
   - Add stable IDs to key sections in `nets/blind-hams/connect/index.md` for jump links

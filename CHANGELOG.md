@@ -66,6 +66,17 @@ All notable changes to this project are documented here.
     - `_data/next_net.yml` (home widgets now render a placeholder and hydrate)
     - `_data/bhn_ncos_schedule.yml` (NCO table renders an empty scaffold for hydration)
 
+## 2025-10-27
+
+- Nets helper pending workflow refinements
+  - Backend now prefers the most recent `_data/pending/nets.pending.*.yml` as the working snapshot; a new selector lets schedulers switch to older pending copies or start fresh from `nets.yml`.
+  - Added `/api/pending` endpoints so the UI can list available pending files and delete them without leaving the app (single-file or “delete all” with confirmation).
+  - Frontend shows a friendly banner when unpublished nets exist, exposes the snapshot picker, and threads the chosen source through preview/save operations.
+  - Updated helper script `tools/run-nets-helper.sh` to activate the existing virtualenv, export path vars, and launch Flask in one step.
+  - Centralized help copy and field labels in `tools/nets-helper/help_texts.json`, keeping accessibility hints editable without touching the template.
+  - Autosave now preserves previous drafts until the user restores or discards them via an inline banner (no modal), and collapsed mode sections expand with checkboxes for a focused experience.
+  - Custom time zone controls start hidden/inert by default and only activate when “Custom…” is selected, preventing screen readers from landing on the field or help accidentally.
+
 ## 2025-10-02
 
 - Nets data rendering
