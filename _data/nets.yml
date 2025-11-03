@@ -219,3 +219,15 @@ nets:
     mode: "LSB"
     frequency: "7.103 MHz"
     location: "40 meters"
+
+  - id: "BH-Iowa"
+    category: "disability"
+    name: "Blind Hams Iowa Net"
+    description: "A net based in Iowa that takes check-ins from amateurs world wide but focusses on helping blind hams in Iowa. Checkins welcome from everywhere."
+    start_local: "15:00"
+    time_zone: "America/Chicago"
+    duration_min: 30
+    rrule: "FREQ=WEEKLY;BYDAY=SU"
+    mode: "add"
+    allstar: "47282"
+    echolink: "710459"
