@@ -9,6 +9,9 @@ from datetime import datetime, timezone
 import json
 import hashlib
 import shutil
+import subprocess
+import threading
+import unicodedata
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -76,6 +79,146 @@ CONNECTION_FIELD_MAP = {
 }
 
 ENTRY_BLOCK_TEMPLATE = r"(?ms)^  - id:\s*{id}\s*\n(?:^(?!  - id:).*[\r]?\n?)*"
+
+METADATA_SUFFIX = ".meta.json"
+PUBLIC_RATE_LIMIT_WINDOW_SECONDS = 3600
+PUBLIC_RATE_LIMIT_MAX = 3
+PUBLIC_RATE_LIMIT: Dict[str, List[float]] = {}
+PUBLIC_RATE_LIMIT_LOCK = threading.Lock()
+
+
+SLUG_PATTERN = re.compile(r"[^A-Za-z0-9\-]+")
+
+
+def slugify(value: str) -> str:
+    if not value:
+        return ""
+    normalized = unicodedata.normalize("NFKD", value)
+    normalized = normalized.encode("ascii", "ignore").decode("ascii")
+    normalized = normalized.strip().lower()
+    normalized = re.sub(r"\s+", "-", normalized)
+    normalized = SLUG_PATTERN.sub("", normalized)
+    normalized = re.sub(r"-{2,}", "-", normalized).strip("-")
+    return normalized
+
+
+def generate_candidate_id(name: str, existing_ids: Iterable[str]) -> str:
+    base = slugify(name) or "net"
+    existing_lower = {str(e).lower() for e in existing_ids}
+    if base.lower() not in existing_lower:
+        return base
+    counter = 2
+    while True:
+        candidate = f"{base}-{counter}"
+        if candidate.lower() not in existing_lower:
+            return candidate
+        counter += 1
+
+
+class RateLimitExceeded(Exception):
+    pass
+
+
+def enforce_public_rate_limit(identifier: str) -> None:
+    if not identifier:
+        identifier = "unknown"
+    now = datetime.now(timezone.utc).timestamp()
+    with PUBLIC_RATE_LIMIT_LOCK:
+        entries = PUBLIC_RATE_LIMIT.setdefault(identifier, [])
+        entries[:] = [ts for ts in entries if now - ts < PUBLIC_RATE_LIMIT_WINDOW_SECONDS]
+        if len(entries) >= PUBLIC_RATE_LIMIT_MAX:
+            raise RateLimitExceeded()
+        entries.append(now)
+
+
+def pending_metadata_path(pending_path: Path) -> Path:
+    return pending_path.with_suffix(pending_path.suffix + METADATA_SUFFIX)
+
+
+def load_pending_metadata(meta_path: Path) -> Dict[str, Any]:
+    try:
+        with meta_path.open("r", encoding="utf-8") as fh:
+            data = json.load(fh) or {}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return data
+
+
+def write_pending_metadata(meta_path: Path, metadata: Dict[str, Any]) -> None:
+    try:
+        with meta_path.open("w", encoding="utf-8") as fh:
+            json.dump(metadata, fh, ensure_ascii=False, indent=2)
+    except OSError:
+        # Metadata is helpful but non-critical; ignore write failures.
+        pass
+
+
+def remove_pending_metadata(pending_path: Path) -> None:
+    meta_path = pending_metadata_path(pending_path)
+    try:
+        meta_path.unlink()
+    except FileNotFoundError:
+        pass
+
+
+def run_git_command(repo_root: Path, args: List[str], env: Optional[Dict[str, str]] = None) -> subprocess.CompletedProcess:
+    command = ["git"] + args
+    result = subprocess.run(
+        command,
+        cwd=str(repo_root),
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    if result.returncode != 0:
+        stdout = result.stdout.strip()
+        stderr = result.stderr.strip()
+        message = stderr or stdout or "Unknown git error"
+        raise RuntimeError(f"git {' '.join(args)} failed: {message}")
+    return result
+
+
+def git_stage_paths(repo_root: Path, paths: Iterable[Path]) -> None:
+    for path in paths:
+        run_git_command(repo_root, ["add", str(path)])
+
+
+def git_has_staged_changes(repo_root: Path) -> bool:
+    result = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"],
+        cwd=str(repo_root),
+    )
+    return result.returncode == 1
+
+
+def git_commit(repo_root: Path, message: str, author: Optional[str] = None) -> str:
+    env = os.environ.copy()
+    if author:
+        sanitized = re.sub(r"[^A-Za-z0-9]+", ".", author).strip(".") or "nets-helper"
+        env.setdefault("GIT_AUTHOR_NAME", author)
+        env.setdefault("GIT_COMMITTER_NAME", author)
+        env.setdefault("GIT_AUTHOR_EMAIL", f"{sanitized}@blindhams.network")
+        env.setdefault("GIT_COMMITTER_EMAIL", f"{sanitized}@blindhams.network")
+    run_git_command(repo_root, ["commit", "-m", message], env=env)
+    result = run_git_command(repo_root, ["rev-parse", "HEAD"])
+    return result.stdout.strip()
+
+
+def git_push(repo_root: Path, remote: str, branch: str) -> None:
+    run_git_command(repo_root, ["push", remote, branch])
+
+
+def git_current_branch(repo_root: Path) -> str:
+    try:
+        result = run_git_command(repo_root, ["rev-parse", "--abbrev-ref", "HEAD"])
+        branch = result.stdout.strip()
+        if branch and branch != "HEAD":
+            return branch
+    except RuntimeError:
+        pass
+    return "main"
 
 
 def load_help_texts_file() -> Tuple[Dict[str, str], Dict[str, str]]:
@@ -155,7 +298,12 @@ def get_current_user(app: Flask) -> Optional[str]:
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config.update(load_config())
-    app.config["ROLES_DATA"] = load_roles_file(app.config["ROLES_FILE"])
+    roles_data = load_roles_file(app.config["ROLES_FILE"])
+    app.config["ROLES_DATA"] = roles_data
+    app.config["ROLE_NAMES"] = {
+        "publishers": [str(user) for user in sorted(roles_data.get("publishers", []))],
+        "reviewers": [str(user) for user in sorted(roles_data.get("reviewers", []))],
+    }
 
     @app.get("/")
     def index():
@@ -190,6 +338,10 @@ def create_app() -> Flask:
         original_id = (data.get("original_id") or "").strip()
         source_hash = (data.get("source_hash") or "").strip()
         snippet = build_yaml_snippet(normalized)
+        submission_note = sanitize_optional(data.get("submission_note"))
+        metadata: Dict[str, Any] = {}
+        if submission_note:
+            metadata["note"] = submission_note
         try:
             pending_path = write_pending_file(
                 snippet,
@@ -199,6 +351,8 @@ def create_app() -> Flask:
                 mode=mode,
                 original_id=original_id,
                 expected_hash=source_hash,
+                current_user=current_user,
+                metadata=metadata,
             )
         except ValueError as exc:
             message = str(exc)
@@ -213,6 +367,8 @@ def create_app() -> Flask:
                 "mode": mode,
                 "net_id": normalized["id"],
                 "original_id": original_id,
+                "submitted_by": current_user or "",
+                "submission_note": submission_note,
             }
         )
 
@@ -278,6 +434,234 @@ def create_app() -> Flask:
 
         return jsonify(result)
 
+    @app.post("/api/pending/promote_commit")
+    def api_pending_promote_commit():
+        current_user = get_current_user(app)
+        if not user_can_promote(app.config["ROLES_DATA"], current_user):
+            return jsonify({"error": "You do not have permission to promote pending files."}), 403
+
+        payload = request.get_json(force=True, silent=True) or {}
+        key = payload.get("key")
+        if not isinstance(key, str):
+            return jsonify({"error": "Specify which pending file to promote."}), 400
+
+        output_dir: Path = app.config["OUTPUT_DIR"]
+        nets_file: Path = app.config["NETS_FILE"]
+        repo_root: Path = app.config["REPO_ROOT"]
+        remote_name: str = app.config.get("GIT_REMOTE", "origin")
+        branch_name: str = app.config.get("GIT_BRANCH") or git_current_branch(repo_root)
+        auto_push: bool = app.config.get("AUTO_PUSH", True)
+
+        pending_entries = list_pending_files(output_dir)
+        pending_lookup = {entry["key"]: entry for entry in pending_entries}
+        if key not in pending_lookup:
+            return jsonify({"error": "Pending file not found."}), 404
+
+        summary_list = summarize_pending_files([pending_lookup[key]], nets_file)
+        if not summary_list:
+            return jsonify({"error": "Unable to summarize pending file."}), 400
+        summary_entry = summary_list[0]
+
+        try:
+            promote_result = promote_pending_file(
+                key,
+                output_dir,
+                nets_file,
+                current_user=current_user,
+            )
+        except FileNotFoundError:
+            return jsonify({"error": "Pending file not found."}), 404
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+
+        nets_rel = nets_file.relative_to(repo_root)
+        paths_to_stage = [nets_rel]
+        backup_path = promote_result.get("backup")
+        if backup_path:
+            backup = Path(backup_path)
+            try:
+                paths_to_stage.append(backup.relative_to(repo_root))
+            except ValueError:
+                pass
+
+        try:
+            git_stage_paths(repo_root, paths_to_stage)
+            if not git_has_staged_changes(repo_root):
+                run_git_command(repo_root, ["reset"])
+                return jsonify({
+                    "message": "Pending file promoted but no changes detected for commit.",
+                    "promoted": promote_result.get("promoted", ""),
+                    "backup": promote_result.get("backup", ""),
+                    "changes": summary_entry.get("changes", []),
+                    "stats": summary_entry.get("stats", {}),
+                })
+
+            commit_msg = payload.get("commit_message")
+            if not isinstance(commit_msg, str) or not commit_msg.strip():
+                change_labels = [f"{change.get('type', 'updated')}: {change.get('id')}" for change in summary_entry.get("changes", [])]
+                if change_labels:
+                    changes_text = ", ".join(change_labels)
+                else:
+                    changes_text = "nets update"
+                commit_msg = f"Publish nets helper: {changes_text}"
+
+            commit_hash = git_commit(repo_root, commit_msg.strip(), author=current_user or "nets-helper")
+
+            push_status = {"pushed": False, "message": "Push skipped"}
+            if auto_push:
+                try:
+                    git_push(repo_root, remote_name, branch_name)
+                    push_status = {"pushed": True, "message": f"Pushed to {remote_name}/{branch_name}"}
+                except RuntimeError as exc:
+                    push_status = {"pushed": False, "message": str(exc)}
+
+        except RuntimeError as exc:
+            try:
+                run_git_command(repo_root, ["reset", "--mixed"])
+            except RuntimeError:
+                pass
+            return jsonify({"error": str(exc)}), 500
+
+        return jsonify(
+            {
+                "message": "Pending file promoted and committed.",
+                "promoted": promote_result.get("promoted", ""),
+                "backup": promote_result.get("backup", ""),
+                "changes": summary_entry.get("changes", []),
+                "stats": summary_entry.get("stats", {}),
+                "commit": {
+                    "hash": commit_hash,
+                    "short_hash": commit_hash[:7],
+                    "message": commit_msg.strip(),
+                    "branch": branch_name,
+                    "pushed": push_status.get("pushed", False),
+                    "push_message": push_status.get("message", ""),
+                },
+            }
+        )
+
+    @app.post("/api/public/suggest")
+    def api_public_suggest():
+        payload = request.get_json(force=True, silent=True)
+        if not payload:
+            payload = request.form.to_dict()
+        if not payload:
+            return jsonify({"error": "No data submitted."}), 400
+
+        honeypot = (payload.get("website") or payload.get("url") or "").strip()
+        if honeypot:
+            # silently accept to confuse bots
+            return jsonify({"message": "Submission received."}), 204
+
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr or "")
+        client_ip = client_ip.split(",")[0].strip()
+        try:
+            enforce_public_rate_limit(client_ip)
+        except RateLimitExceeded:
+            return jsonify({"error": "Too many submissions from this address. Please try again later."}), 429
+
+        name = (payload.get("name") or "").strip()
+        description = (payload.get("description") or "").strip()
+        category = (payload.get("category") or "").strip() or "bhn"
+        start_local = (payload.get("start_local") or payload.get("start_time") or "").strip()
+        duration = payload.get("duration_min") or payload.get("duration_minutes") or payload.get("duration") or ""
+        time_zone = (payload.get("time_zone") or payload.get("timezone") or "").strip() or "America/New_York"
+        rrule = (payload.get("rrule") or payload.get("recurrence") or "").strip()
+        contact_name = (payload.get("contact_name") or "").strip()
+        contact_email = (payload.get("contact_email") or "").strip()
+        additional_info = (payload.get("additional_info") or payload.get("notes") or "").strip()
+
+        allstar = (payload.get("allstar") or "").strip()
+        echolink = (payload.get("echolink") or "").strip()
+        frequency = (payload.get("frequency") or payload.get("hf_frequency") or "").strip()
+        mode = (payload.get("mode") or payload.get("hf_mode") or "").strip()
+
+        if not name or not description or not start_local or not duration or not rrule or not contact_email:
+            return jsonify({"error": "Missing required fields."}), 400
+
+        context = load_context(app.config, "nets", None)
+        existing_ids = set(context.get("existing_ids", []))
+        for net in context.get("nets_data", []):
+            net_id = str(net.get("id") or "").strip()
+            if net_id:
+                existing_ids.add(net_id)
+        pending_entries = context.get("pending_context", {}).get("pending", [])
+        for entry in pending_entries:
+            for change in entry.get("changes", []):
+                change_id = str(change.get("id") or "").strip()
+                if change_id:
+                    existing_ids.add(change_id)
+
+        candidate_id = generate_candidate_id(name, existing_ids)
+
+        submission_data = {
+            "id": candidate_id,
+            "name": name,
+            "description": description,
+            "category": category,
+            "start_local": start_local,
+        }
+
+        try:
+            duration_int = int(str(duration).strip())
+        except ValueError:
+            return jsonify({"error": "Duration must be a number (minutes)."}), 400
+        submission_data["duration_min"] = str(duration_int)
+        submission_data["rrule"] = rrule
+        submission_data["time_zone"] = time_zone
+
+        optional_fields = {}
+        if allstar:
+            optional_fields["allstar"] = allstar
+        if echolink:
+            optional_fields["echolink"] = echolink
+        if frequency:
+            optional_fields["frequency"] = frequency
+        if mode:
+            optional_fields["mode"] = mode
+        if additional_info:
+            optional_fields["notes"] = additional_info
+        for key, value in optional_fields.items():
+            submission_data[key] = value
+
+        normalized, errors = normalize_submission(submission_data, existing_ids, context["default_time_zone"])
+        if errors:
+            return jsonify({"errors": errors}), 400
+
+        metadata = {
+            "submitted_via": "public_form",
+            "submitted_by": contact_name or contact_email,
+            "contact_email": contact_email,
+            "contact_name": contact_name,
+            "note": additional_info,
+        }
+
+        submission_note = f"Public submission by {contact_name or 'anonymous'} ({contact_email})"
+
+        try:
+            pending_path = write_pending_file(
+                build_yaml_snippet(normalized),
+                app.config["NETS_FILE"],
+                app.config["OUTPUT_DIR"],
+                context["working_file"],
+                mode="add",
+                original_id="",
+                expected_hash="",
+                current_user=None,
+                metadata=metadata,
+            )
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+
+        return jsonify(
+            {
+                "message": "Submission received. A moderator will review it soon.",
+                "generated_id": normalized["id"],
+                "pending_path": str(pending_path),
+                "submission_note": submission_note,
+            }
+        ), 202
+
     @app.get("/api/nets")
     def api_nets():
         source_key = request.args.get("source")
@@ -302,11 +686,16 @@ def create_app() -> Flask:
         if not target_net:
             return jsonify({"error": "Net not found in the current snapshot."}), 404
 
+        metadata_entry = {}
+        if context["active_source_key"].startswith("pending:"):
+            metadata_entry = context.get("pending_metadata", {}).get(context["active_source_key"], {})
+
         form_state = build_form_state(
             target_net,
             context["default_time_zone"],
             context["active_source_key"],
             context["working_file"],
+            metadata=metadata_entry,
         )
         label = build_edit_label(actual_id, target_net.get("name"))
 
@@ -316,6 +705,7 @@ def create_app() -> Flask:
                 "original_id": actual_id,
                 "active_source": context["active_source_key"],
                 "label": label,
+                "metadata": form_state.get("metadata", {}),
                 "permissions": context["permissions"],
                 "user": context["current_user"],
             }
@@ -348,12 +738,27 @@ def load_config() -> Dict[str, Path]:
     nets_file = nets_file.resolve(strict=False)
     output_dir = output_dir.resolve(strict=False)
     roles_file = roles_file.resolve(strict=False)
+    resolved_nets = nets_file.resolve()
+    repo_root = resolved_nets.parent
+    current = repo_root
+    while current.parent != current:
+        if (current / ".git").is_dir():
+            repo_root = current
+            break
+        current = current.parent
+
+    auto_push_env = os.environ.get("BHN_NETS_AUTO_PUSH", "1").strip().lower()
+    auto_push = auto_push_env not in {"0", "false", "off", "no"}
 
     return {
         "NETS_FILE": nets_file,
         "OUTPUT_DIR": output_dir,
         "ROLES_FILE": roles_file,
         "DEFAULT_USER": os.environ.get("BHN_NETS_DEFAULT_USER", "").strip(),
+        "REPO_ROOT": repo_root,
+        "GIT_REMOTE": os.environ.get("BHN_NETS_REMOTE", "origin"),
+        "GIT_BRANCH": os.environ.get("BHN_NETS_BRANCH", ""),
+        "AUTO_PUSH": auto_push,
     }
 
 
@@ -420,9 +825,14 @@ def load_context(config: Dict, source_key: Optional[str] = None, current_user: O
             "name": entry["name"],
             "label": entry.get("label", ""),
             "created_at": entry.get("created_at", ""),
+            "submitted_by": entry.get("submitted_by", ""),
+            "submitted_at": entry.get("submitted_at", ""),
+            "note": entry.get("note", ""),
         }
         for entry in pending_files
     ]
+
+    pending_metadata_map = {entry["key"]: entry.get("metadata", {}) for entry in pending_files}
 
     return {
         "categories": categories,
@@ -443,7 +853,9 @@ def load_context(config: Dict, source_key: Optional[str] = None, current_user: O
             "pending": pending_summary,
             "permissions": permissions,
             "user": current_user,
+            "role_names": config.get("ROLE_NAMES", {}),
         },
+        "pending_metadata": pending_metadata_map,
         "help_texts": HELP_TEXTS,
         "help_labels": HELP_LABELS,
         "nets_data": nets_data,
@@ -480,6 +892,8 @@ def list_pending_files(output_dir: Path) -> List[Dict[str, str]]:
         reverse=True,
     ):
         label, iso_timestamp = pending_label_from_name(path.name)
+        meta_path = pending_metadata_path(path)
+        metadata = load_pending_metadata(meta_path)
         entries.append(
             {
                 "key": f"pending:{path.name}",
@@ -487,6 +901,10 @@ def list_pending_files(output_dir: Path) -> List[Dict[str, str]]:
                 "path": str(path),
                 "label": label,
                 "created_at": iso_timestamp or "",
+                "submitted_by": str(metadata.get("submitted_by", "") or ""),
+                "submitted_at": str(metadata.get("submitted_at", "") or ""),
+                "note": str(metadata.get("note", "") or ""),
+                "metadata": metadata,
             }
         )
     return entries
@@ -515,6 +933,9 @@ def build_source_options(pending_files: List[Dict[str, str]], nets_file: Path, a
                 "name": entry["name"],
                 "is_pending": True,
                 "active": entry["key"] == active_key,
+                "submitted_by": entry.get("submitted_by", ""),
+                "submitted_at": entry.get("submitted_at", ""),
+                "note": entry.get("note", ""),
             }
         )
 
@@ -537,6 +958,7 @@ def delete_all_pending(output_dir: Path) -> List[str]:
         try:
             path.unlink()
             deleted.append(entry["name"])
+            remove_pending_metadata(path)
         except FileNotFoundError:
             continue
     return deleted
@@ -548,6 +970,7 @@ def delete_single_pending(output_dir: Path, key: str) -> List[str]:
         raise FileNotFoundError(key)
     path = Path(pending_files[key]["path"])
     path.unlink()
+    remove_pending_metadata(path)
     return [pending_files[key]["name"]]
 
 
@@ -763,6 +1186,8 @@ def write_pending_file(
     mode: str = "add",
     original_id: str = "",
     expected_hash: Optional[str] = "",
+    current_user: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
 ) -> Path:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     pending_dir = output_dir / "pending"
@@ -792,6 +1217,22 @@ def write_pending_file(
     with tmp_path.open("w", encoding="utf-8") as fh:
         fh.write(new_content)
     os.replace(tmp_path, pending_path)
+
+    metadata_payload: Dict[str, Any] = {
+        "submitted_by": (current_user or ""),
+        "submitted_at": datetime.now(timezone.utc).isoformat(),
+        "mode": mode,
+    }
+    if original_id:
+        metadata_payload["original_id"] = original_id
+    if metadata:
+        for key, value in metadata.items():
+            if value in (None, "", []):
+                continue
+            metadata_payload[key] = value
+
+    meta_path = pending_metadata_path(pending_path)
+    write_pending_metadata(meta_path, metadata_payload)
 
     return pending_path
 
@@ -903,6 +1344,9 @@ def summarize_pending_files(pending_entries: List[Dict[str, str]], canonical_fil
             "created_at": entry.get("created_at", ""),
             "changes": changes,
             "stats": stats,
+            "submitted_by": entry.get("submitted_by", ""),
+            "submitted_at": entry.get("submitted_at", ""),
+            "note": entry.get("note", ""),
         }
         summaries.append(summary_entry)
 
@@ -932,6 +1376,7 @@ def promote_pending_file(key: str, output_dir: Path, nets_file: Path, current_us
     os.replace(tmp_path, nets_file)
 
     pending_path.unlink()
+    remove_pending_metadata(pending_path)
 
     return {
         "message": "Pending file promoted",
@@ -984,6 +1429,7 @@ def build_form_state(
     default_time_zone: str,
     active_source: str,
     source_file: Optional[Path] = None,
+    metadata: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     values: Dict[str, str] = {}
     for key in BASE_FIELD_KEYS:
@@ -1035,12 +1481,19 @@ def build_form_state(
     values["original_id"] = str(net.get("id") or "")
     values["mode"] = "edit"
     values["source_hash"] = source_hash
+    metadata = metadata or {}
+    values["submission_note"] = str(metadata.get("note", "") or "")
 
     return {
         "values": values,
         "customFields": custom_fields,
         "connections": connections,
         "meta": meta,
+        "metadata": {
+            "submitted_by": str(metadata.get("submitted_by", "") or ""),
+            "submitted_at": str(metadata.get("submitted_at", "") or ""),
+            "note": str(metadata.get("note", "") or ""),
+        },
     }
 
 

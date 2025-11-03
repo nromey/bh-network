@@ -211,53 +211,23 @@
         margin-top: 0;
       }
       .net-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
+        width: min(100%, 24rem);
+        min-height: 12rem;
         max-height: 18rem;
-        overflow: auto;
+        padding: 0.5rem;
+        font-size: 0.95rem;
         border: 1px solid #999;
         border-radius: 0.5rem;
       }
       .net-list[aria-busy="true"] {
         opacity: 0.65;
       }
-      .net-list-item + .net-list-item {
-        border-top: 1px solid rgba(17, 17, 17, 0.1);
+      .net-list:focus {
+        outline: 3px solid rgba(42, 106, 209, 0.35);
+        border-color: #2a6ad1;
       }
-      .net-item {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 1rem;
-        width: 100%;
-        text-align: left;
-        padding: 0.6rem 0.9rem;
-        font-size: 0.95rem;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-      }
-      .net-item:hover,
-      .net-item:focus-visible {
-        background: rgba(42, 106, 209, 0.15);
-        outline: none;
-      }
-      .net-item.selected,
-      .net-item[aria-selected="true"] {
-        background: rgba(42, 106, 209, 0.25);
-        border-left: 4px solid #2a6ad1;
-      }
-      .net-item .net-id {
-        font-weight: 600;
-      }
-      .net-item .net-category {
-        font-size: 0.85rem;
-        color: #444;
-      }
-      .net-list-empty {
-        padding: 0.75rem 1rem;
-        font-size: 0.95rem;
-        color: #555;
+      .net-list option {
+        padding: 0.4rem 0.5rem;
       }
       .edit-notice {
         border: 1px solid #ffbf47;
@@ -327,6 +297,21 @@
         font-size: 0.95rem;
         color: #555;
       }
+      .pending-meta {
+        display: inline-block;
+        margin-top: 0.25rem;
+        font-size: 0.9rem;
+        color: #374151;
+      }
+      .pending-note {
+        margin: 0.5rem 0 0;
+        font-size: 0.95rem;
+        color: #1f2937;
+      }
+      .pending-note-inline {
+        font-size: 0.9rem;
+        color: #374151;
+      }
       button.secondary {
         background: #f3f4f6;
         color: #111;
@@ -372,6 +357,14 @@
         font-size: 0.9rem;
         color: #555;
       }
+      .submission-note {
+        margin-top: 1.5rem;
+        max-width: 32rem;
+      }
+      .submission-note textarea {
+        width: 100%;
+        min-height: 4.5rem;
+      }
       .section-heading {
         font-size: 1.35rem;
         font-weight: 600;
@@ -413,18 +406,6 @@
         padding: 0.5rem;
         font-size: 1rem;
         margin-top: 0.25rem;
-      }
-      .existing-ids {
-        margin-top: 0.35rem;
-      }
-      .existing-ids ul {
-        margin: 0.25rem 0 0;
-        padding-left: 1.25rem;
-        columns: auto;
-        column-gap: 1.5rem;
-      }
-      .existing-ids ul li {
-        margin-bottom: 0.1rem;
       }
       .field-header {
         display: flex;
@@ -487,6 +468,15 @@
         margin-top: 0.35rem;
         font-weight: 500;
       }
+      .manager-info {
+        margin-top: 0.75rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background: rgba(17, 24, 39, 0.04);
+        font-size: 0.95rem;
+        color: #1f2937;
+      }
       .category-option input[type="radio"] {
         transform: scale(1.15);
       }
@@ -544,9 +534,14 @@
           <button type="button" id="netSearchLoadBtn" class="secondary">Load by ID</button>
         </div>
         <p class="hint" id="netSearchHint">Know the exact ID? Enter it and choose “Load by ID.” Otherwise, select from the list below.</p>
-        <ul id="netList" class="net-list" role="listbox" aria-label="Available nets for editing">
-          <li class="net-list-empty">Loading nets…</li>
-        </ul>
+        <button type="button" class="secondary" id="showManagersBtn" aria-expanded="false" aria-controls="managerInfo">Who are the managers?</button>
+        <div id="managerInfo" class="manager-info" hidden aria-hidden="true"></div>
+        <select id="netList" class="net-list" size="12" aria-label="Available nets for editing" aria-describedby="netListStatus" disabled>
+        </select>
+        <p class="hint" id="netListStatus" aria-live="polite">Loading nets…</p>
+        <div class="actions">
+          <button type="button" id="netLoadSelectedBtn" class="secondary" disabled>Load selected net</button>
+        </div>
       </section>
 
       <section id="pendingReview" class="pending-review" aria-labelledby="pendingReviewHeading">
@@ -582,27 +577,8 @@
         <fieldset>
           <legend>Net details</legend>
 
-          <div class="field-header">
-            <label for="id">Unique ID <span aria-hidden="true">*</span></label>
-          </div>
-          <p class="hint">Letters, numbers, hyphen, or underscore. Example: <code>blind-hams-digital</code>.</p>
-          <div class="field-input">
-            <input type="text" id="id" name="id" required pattern="^[A-Za-z0-9][A-Za-z0-9_\-]*$">
-            <button type="button" class="help-button" data-help="id" data-field-id="id" data-field-label="Unique ID" aria-expanded="false" aria-controls="help-id" aria-label="What does the Unique ID field mean?">?</button>
-          </div>
-          {% if existing_ids %}
-          <section class="hint existing-ids" role="region" aria-labelledby="existingIdsHeading" aria-describedby="existingIdsNote">
-            <p id="existingIdsHeading" class="sr-only">Existing net IDs</p>
-            <p id="existingIdsNote" class="sr-only">Exit Forms Mode or Browse Mode to review this list.</p>
-            <p aria-hidden="true">Existing IDs ({{ existing_ids|length }}):</p>
-            <ul>
-              {% for eid in existing_ids %}
-              <li>{{ eid }}</li>
-              {% endfor %}
-            </ul>
-          </section>
-          {% endif %}
-          <p class="hint help-text" id="help-id"></p>
+          <input type="hidden" id="id" name="id">
+          <p class="hint" id="idDisplay" aria-live="polite">ID will be generated from the net name.</p>
 
           <div class="field-header">
             <label for="name">Net name <span aria-hidden="true">*</span></label>
@@ -876,6 +852,11 @@
           <button type="button" id="previewBtn" class="primary">Preview YAML</button>
           <button type="button" id="saveBtn">Create pending file</button>
         </div>
+        <div class="submission-note">
+          <label for="submission_note">Submission note (optional)</label>
+          <textarea id="submission_note" name="submission_note" aria-describedby="submissionNoteHint"></textarea>
+          <p class="hint" id="submissionNoteHint">This note appears to publishers when reviewing the pending file (for example &ldquo;Rachel &ndash; added AllStar node details&rdquo;).</p>
+        </div>
         <p id="autosaveStatus" class="autosave-status" hidden aria-live="polite"></p>
       </form>
 
@@ -952,12 +933,18 @@
       const editNoticeValue = document.getElementById('editNoticeValue');
       const exitEditModeBtn = document.getElementById('exitEditModeBtn');
       const netList = document.getElementById('netList');
+      const netListStatus = document.getElementById('netListStatus');
+      const netLoadSelectedBtn = document.getElementById('netLoadSelectedBtn');
       const netSearchInput = document.getElementById('netSearch');
       const netSearchLoadBtn = document.getElementById('netSearchLoadBtn');
       const editControlsSection = document.getElementById('editControls');
       const pendingReviewSection = document.getElementById('pendingReview');
       const pendingReviewHint = document.getElementById('pendingReviewHint');
       const pendingListContainer = document.getElementById('pendingList');
+      const idField = document.getElementById('id');
+      const idDisplay = document.getElementById('idDisplay');
+      const initialExistingIds = {{ existing_ids|tojson }};
+      const initialExistingIdsLower = new Set(initialExistingIds.map((id) => String(id || '').toLowerCase()));
       const connectionConfigs = [
         {
           key: 'allstar',
@@ -1011,6 +998,42 @@
         originalId: '',
         label: '',
       };
+
+      function buildApiUrl(path) {
+        const trimmed = String(path || '').replace(/^\//, '');
+        return new URL(trimmed, window.location.href).toString();
+      }
+
+      function netOptionLabel(item) {
+        const id = item.id || '';
+        const name = item.name ? ` — ${item.name}` : '';
+        const category = item.category ? ` (${item.category})` : '';
+        return `${id}${name}${category}`.trim();
+      }
+
+      function updateNetListStatus(count, customMessage) {
+        if (!netListStatus) {
+          return;
+        }
+        if (customMessage) {
+          netListStatus.textContent = customMessage;
+          return;
+        }
+        if (!count) {
+          netListStatus.textContent = 'No nets found.';
+        } else {
+          netListStatus.textContent = count === 1 ? '1 net available.' : `${count} nets available.`;
+        }
+      }
+
+      function syncLoadSelectedButton() {
+        if (!netLoadSelectedBtn || !netList) {
+          return;
+        }
+        netLoadSelectedBtn.disabled = netList.disabled || !netList.value;
+      }
+
+      syncLoadSelectedButton();
 
       function escapeSelector(value) {
         if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
@@ -1082,7 +1105,6 @@
         }
       }
 
-      let askedDeleteForFresh = false;
       if (sourcePicker) {
         updateSourceSelectionUI();
         sourcePicker.addEventListener('change', handleSourceChange);
@@ -1229,6 +1251,87 @@
         extras.forEach((element) => APPLY_STYLE(element, show));
       }
 
+      function slugify(value) {
+        return String(value || '')
+          .normalize('NFKD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^A-Za-z0-9\s_-]/g, '')
+          .trim()
+          .replace(/[\s_-]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .toLowerCase();
+      }
+
+      function isIdTaken(candidate) {
+        const lower = String(candidate || '').toLowerCase();
+        if (!lower) {
+          return false;
+        }
+        if (initialExistingIdsLower.has(lower)) {
+          return true;
+        }
+        if (netIndex.some((item) => String(item.id || '').toLowerCase() === lower)) {
+          return true;
+        }
+        if (pendingContext && Array.isArray(pendingContext.pending)) {
+          for (const entry of pendingContext.pending) {
+            if (!entry || !Array.isArray(entry.changes)) {
+              continue;
+            }
+            if (entry.changes.some((change) => String(change.id || '').toLowerCase() === lower)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function generateUniqueId(base) {
+        const cleanBase = base || 'net';
+        let candidate = cleanBase;
+        let counter = 2;
+        while (isIdTaken(candidate)) {
+          candidate = `${cleanBase}-${counter}`;
+          counter += 1;
+        }
+        return candidate;
+      }
+
+      function updateIdDisplay(idValue) {
+        if (!idDisplay) {
+          return;
+        }
+        if (idValue) {
+          idDisplay.innerHTML = `Generated ID: <code>${escapeHtml(idValue)}</code>`;
+        } else {
+          idDisplay.textContent = 'ID will be generated from the net name.';
+        }
+      }
+
+      function autoAssignId({ force = false } = {}) {
+        if (!idField) {
+          return;
+        }
+        if (editingState.active) {
+          if (force && idField.value) {
+            updateIdDisplay(idField.value);
+          } else if (!idField.value) {
+            updateIdDisplay('');
+          }
+          return;
+        }
+        const name = netNameInput ? netNameInput.value.trim() : '';
+        if (!name) {
+          idField.value = '';
+          updateIdDisplay('');
+          return;
+        }
+        const base = slugify(name) || 'net';
+        const unique = generateUniqueId(base);
+        idField.value = unique;
+        updateIdDisplay(unique);
+      }
+
       function resolveConnectionFields(config) {
         config.fieldElements = config.fields
           .map((name) => form.elements[name])
@@ -1305,7 +1408,8 @@
       function setConnectionState(config, enable, { announceChanges = true, allowPrompt = true, initialize = false } = {}) {
         const hasData = connectionHasData(config);
         if (enable) {
-          setConnectionSectionVisibility(config, true, { focusFirst: !initialize });
+          setConnectionSectionVisibility(config, true);
+          config.checkbox.setAttribute('aria-expanded', 'true');
           if (!initialize && announceChanges) {
             announce(`${config.label} connection expanded.`);
           }
@@ -1328,6 +1432,7 @@
         }
 
         setConnectionSectionVisibility(config, false);
+        config.checkbox.setAttribute('aria-expanded', 'false');
         if (!initialize && announceChanges) {
           announce(`${config.label} connection collapsed.`);
         }
@@ -1666,13 +1771,21 @@
             exitEditMode({ silent: true });
           }
 
+          if (idField) {
+            const newIdValue = values.id || originalIdValue || idField.value || '';
+            idField.value = newIdValue;
+            updateIdDisplay(newIdValue);
+          } else {
+            updateIdDisplay(values.id || originalIdValue || '');
+          }
+
           const timestamp = state && typeof state.timestamp === 'number' ? state.timestamp : Date.now();
           updateAutosaveStatus(timestamp);
           if (announceMessage) {
             announce(announceMessage);
           }
           if (shouldEdit && !fromDraft) {
-            focusIdField();
+            focusNameField();
           }
         } catch (error) {
           console.warn('Unable to apply form state', error);
@@ -1730,6 +1843,7 @@
           return;
         }
         resolveConnectionFields(config);
+        config.checkbox.setAttribute('aria-controls', config.section.id);
         const initialEnabled = config.checkbox.checked || connectionHasData(config);
         config.checkbox.checked = initialEnabled;
         setConnectionState(config, initialEnabled, {
@@ -1814,21 +1928,25 @@
         if (!netList) {
           return;
         }
-        const buttons = netList.querySelectorAll('.net-item');
-        buttons.forEach((button) => {
-          const netId = button.dataset.netId || '';
-          const isMatch =
-            editingState.active &&
-            netId &&
-            netId.toLowerCase() === editingState.originalId.toLowerCase();
-          if (isMatch) {
-            button.classList.add('selected');
-            button.setAttribute('aria-selected', 'true');
-          } else {
-            button.classList.remove('selected');
-            button.setAttribute('aria-selected', 'false');
+        if (!editingState.active || !editingState.originalId) {
+          if (netList.selectedIndex === -1 && netList.options.length) {
+            netList.selectedIndex = 0;
+          }
+          syncLoadSelectedButton();
+          return;
+        }
+        const target = editingState.originalId.toLowerCase();
+        let matched = false;
+        Array.from(netList.options).forEach((option) => {
+          if (option.value.toLowerCase() === target) {
+            option.selected = true;
+            matched = true;
           }
         });
+        if (!matched) {
+          netList.selectedIndex = -1;
+        }
+        syncLoadSelectedButton();
       }
 
       customFieldsContainer.addEventListener('click', (event) => {
@@ -1913,7 +2031,12 @@
         updateRruleDescription();
       });
 
-      netNameInput.addEventListener('input', updateRruleDescription);
+      if (netNameInput) {
+        netNameInput.addEventListener('input', () => {
+          autoAssignId();
+          updateRruleDescription();
+        });
+      }
 
       function setHelpVisibility(targetId, show, options = {}) {
         const { silent = false } = options;
@@ -1977,6 +2100,7 @@
       const initialSourceKey = (sourceInput && sourceInput.value) || (pendingContext && pendingContext.active_source) || 'nets';
       loadNetIndex(initialSourceKey);
       loadPendingOverview();
+      autoAssignId({ force: true });
 
       window.addEventListener('beforeunload', () => {
         saveDraftToStorage();
@@ -2031,7 +2155,7 @@
         clearStatus();
         const payload = collectFormData();
         try {
-          const response = await fetch('/api/preview', requestOptions(payload));
+          const response = await fetch(buildApiUrl('api/preview'), requestOptions(payload));
           const body = await parseResponse(response);
           if (!response.ok) {
             renderErrors(body.errors || {});
@@ -2075,13 +2199,70 @@
       }
 
       if (netList) {
-        netList.addEventListener('click', (event) => {
-          const button = event.target.closest('.net-item');
-          if (!button) {
-            return;
+        netList.addEventListener('change', () => {
+          syncLoadSelectedButton();
+        });
+        netList.addEventListener('dblclick', () => {
+          if (netList.value) {
+            loadNetForEdit(netList.value);
           }
-          const netId = button.dataset.netId;
-          loadNetForEdit(netId);
+        });
+        netList.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' && !event.altKey && !event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            if (netList.value) {
+              loadNetForEdit(netList.value);
+            }
+          }
+        });
+      }
+
+      if (netLoadSelectedBtn) {
+        netLoadSelectedBtn.addEventListener('click', () => {
+          if (netList && netList.value) {
+            loadNetForEdit(netList.value);
+          } else {
+            announce('Select a net from the list first.');
+            if (netList && !netList.disabled) {
+              netList.focus({ preventScroll: true });
+            }
+          }
+        });
+      }
+
+      const showManagersBtn = document.getElementById('showManagersBtn');
+      const managerInfo = document.getElementById('managerInfo');
+      const roleNames = (pendingContext && pendingContext.role_names) || {};
+      function renderManagerInfo() {
+        if (!managerInfo) return;
+        const lines = [];
+        const publishers = Array.isArray(roleNames.publishers) ? roleNames.publishers : [];
+        const reviewers = Array.isArray(roleNames.reviewers) ? roleNames.reviewers : [];
+        if (publishers.length) {
+          lines.push(`<p><strong>Publishers (can promote to live):</strong> ${publishers.join(', ')}</p>`);
+        }
+        if (reviewers.length) {
+          lines.push(`<p><strong>Reviewers:</strong> ${reviewers.join(', ')}</p>`);
+        }
+        if (!lines.length) {
+          lines.push('<p>No team members listed.</p>');
+        }
+        managerInfo.innerHTML = lines.join('\n');
+      }
+      if (showManagersBtn && managerInfo) {
+        renderManagerInfo();
+        showManagersBtn.addEventListener('click', () => {
+          const isHidden = managerInfo.hasAttribute('hidden');
+          if (isHidden) {
+            managerInfo.removeAttribute('hidden');
+            managerInfo.setAttribute('aria-hidden', 'false');
+            showManagersBtn.setAttribute('aria-expanded', 'true');
+            renderManagerInfo();
+          } else {
+            managerInfo.setAttribute('hidden', '');
+            managerInfo.setAttribute('aria-hidden', 'true');
+            showManagersBtn.setAttribute('aria-expanded', 'false');
+          }
         });
       }
 
@@ -2112,7 +2293,7 @@
         clearStatus();
         const payload = collectFormData();
         try {
-          const response = await fetch('/api/save', requestOptions(payload));
+          const response = await fetch(buildApiUrl('api/save'), requestOptions(payload));
           const body = await parseResponse(response);
           if (!response.ok) {
             renderErrors(body.errors || {});
@@ -2159,6 +2340,11 @@
         payload.mode = modeValue;
         delete payload.categoryChoice;
         delete payload.start_local_manual;
+
+        if (idField && (!payload.id || !String(payload.id).trim())) {
+          autoAssignId({ force: true });
+          payload.id = idField.value;
+        }
 
         return payload;
       }
@@ -2216,14 +2402,6 @@
         window.history.replaceState({}, '', url);
         exitEditMode({ silent: true });
         loadNetIndex(value);
-        const isPending = option.dataset.isPending === 'true';
-        if (!isPending && pendingContext && pendingContext.has_pending && !askedDeleteForFresh) {
-          askedDeleteForFresh = true;
-          const deleteNow = window.confirm('Start fresh from the canonical list? Delete existing pending files first?');
-          if (deleteNow) {
-            deletePending('all', null, 'nets');
-          }
-        }
       }
 
       function handleDeleteSelected() {
@@ -2256,7 +2434,7 @@
           payload.key = key;
         }
         try {
-          const response = await fetch('/api/pending', {
+          const response = await fetch(buildApiUrl('api/pending'), {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -2286,7 +2464,26 @@
         }
         if (currentSnapshot) {
           const label = option.dataset.name || option.textContent.trim() || option.value;
-          currentSnapshot.innerHTML = `Currently editing: <code>${escapeHtml(label)}</code>`;
+          let snapshotHtml = `Currently editing: <code>${escapeHtml(label)}</code>`;
+          const submittedBy = option.dataset.submittedBy || '';
+          const submittedAt = option.dataset.submittedAt || '';
+          const note = option.dataset.note || '';
+          const detailParts = [];
+          if (submittedBy) {
+            detailParts.push(`submitted by ${escapeHtml(submittedBy)}`);
+          }
+          if (submittedAt) {
+            const submittedDate = new Date(submittedAt);
+            const formatted = Number.isNaN(submittedDate.valueOf()) ? submittedAt : submittedDate.toLocaleString();
+            detailParts.push(`saved ${escapeHtml(formatted)}`);
+          }
+          if (detailParts.length) {
+            snapshotHtml += `<br><span class="pending-meta">${detailParts.join(' • ')}</span>`;
+          }
+          if (note) {
+            snapshotHtml += `<br><span class="pending-note-inline">Note: ${escapeHtml(note)}</span>`;
+          }
+          currentSnapshot.innerHTML = snapshotHtml;
         }
         if (sourceInput && sourceInput.value !== option.value) {
           sourceInput.value = option.value;
@@ -2340,34 +2537,48 @@
         if (!netList) {
           return;
         }
+        const previousSelection = netList.value;
         netList.innerHTML = '';
         if (!items.length) {
-          const empty = document.createElement('li');
-          empty.className = 'net-list-empty';
-          empty.textContent = 'No nets found.';
-          netList.appendChild(empty);
+          netList.disabled = true;
+          updateNetListStatus(0);
+          syncLoadSelectedButton();
           return;
         }
+        const fragment = document.createDocumentFragment();
         items.forEach((item) => {
-          const li = document.createElement('li');
-          li.className = 'net-list-item';
-          li.setAttribute('role', 'presentation');
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'net-item';
-          button.dataset.netId = item.id;
-          button.dataset.label = item.label || item.id;
-          button.setAttribute('role', 'option');
-          button.setAttribute('aria-selected', 'false');
-          button.innerHTML = `
-            <span class="net-id">${escapeHtml(item.id)}</span>
-            <span class="net-name">${escapeHtml(item.name || '')}</span>
-            <span class="net-category">${escapeHtml(item.category || '')}</span>
-          `;
-          li.appendChild(button);
-          netList.appendChild(li);
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = netOptionLabel(item);
+          option.dataset.label = item.label || item.id;
+          option.dataset.category = item.category || '';
+          fragment.appendChild(option);
         });
+        netList.appendChild(fragment);
+        netList.disabled = false;
+
+        let desiredValue = '';
+        if (editingState.active && editingState.originalId) {
+          desiredValue = editingState.originalId;
+        } else if (previousSelection) {
+          const exists = items.some((item) => (item.id || '').toLowerCase() === previousSelection.toLowerCase());
+          if (exists) {
+            desiredValue = previousSelection;
+          }
+        }
+        if (desiredValue) {
+          netList.value = desiredValue;
+          if (netList.value !== desiredValue) {
+            netList.selectedIndex = -1;
+          }
+        }
+        if (netList.selectedIndex === -1 && netList.options.length) {
+          netList.selectedIndex = 0;
+        }
+
+        updateNetListStatus(items.length);
         updateNetSelectionUI();
+        syncLoadSelectedButton();
       }
 
       function applyNetSearch({ announceResults = false } = {}) {
@@ -2387,6 +2598,9 @@
           });
         }
         renderNetIndex(filteredNetIndex);
+        if (!filteredNetIndex.length && netIndex.length) {
+          updateNetListStatus(0, 'No nets match your filter.');
+        }
         if (announceResults) {
           const count = filteredNetIndex.length;
           const message = count === 1 ? '1 net matches your filter.' : `${count} nets match your filter.`;
@@ -2399,8 +2613,11 @@
           return;
         }
         netList.setAttribute('aria-busy', 'true');
+        netList.disabled = true;
+        updateNetListStatus(0, 'Loading nets…');
+        syncLoadSelectedButton();
         try {
-          const url = new URL('/api/nets', window.location.origin);
+          const url = new URL(buildApiUrl('api/nets'));
           if (sourceKey) {
             url.searchParams.set('source', sourceKey);
           }
@@ -2411,6 +2628,7 @@
             netIndex = [];
             filteredNetIndex = [];
             renderNetIndex([]);
+            updateNetListStatus(0, 'Unable to load nets.');
             return;
           }
           netIndex = Array.isArray(body.nets) ? body.nets : [];
@@ -2420,8 +2638,10 @@
           netIndex = [];
           filteredNetIndex = [];
           renderNetIndex([]);
+          updateNetListStatus(0, 'Unable to load nets.');
         } finally {
           netList.removeAttribute('aria-busy');
+          syncLoadSelectedButton();
         }
       }
 
@@ -2431,7 +2651,7 @@
         }
         pendingListContainer.setAttribute('aria-busy', 'true');
         try {
-          const url = new URL('/api/pending', window.location.origin);
+          const url = new URL(buildApiUrl('api/pending'));
           const activeSource = sourceInput ? sourceInput.value : pendingContext && pendingContext.active_source;
           if (activeSource) {
             url.searchParams.set('source', activeSource);
@@ -2447,6 +2667,7 @@
           pendingContext.has_pending = Boolean(body.pending_files && body.pending_files.length);
           pendingContext.permissions = body.permissions || pendingContext.permissions || {};
           pendingContext.user = body.user || pendingContext.user || '';
+          pendingContext.pending = Array.isArray(body.pending_files) ? body.pending_files : [];
           if (body.active_source) {
             pendingContext.active_source = body.active_source;
           }
@@ -2460,9 +2681,7 @@
           renderPendingOverview(body);
           refreshSourceOptions(pendingContext.options, pendingContext.active_source);
           updatePendingStatusHint();
-          if (!pendingContext.has_pending) {
-            askedDeleteForFresh = false;
-          }
+          // no pending files to review
         } catch (error) {
           showStatus(error.message, 'error');
         } finally {
@@ -2486,6 +2705,21 @@
           opt.textContent = option.label;
           opt.dataset.isPending = option.is_pending ? 'true' : 'false';
           opt.dataset.name = option.name || option.label || option.key;
+          if (option.submitted_by) {
+            opt.dataset.submittedBy = option.submitted_by;
+          } else {
+            opt.dataset.submittedBy = '';
+          }
+          if (option.submitted_at) {
+            opt.dataset.submittedAt = option.submitted_at;
+          } else {
+            opt.dataset.submittedAt = '';
+          }
+          if (option.note) {
+            opt.dataset.note = option.note;
+          } else {
+            opt.dataset.note = '';
+          }
           if (!hasSelected && (option.active || option.key === selectedKey)) {
             opt.selected = true;
             hasSelected = true;
@@ -2514,6 +2748,7 @@
           return;
         }
         const files = Array.isArray(data.pending_files) ? data.pending_files : [];
+        pendingContext.pending = files;
         const permissions = data.permissions || pendingContext.permissions || {};
         const canPromote = Boolean(permissions.can_promote);
         pendingListContainer.innerHTML = '';
@@ -2545,14 +2780,24 @@
           if (stats.removed) {
             statParts.push(`${stats.removed} removed`);
           }
-          let createdAt = 'Unknown time';
-          if (file.created_at) {
-            const createdDate = new Date(file.created_at);
-            if (!Number.isNaN(createdDate.valueOf())) {
-              createdAt = createdDate.toLocaleString();
-            }
+          let submittedDisplay = '';
+          const submittedAt = file.submitted_at || file.created_at || '';
+          if (submittedAt) {
+            const submittedDate = new Date(submittedAt);
+            submittedDisplay = Number.isNaN(submittedDate.valueOf()) ? submittedAt : submittedDate.toLocaleString();
           }
-          meta.textContent = `${createdAt} • ${statParts.join(' • ')}`;
+          const metaParts = [];
+          if (file.submitted_by) {
+            metaParts.push(`Submitted by ${file.submitted_by}`);
+          }
+          if (submittedDisplay) {
+            metaParts.push(submittedDisplay);
+          }
+          const statText = statParts.join(' • ');
+          if (statText) {
+            metaParts.push(statText);
+          }
+          meta.textContent = metaParts.join(' • ');
           card.appendChild(meta);
 
           const changes = Array.isArray(file.changes) ? file.changes : [];
@@ -2571,6 +2816,13 @@
             noChanges.className = 'pending-empty';
             noChanges.textContent = 'No differences detected in this pending file.';
             card.appendChild(noChanges);
+          }
+
+          if (file.note) {
+            const note = document.createElement('p');
+            note.className = 'pending-note';
+            note.textContent = `Note: ${file.note}`;
+            card.appendChild(note);
           }
 
           if (canPromote) {
@@ -2597,9 +2849,30 @@
         if (!key) {
           return;
         }
+        const entries = pendingContext.pending || [];
+        const file = entries.find((entry) => entry.key === key);
+        let summaryLines = [];
+        if (file && Array.isArray(file.changes) && file.changes.length) {
+          summaryLines = file.changes.map((change) => `• ${change.type || 'updated'}: ${change.id || ''} ${change.name ? `— ${change.name}` : ''}`.trim());
+        }
+        if (!summaryLines.length && file && file.stats) {
+          const stats = file.stats;
+          summaryLines.push(`• Changes: added ${stats.added || 0}, updated ${stats.updated || 0}, removed ${stats.removed || 0}`);
+        }
+        if (!summaryLines.length) {
+          summaryLines.push('• No detailed change list available');
+        }
+        const confirmMessage = `Publish the following changes to live and push to GitHub?\n\n${summaryLines.join('\n')}\n\nThis action updates _data/nets.yml and creates a git commit.`;
+        const confirmed = window.confirm(confirmMessage);
+        if (!confirmed) {
+          announce('Promotion cancelled.');
+          return;
+        }
+
         clearStatus();
+        showStatus('Publishing pending changes…');
         try {
-          const response = await fetch('/api/pending/promote', {
+          const response = await fetch(buildApiUrl('api/pending/promote_commit'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ key }),
@@ -2609,7 +2882,17 @@
             showStatus(body.error || 'Unable to promote pending file.', 'error');
             return;
           }
-          announce('Pending file promoted.');
+          let message = body.message || 'Pending file promoted and committed.';
+          if (body.commit) {
+            const commit = body.commit;
+            if (commit.hash) {
+              message += ` Commit ${commit.short_hash || commit.hash}: ${commit.message || ''}.`;
+            }
+            if (commit.push_message) {
+              message += ` ${commit.push_message}`;
+            }
+          }
+          showStatus(message, 'success');
           updateActiveSource('nets');
           await loadPendingOverview();
         } catch (error) {
@@ -2625,8 +2908,9 @@
         if (netList) {
           netList.setAttribute('aria-busy', 'true');
         }
+        syncLoadSelectedButton();
         try {
-          const url = new URL(`/api/nets/${encodeURIComponent(netId)}`, window.location.origin);
+          const url = new URL(buildApiUrl(`api/nets/${encodeURIComponent(netId)}`));
           const sourceKey = sourceInput ? sourceInput.value : pendingContext && pendingContext.active_source;
           if (sourceKey) {
             url.searchParams.set('source', sourceKey);
@@ -2645,20 +2929,26 @@
         if (netList) {
           netList.removeAttribute('aria-busy');
         }
+        syncLoadSelectedButton();
       }
     }
 
     function handleNetSearchLoad() {
-      if (!netSearchInput) {
+      const typedValue = netSearchInput ? netSearchInput.value.trim() : '';
+      if (typedValue) {
+        loadNetForEdit(typedValue);
         return;
       }
-      const value = netSearchInput.value.trim();
-      if (!value) {
-        announce('Enter a net ID to load.');
+      if (netList && netList.value) {
+        loadNetForEdit(netList.value);
+        return;
+      }
+      announce('Select a net from the list or enter an ID to load.');
+      if (netList && !netList.disabled) {
+        netList.focus({ preventScroll: true });
+      } else if (netSearchInput) {
         netSearchInput.focus({ preventScroll: true });
-        return;
       }
-      loadNetForEdit(value);
     }
 
     function clearStatus() {
@@ -2713,11 +3003,16 @@
             initialize: true,
           });
         });
+        if (idField) {
+          idField.value = '';
+        }
+        updateIdDisplay('');
+        autoAssignId({ force: true });
         if (announceMessage) {
           announce(announceMessage);
         }
         if (focus) {
-          focusIdField();
+          focusNameField();
         }
       }
 
@@ -2727,10 +3022,9 @@
         prepareFormForNewNet({ announceMessage: 'Form cleared for the next net entry.' });
       }
 
-      function focusIdField() {
-        const idField = document.getElementById('id');
-        if (idField) {
-          idField.focus({ preventScroll: true });
+      function focusNameField() {
+        if (netNameInput) {
+          netNameInput.focus({ preventScroll: true });
         }
       }
 

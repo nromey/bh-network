@@ -5,7 +5,9 @@ Web helper for trusted schedulers to draft `_data/nets.yml` updates from a brows
 ## Overview
 
 - **Frontend:** Accessible form with live YAML preview, edit mode, autosave drafts, and a pending-review dashboard.
+- **Automatic IDs:** Net IDs are generated from the name (slugged + dedupe) so editors no longer have to hand-type identifiers.
 - **Backend:** Flask app that validates inputs, prevents ID collisions, writes timestamped pending copies in `_data/pending/`, and can promote approved bundles into `_data/nets.yml`.
+- **Metadata:** Every pending save records the authenticated username, timestamp, and optional submission note so reviewers know who staged the change.
 - **Security:** Keep HTTP Basic Auth in front, and have the web server forward the authenticated username so role-based permissions (review vs. promote) can be enforced.
 
 ## Local Development
@@ -22,6 +24,20 @@ flask --app app run --debug
 # Note: if you override these paths manually, use absolute paths or `$HOME`.
 # Using a literal `"~/..."` will not expand the tilde.
 ```
+
+## Testing
+
+Automated tests cover validation, pending file writes, and the promote flow using Flask's built‑in test client. Install the dev dependencies and run `pytest` from the helper directory:
+
+```bash
+cd tools/nets-helper
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements-dev.txt
+pytest
+```
+
+Each test run sets up temporary copies of `_data/nets.yml`, `_data/pending/`, and `roles.yml`, so the live files in the repo are never touched.
 
 Load http://127.0.0.1:5000/ to try the form. Pending files will be created under `_data/pending/` with names like `nets.pending.20250317_153000.yml`.
 
@@ -110,7 +126,8 @@ Load http://127.0.0.1:5000/ to try the form. Pending files will be created under
 
 5. **Workflow for maintainers**
    - A reviewer (e.g., `list-manager`) stages additions or edits. Each save produces/updates a pending snapshot under `_data/pending/` and the UI lists it under “Pending submissions”.
-   - Publishers (e.g., `web-admin`) see the same list. They review the change summary, optionally make further edits, then click **Promote to live** to atomically copy the snapshot into `_data/nets.yml`. A timestamped backup (e.g., `nets.backup.20241028_153000.yml`) is kept alongside the canonical file.
+   - Publishers (e.g., `web-admin`) see the same list. They review the change summary (including who submitted it and any notes), optionally make further edits, then click **Promote to live**.
+   - Promotion now stages the updated `_data/nets.yml`, commits it to git with an auto-generated message, and pushes to GitHub after the publisher confirms the summary. A timestamped backup (e.g., `nets.backup.20241028_153000.yml`) is kept alongside the canonical file.
    - If something goes wrong, publishers can still promote manually by copying a pending file over `_data/nets.yml`; the helper simply automates that workflow.
    - After promoting, commit the updated `_data/nets.yml` to git as usual so other hosts stay in sync.
 
