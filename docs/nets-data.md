@@ -1,12 +1,12 @@
 # Nets Data: Authoring and JSON Generation
 
-This guide explains how to enter nets in `_data/nets.yml` and how a JSON generator should read that file to produce the live `next_nets.json` used on the home page.
+This guide explains how to enter nets in `_data/nets.json` and how a JSON generator should read that file to produce the live `next_nets.json` used on the home page.
 
 It focuses on time fields, time zones, and output ISO formats so that both “Net time” and “My time” displays work accurately across DST and different locales.
 
 ---
 
-## 1) Authoring `_data/nets.yml`
+## 1) Authoring `_data/nets.json`
 
 Required per‑net fields (typical):
 
@@ -28,22 +28,24 @@ Recommended optional fields:
 - `website` — external link for more info.
 - `schedule_text` — override display phrase (rarely needed; generator still relies on `rrule`).
 
-Example:
+Example (single entry inside the `nets` array):
 
-```yaml
-- id: friday-night-net
-  category: bhn
-  name: "The Friday Night Blind Hams Allstar and Echolink Net"
-  description: "Join KY2D, Jim…"
-  start_local: "20:00"       # 8:00 PM in the net’s local zone
-  duration_min: 60
-  rrule: "FREQ=WEEKLY;BYDAY=FR"
-  time_zone: America/New_York
-  allstar: "blind hams allstar or KY2D node 2396"
-  echolink: "*blind* conference or ky2d-r"
+```json
+{
+  "id": "friday-night-net",
+  "category": "bhn",
+  "name": "The Friday Night Blind Hams Allstar and Echolink Net",
+  "description": "Join KY2D, Jim…",
+  "start_local": "20:00",
+  "duration_min": 60,
+  "rrule": "FREQ=WEEKLY;BYDAY=FR",
+  "time_zone": "America/New_York",
+  "allstar": "blind hams allstar or KY2D node 2396",
+  "echolink": "*blind* conference or ky2d-r"
+}
 ```
 
-Key rule: `start_local` must be the local wall‑clock time for the net’s `time_zone`. If your net runs in Australia/Sydney, set `time_zone: Australia/Sydney` and author `start_local` in Sydney time.
+Key rule: `start_local` must be the local wall‑clock time for the net’s `time_zone`. If your net runs in Australia/Sydney, set `"time_zone": "Australia/Sydney"` and author `start_local` in Sydney time.
 
 Note on BHN default timezone
 
@@ -114,13 +116,13 @@ Cross‑DST behavior is handled by the local offset embedded in `start_iso`/`end
 
 Category pages (Blind Hams/Disability/General) currently show schedule phrases (e.g., “Saturdays at 10:00 AM Eastern”) computed from `rrule + start_local + time_zone`.
 
-To display “My time” for these schedules, we plan to compute each net’s next occurrence (date) at runtime (or via a helper feed), then format as we do on the home page. Authoring guidance in `_data/nets.yml` will not change.
+To display “My time” for these schedules, we plan to compute each net’s next occurrence (date) at runtime (or via a helper feed), then format as we do on the home page. Authoring guidance in `_data/nets.json` will not change.
 
 ---
 
 ## 5) Summary (TL;DR)
 
-- In `_data/nets.yml`, always provide:
+- In `_data/nets.json`, always provide:
   - `start_local` in the net’s IANA `time_zone`
   - `duration_min`, `rrule`, and `category`
 - In JSON, emit rolling `items[]` with:

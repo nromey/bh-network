@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import os
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
@@ -208,11 +209,19 @@ def upcoming_occurrences(net: Net, now: datetime, horizon_days: int) -> List[Occ
     return occs
 
 
-def load_yaml(path: Path) -> dict:
-    if not path.exists():
-        raise FileNotFoundError(f"Missing YAML file: {path}")
-    with path.open("r", encoding="utf-8") as fp:
-        return yaml.safe_load(fp) or {}
+def load_nets_data(root: Path) -> dict:
+    json_path = root / "_data" / "nets.json"
+    yaml_path = root / "_data" / "nets.yml"
+    if json_path.exists():
+        with json_path.open("r", encoding="utf-8") as fp:
+            try:
+                return json.load(fp) or {}
+            except json.JSONDecodeError as exc:
+                raise RuntimeError(f"Failed to parse JSON nets file {json_path}: {exc}") from exc
+    if yaml_path.exists():
+        with yaml_path.open("r", encoding="utf-8") as fp:
+            return yaml.safe_load(fp) or {}
+    raise FileNotFoundError(f"Missing nets data file: {json_path} (or {yaml_path})")
 
 
 def dump_yaml(path: Path, data: dict) -> None:
@@ -228,7 +237,7 @@ def build_next_net(
     horizon_days: int,
     week_window: int,
 ) -> dict:
-    data = load_yaml(root / "_data" / "nets.yml")
+    data = load_nets_data(root)
     tzname = data.get("time_zone") or DEFAULT_TZ
     tz = ZoneInfo(tzname)
     now = datetime.now(tz)

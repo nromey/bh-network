@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here.
 
+## 2025-02-16
+
+- Nets data migration to JSON
+  - `_data/nets.json` replaces the former YAML source; Liquid fallbacks and hydration helpers now read the JSON data directly.
+  - `tools/nets-helper` reads/writes JSON pending files, promotes `_data/nets.json`, and produces `.json` backups. UI preview now shows JSON, and helper tests/fixtures were updated accordingly.
+  - New utility `scripts/convert_nets_yaml_to_json.py` converts legacy YAML snapshots to the JSON shape.
+  - Legacy `_data/nets.yml` was removed after seeding the JSON equivalent.
+
 ## 2025-10-28
 
 - Nets helper edit & review flow

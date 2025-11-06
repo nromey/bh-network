@@ -80,7 +80,7 @@
         background: #ecf8ed;
         border: 1px solid #2b7a2e;
       }
-      #yamlPreview {
+      #jsonPreview {
         background: #111;
         color: #fafafa;
         padding: 1rem;
@@ -840,16 +840,16 @@
           </div>
         </fieldset>
 
-        <h2 class="section-heading">Custom YAML fields</h2>
+        <h2 class="section-heading">Custom fields</h2>
         <fieldset>
-          <legend>Custom YAML fields</legend>
+          <legend>Custom fields</legend>
           <p class="hint">Need a field that is not listed above? Add it here.</p>
           <div id="customFields"></div>
           <button type="button" id="addCustomField">Add custom field</button>
         </fieldset>
 
         <div class="actions">
-          <button type="button" id="previewBtn" class="primary">Preview YAML</button>
+          <button type="button" id="previewBtn" class="primary">Preview JSON</button>
           <button type="button" id="saveBtn">Create pending file</button>
         </div>
         <div class="submission-note">
@@ -864,7 +864,7 @@
 
       <section aria-live="polite" aria-atomic="true">
         <h2>Preview</h2>
-        <pre id="yamlPreview">Preview will appear here after you press “Preview YAML”.</pre>
+        <pre id="jsonPreview">Preview will appear here after you press “Preview JSON”.</pre>
       </section>
     </main>
 
@@ -886,7 +886,7 @@
       const previewBtn = document.getElementById('previewBtn');
       const saveBtn = document.getElementById('saveBtn');
       const statusBox = document.getElementById('liveStatus');
-      const yamlPreview = document.getElementById('yamlPreview');
+      const jsonPreview = document.getElementById('jsonPreview');
       const sourceInput = document.getElementById('source_key');
       const sourcePicker = document.getElementById('sourcePicker');
       const deleteSelectedBtn = document.getElementById('deleteSelected');
@@ -2161,7 +2161,7 @@
             renderErrors(body.errors || {});
             return;
           }
-          yamlPreview.textContent = body.snippet;
+          jsonPreview.textContent = body.snippet;
           announce('Preview ready.');
         } catch (error) {
           renderErrors({ general: error.message });
@@ -2299,7 +2299,7 @@
             renderErrors(body.errors || {});
             return;
           }
-          yamlPreview.textContent = body.snippet;
+          jsonPreview.textContent = body.snippet;
           showStatus(`Success — pending file saved to ${body.pending_path}`, 'success');
           updateActiveSource(body.active_source);
           resetFormAfterSave();
@@ -2500,10 +2500,10 @@
         }
         if (pendingContext && pendingContext.has_pending) {
           pendingStatusHint.textContent = pendingContext.options && pendingContext.options.length
-            ? 'Default selection is the newest pending file. Pick another to review an older snapshot, or choose “Start fresh from nets.yml” to begin a new list.'
+            ? 'Default selection is the newest pending file. Pick another to review an older snapshot, or choose “Start fresh from nets.json” to begin a new list.'
             : 'Pending files detected. Select one from the menu to review or edit.';
         } else {
-          pendingStatusHint.textContent = 'Submissions will be based on nets.yml until a pending copy exists.';
+          pendingStatusHint.textContent = 'Submissions will be based on nets.json until a pending copy exists.';
         }
       }
 
@@ -2862,7 +2862,7 @@
         if (!summaryLines.length) {
           summaryLines.push('• No detailed change list available');
         }
-        const confirmMessage = `Publish the following changes to live and push to GitHub?\n\n${summaryLines.join('\n')}\n\nThis action updates _data/nets.yml and creates a git commit.`;
+        const confirmMessage = `Publish the following changes to live and push to GitHub?\n\n${summaryLines.join('\n')}\n\nThis action updates _data/nets.json and creates a git commit.`;
         const confirmed = window.confirm(confirmMessage);
         if (!confirmed) {
           announce('Promotion cancelled.');

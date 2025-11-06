@@ -8,7 +8,7 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 
 1) Stack & Where Things Live
 - Static site: Jekyll (Minima), deployed on Netlify
-- Authoring data: `_data/nets.yml` and `_data/ncos.yml`
+- Authoring data: `_data/nets.json` and `_data/ncos.yml`
 - Live JSON feeds (rendered at runtime):
   - Next + 7‑day: https://data.blindhams.network/next_nets.json
   - NCO 12‑week: https://data.blindhams.network/bhn_nco_12w.json
@@ -29,8 +29,8 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 - Net time: display as written; label event zone. My time: convert to viewer’s local; label “Local”.
 - Category pages append “— Next: …” per net using the JSON feed (by id). 
 
-4) Authoring Nets (YAML)
-- `_data/nets.yml`: `id`, `name`, `category`, `start_local` (HH:MM), `duration_min`, `rrule`, `time_zone` (IANA); plus connections.
+4) Authoring Nets (JSON)
+- `_data/nets.json`: `id`, `name`, `category`, `start_local` (HH:MM), `duration_min`, `rrule`, `time_zone` (IANA); plus connections.
 - See docs/nets-data.md for examples and the generator output spec.
 
 5) JSON Output (Reference)
@@ -62,7 +62,7 @@ It replaces older notes that referenced generated YAML; the site now hydrates fr
 11) Hydration & Sorting Updates (2025-10)
 - Weekly list ordering: starts at the next upcoming item, then wraps through remaining future items and finally shows recent past items within the feed window. Implemented in `assets/js/json-widgets.js`.
 - Category pages ordering: nets are ordered by their next upcoming occurrence (soonest → latest). Nets with no future occurrence in the window appear after, ordered by most recent past first. Robust ID normalization handles minor ID mismatches between YAML and the live feed.
-- Descriptions: when the live feed omits `description`, the UI hydrates description text from `_data/nets.yml` via a pre-rendered id→HTML map injected by `_includes/home_next_nets.html` and `_includes/next_net_card.html`.
+- Descriptions: when the live feed omits `description`, the UI hydrates description text from `_data/nets.json` via a pre-rendered id→HTML map injected by `_includes/home_next_nets.html` and `_includes/next_net_card.html`.
 - Dev vs Prod data source:
   - Dev (JEKYLL_ENV=development): `_includes/nets_page.html` points to `/.netlify/functions/proxy-next-nets` to avoid CORS on Branch Deploys.
   - Fallback (all envs): if a direct fetch fails, `json-widgets.js` retries via `/.netlify/functions/proxy-next-nets?url=…`.

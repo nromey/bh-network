@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-import yaml
+import json
 
 import app as nets_app
 
@@ -46,7 +46,7 @@ def test_normalize_submission_rejects_duplicate_id():
     assert "already exists" in errors["id"]
 
 
-def test_build_yaml_snippet_handles_multiline_and_special_chars():
+def test_build_json_preview_handles_multiline_and_special_chars():
     record = {
         "id": "gamma-net",
         "category": "general",
@@ -60,13 +60,15 @@ def test_build_yaml_snippet_handles_multiline_and_special_chars():
         "custom": [("dtmf_code", "73#")],
     }
 
-    snippet = nets_app.build_yaml_snippet(record)
+    entry = nets_app.record_to_entry(record)
+    snippet = nets_app.build_json_preview(entry)
+    parsed = json.loads(snippet)
 
-    assert 'id: "gamma-net"' in snippet
-    assert 'description: |\n      Details line 1.\n      Details line 2.' in snippet
-    assert 'echolink: "node:1234"' in snippet
-    assert 'notes: |\n      Line one\n      Line two' in snippet
-    assert 'dtmf_code: "73#"' in snippet
+    assert parsed["id"] == "gamma-net"
+    assert parsed["description"] == "Details line 1.\nDetails line 2."
+    assert parsed["echolink"] == "node:1234"
+    assert parsed["notes"] == "Line one\nLine two"
+    assert parsed["dtmf_code"] == "73#"
 
 
 def test_write_pending_file_appends_new_entry(sample_repo):
@@ -85,10 +87,8 @@ def test_write_pending_file_appends_new_entry(sample_repo):
         "America/New_York",
     )
     assert not errors
-    snippet = nets_app.build_yaml_snippet(record)
-
     pending_path = nets_app.write_pending_file(
-        snippet,
+        nets_app.record_to_entry(record),
         sample_repo["nets_file"],
         sample_repo["root"],
         current_user="tester",
@@ -96,7 +96,7 @@ def test_write_pending_file_appends_new_entry(sample_repo):
     )
 
     assert pending_path.parent == sample_repo["pending_dir"]
-    data = yaml.safe_load(pending_path.read_text(encoding="utf-8"))
+    data = json.loads(pending_path.read_text(encoding="utf-8"))
     assert len(data["nets"]) == 2
     assert any(net["id"] == "delta-net" for net in data["nets"])
     meta = nets_app.load_pending_metadata(nets_app.pending_metadata_path(pending_path))
@@ -120,9 +120,8 @@ def test_promote_pending_file_replaces_nets_file(sample_repo):
         "America/New_York",
     )
     assert not errors
-    snippet = nets_app.build_yaml_snippet(record)
     pending_path = nets_app.write_pending_file(
-        snippet,
+        nets_app.record_to_entry(record),
         sample_repo["nets_file"],
         sample_repo["root"],
         current_user="reviewer",
@@ -138,10 +137,10 @@ def test_promote_pending_file_replaces_nets_file(sample_repo):
     result = nets_app.promote_pending_file(key, sample_repo["root"], sample_repo["nets_file"], current_user="publisher")
 
     assert result["message"] == "Pending file promoted"
-    nets_data = yaml.safe_load(sample_repo["nets_file"].read_text(encoding="utf-8"))
+    nets_data = json.loads(sample_repo["nets_file"].read_text(encoding="utf-8"))
     assert any(net["id"] == "echo-net" for net in nets_data["nets"])
 
-    backups = sorted(sample_repo["root"].glob("nets.backup.*.yml"))
+    backups = sorted(sample_repo["root"].glob("nets.backup.*.json"))
     assert backups, "Expected a timestamped backup file"
     assert not pending_path.exists()
     assert not meta_path.exists()
@@ -194,9 +193,9 @@ def test_api_save_and_promote_flow(client, sample_repo):
     assert result["promoted"]
     assert result["user"] == "publisher"
 
-    nets_data = yaml.safe_load(sample_repo["nets_file"].read_text(encoding="utf-8"))
+    nets_data = json.loads(sample_repo["nets_file"].read_text(encoding="utf-8"))
     assert any(net["id"] == "foxtrot-net" for net in nets_data["nets"])
-    assert not list(sample_repo["pending_dir"].glob("nets.pending.*.yml"))
+    assert not list(sample_repo["pending_dir"].glob("nets.pending.*.json"))
 
 
 def test_api_promote_commit_flow(client, sample_repo):
@@ -231,7 +230,7 @@ def test_api_promote_commit_flow(client, sample_repo):
     assert body["commit"]["hash"]
     assert body["commit"]["message"].startswith("Publish nets helper")
 
-    nets_data = yaml.safe_load(sample_repo["nets_file"].read_text(encoding="utf-8"))
+    nets_data = json.loads(sample_repo["nets_file"].read_text(encoding="utf-8"))
     assert any(net["id"] == "golf-net" for net in nets_data["nets"])
 
     log = subprocess.run(
@@ -243,7 +242,7 @@ def test_api_promote_commit_flow(client, sample_repo):
     )
     assert "Publish nets helper" in log.stdout
 
-    assert not list(sample_repo["pending_dir"].glob("nets.pending.*.yml"))
+    assert not list(sample_repo["pending_dir"].glob("nets.pending.*.json"))
 
 
 def test_public_suggest_creates_pending(client, sample_repo):

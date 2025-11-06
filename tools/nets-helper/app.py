@@ -1,10 +1,11 @@
 """
-Flask app that helps trusted editors draft additions to _data/nets.yml.
+Flask app that helps trusted editors draft additions to _data/nets.json.
 """
 from __future__ import annotations
 
 import os
 import re
+from collections import OrderedDict
 from datetime import datetime, timezone
 import json
 import hashlib
@@ -57,7 +58,7 @@ OPTIONAL_FIELD_KEYS = [
 ]
 
 ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_\-]*$")
-PENDING_NAME_PATTERN = re.compile(r"^nets\.pending\.(\d{8})_(\d{6})\.yml$")
+PENDING_NAME_PATTERN = re.compile(r"^nets\.pending\.(\d{8})_(\d{6})\.json$")
 
 BASE_FIELD_KEYS = [
     "id",
@@ -78,8 +79,6 @@ CONNECTION_FIELD_MAP = {
     "hf": ["frequency", "mode"],
 }
 
-ENTRY_BLOCK_TEMPLATE = r"(?ms)^  - id:\s*{id}\s*\n(?:^(?!  - id:).*[\r]?\n?)*"
-
 METADATA_SUFFIX = ".meta.json"
 PUBLIC_RATE_LIMIT_WINDOW_SECONDS = 3600
 PUBLIC_RATE_LIMIT_MAX = 3
@@ -88,6 +87,120 @@ PUBLIC_RATE_LIMIT_LOCK = threading.Lock()
 
 
 SLUG_PATTERN = re.compile(r"[^A-Za-z0-9\-]+")
+TOP_LEVEL_ORDER = ["time_zone", "nets"]
+
+
+def default_nets_payload() -> OrderedDict:
+    payload = OrderedDict()
+    payload["time_zone"] = "America/New_York"
+    payload["nets"] = []
+    return payload
+
+
+def normalize_net_entry(entry: Dict[str, Any]) -> OrderedDict:
+    ordered: OrderedDict[str, Any] = OrderedDict()
+    for key in BASE_FIELD_KEYS:
+        if key in entry:
+            ordered[key] = entry[key]
+
+    for key in OPTIONAL_FIELD_KEYS:
+        if key in entry and key not in ordered and entry[key] not in (None, ""):
+            ordered[key] = entry[key]
+
+    remaining = sorted(k for k in entry.keys() if k not in ordered)
+    for key in remaining:
+        ordered[key] = entry[key]
+    return ordered
+
+
+def normalize_nets_payload(payload: Dict[str, Any]) -> OrderedDict:
+    normalized = default_nets_payload()
+    time_zone = payload.get("time_zone")
+    if isinstance(time_zone, str) and time_zone.strip():
+        normalized["time_zone"] = time_zone.strip()
+
+    nets = payload.get("nets")
+    if isinstance(nets, list):
+        normalized["nets"] = [normalize_net_entry(entry) if isinstance(entry, dict) else entry for entry in nets]
+    else:
+        normalized["nets"] = []
+
+    # Preserve any other top-level keys deterministically
+    for key in sorted(payload.keys()):
+        if key in normalized:
+            continue
+        normalized[key] = payload[key]
+    return normalized
+
+
+def load_nets_payload(path: Path) -> OrderedDict:
+    try:
+        with path.open("r", encoding="utf-8") as fh:
+            raw = json.load(fh) or {}
+    except FileNotFoundError:
+        return default_nets_payload()
+    except json.JSONDecodeError:
+        return default_nets_payload()
+
+    if not isinstance(raw, dict):
+        return default_nets_payload()
+    return normalize_nets_payload(raw)
+
+
+def save_nets_payload(path: Path, payload: Dict[str, Any]) -> None:
+    normalized = normalize_nets_payload(payload)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    with tmp_path.open("w", encoding="utf-8") as fh:
+        json.dump(normalized, fh, ensure_ascii=False, indent=2)
+        fh.write("\n")
+    os.replace(tmp_path, path)
+
+
+def compute_record_hash(record: Dict[str, Any]) -> str:
+    canonical = json.dumps(record, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def extract_entry_record(path: Optional[Path], net_id: str) -> Optional[Dict[str, Any]]:
+    if not path or not path.exists():
+        return None
+    payload = load_nets_payload(path)
+    nets = payload.get("nets") or []
+    target = net_id.strip().lower()
+    for entry in nets:
+        if not isinstance(entry, dict):
+            continue
+        current_id = str(entry.get("id") or "").strip().lower()
+        if current_id == target:
+            return entry
+    return None
+
+
+def record_to_entry(record: Dict[str, Any]) -> OrderedDict:
+    entry: Dict[str, Any] = {
+        "id": record["id"],
+        "category": record["category"],
+        "name": record["name"],
+        "description": record["description"],
+        "start_local": record["start_local"],
+        "duration_min": record["duration_min"],
+        "rrule": record["rrule"],
+    }
+    tz = record.get("time_zone")
+    if tz:
+        entry["time_zone"] = tz
+
+    optional_fields = record.get("optional") or {}
+    for key, value in optional_fields.items():
+        if value not in (None, ""):
+            entry[key] = value
+
+    for key, value in record.get("custom", []):
+        if value not in (None, ""):
+            entry[key] = value
+
+    return normalize_net_entry(entry)
 
 
 def slugify(value: str) -> str:
@@ -321,7 +434,8 @@ def create_app() -> Flask:
         normalized, errors = normalize_submission(data, context["existing_ids"], context["default_time_zone"])
         if errors:
             return jsonify({"errors": errors}), 400
-        snippet = build_yaml_snippet(normalized)
+        entry = record_to_entry(normalized)
+        snippet = build_json_preview(entry)
         return jsonify({"snippet": snippet})
 
     @app.post("/api/save")
@@ -337,14 +451,15 @@ def create_app() -> Flask:
         mode = (data.get("mode") or "add").strip().lower()
         original_id = (data.get("original_id") or "").strip()
         source_hash = (data.get("source_hash") or "").strip()
-        snippet = build_yaml_snippet(normalized)
+        entry = record_to_entry(normalized)
+        snippet = build_json_preview(entry)
         submission_note = sanitize_optional(data.get("submission_note"))
         metadata: Dict[str, Any] = {}
         if submission_note:
             metadata["note"] = submission_note
         try:
             pending_path = write_pending_file(
-                snippet,
+                entry,
                 app.config["NETS_FILE"],
                 app.config["OUTPUT_DIR"],
                 context["working_file"],
@@ -640,7 +755,7 @@ def create_app() -> Flask:
 
         try:
             pending_path = write_pending_file(
-                build_yaml_snippet(normalized),
+                record_to_entry(normalized),
                 app.config["NETS_FILE"],
                 app.config["OUTPUT_DIR"],
                 context["working_file"],
@@ -721,7 +836,7 @@ def load_config() -> Dict[str, Path]:
     if nets_env:
         nets_file = Path(nets_env).expanduser()
     else:
-        nets_file = repo_root / "_data" / "nets.yml"
+        nets_file = repo_root / "_data" / "nets.json"
 
     output_env = os.environ.get("BHN_NETS_OUTPUT_DIR")
     if output_env:
@@ -787,11 +902,7 @@ def load_context(config: Dict, source_key: Optional[str] = None, current_user: O
     nets_data: List[Dict[str, Any]] = []
 
     if working_file.exists():
-        try:
-            with working_file.open("r", encoding="utf-8") as fh:
-                data = yaml.safe_load(fh) or {}
-        except yaml.YAMLError:
-            data = {}
+        data = load_nets_payload(working_file)
         default_time_zone = data.get("time_zone", default_time_zone)
         nets = data.get("nets", []) or []
         for net in nets:
@@ -870,11 +981,7 @@ def find_latest_pending_file(output_dir: Path) -> Optional[Path]:
     if not pending_dir.is_dir():
         return None
 
-    candidates = sorted(
-        (path for path in pending_dir.glob("nets.pending.*.yml") if path.is_file()),
-        key=lambda p: p.name,
-        reverse=True,
-    )
+    candidates = sorted(iter_pending_snapshot_paths(pending_dir), key=lambda p: p.name, reverse=True)
     if not candidates:
         return None
     return candidates[0]
@@ -886,11 +993,7 @@ def list_pending_files(output_dir: Path) -> List[Dict[str, str]]:
         return []
 
     entries: List[Dict[str, str]] = []
-    for path in sorted(
-        (p for p in pending_dir.glob("nets.pending.*.yml") if p.is_file()),
-        key=lambda p: p.name,
-        reverse=True,
-    ):
+    for path in sorted(iter_pending_snapshot_paths(pending_dir), key=lambda p: p.name, reverse=True):
         label, iso_timestamp = pending_label_from_name(path.name)
         meta_path = pending_metadata_path(path)
         metadata = load_pending_metadata(meta_path)
@@ -908,6 +1011,15 @@ def list_pending_files(output_dir: Path) -> List[Dict[str, str]]:
             }
         )
     return entries
+
+
+def iter_pending_snapshot_paths(pending_dir: Path):
+    for path in pending_dir.glob("nets.pending.*.json"):
+        if not path.is_file():
+            continue
+        if path.name.endswith(".meta.json"):
+            continue
+        yield path
 
 
 def pending_label_from_name(filename: str) -> Tuple[str, Optional[str]]:
@@ -1108,78 +1220,12 @@ def sanitize_multiline(value) -> str:
     return text
 
 
-def build_yaml_snippet(record: Dict) -> str:
-    lines: List[str] = []
-    push = lines.append
-
-    push(f"  - id: {quote_value(record['id'])}")
-    push(f"    category: {quote_value(record['category'])}")
-    push(f"    name: {quote_value(record['name'])}")
-    push(f"    description: {quote_value(record['description'])}")
-
-    optional = record.get("optional", {})
-    if optional.get("location"):
-        push(f"    location: {quote_value(optional['location'])}")
-
-    push(f"    start_local: {quote_value(record['start_local'])}")
-
-    tz = record.get("time_zone")
-    if tz:
-        push(f"    time_zone: {quote_value(tz)}")
-
-    push(f"    duration_min: {record['duration_min']}")
-    push(f"    rrule: {quote_value(record['rrule'])}")
-
-    for key in OPTIONAL_FIELD_KEYS:
-        if key in optional and key != "location":
-            push(f"    {key}: {quote_value(optional[key])}")
-
-    for key, value in record.get("custom", []):
-        push(f"    {key}: {quote_value(value)}")
-
-    snippet = "\n".join(lines)
-    return snippet
-
-
-def quote_value(value: str) -> str:
-    if isinstance(value, (int, float)):
-        return str(value)
-    text = str(value)
-    if not text:
-        return '""'
-    escaped = text.replace('"', r"\"")
-    if "\n" in escaped:
-        indented = "\n      ".join(escaped.split("\n"))
-        return f'|\n      {indented}'
-    if re.search(r"[:#\[\]{}]", escaped):
-        return f'"{escaped}"'
-    return f'"{escaped}"'
-
-
-def find_net_block_match(original_text: str, net_id: str) -> Optional[re.Match[str]]:
-    pattern = re.compile(ENTRY_BLOCK_TEMPLATE.format(id=re.escape(net_id)))
-    return pattern.search(original_text)
-
-
-def compute_block_hash(block_text: str) -> str:
-    return hashlib.sha256(block_text.encode("utf-8")).hexdigest()
-
-
-def extract_entry_block(path: Optional[Path], net_id: str) -> Optional[str]:
-    if not path or not path.exists():
-        return None
-    try:
-        original_text = path.read_text(encoding="utf-8")
-    except (FileNotFoundError, OSError):
-        return None
-    match = find_net_block_match(original_text, net_id)
-    if not match:
-        return None
-    return match.group(0)
+def build_json_preview(entry: Dict[str, Any]) -> str:
+    return json.dumps(entry, ensure_ascii=False, indent=2)
 
 
 def write_pending_file(
-    snippet: str,
+    net_entry: Dict[str, Any],
     nets_file: Path,
     output_dir: Path,
     source_file: Optional[Path] = None,
@@ -1192,31 +1238,44 @@ def write_pending_file(
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     pending_dir = output_dir / "pending"
     pending_dir.mkdir(parents=True, exist_ok=True)
-    pending_name = f"nets.pending.{timestamp}.yml"
+    pending_name = f"nets.pending.{timestamp}.json"
     pending_path = pending_dir / pending_name
-    tmp_path = pending_path.with_suffix(pending_path.suffix + ".tmp")
 
     base_file = source_file or nets_file
-    original_text = base_file.read_text(encoding="utf-8")
-    if not original_text.endswith("\n"):
-        original_text += "\n"
+    payload = load_nets_payload(base_file)
+    nets = []
+    for entry in payload.get("nets", []) or []:
+        if isinstance(entry, dict):
+            nets.append(entry.copy())
+        else:
+            nets.append(entry)
 
+    normalized_entry = normalize_net_entry(net_entry)
     mode = (mode or "add").strip().lower()
     if mode == "edit":
         if not original_id:
             raise ValueError("original_id required for edit mode")
-        updated_text, matched_block = replace_existing_entry(original_text, original_id, snippet)
+        target = original_id.strip().lower()
+        index = -1
+        for idx, existing in enumerate(nets):
+            if not isinstance(existing, dict):
+                continue
+            current_id = str(existing.get("id") or "").strip().lower()
+            if current_id == target:
+                index = idx
+                break
+        if index == -1:
+            raise ValueError(f"Unable to locate net with id '{original_id}' in the current snapshot.")
         if expected_hash:
-            current_hash = compute_block_hash(matched_block)
+            current_hash = compute_record_hash(nets[index])
             if current_hash != expected_hash:
                 raise ValueError("This net changed in the meantime. Reload the latest snapshot and try again.")
-        new_content = updated_text
+        nets[index] = normalized_entry
     else:
-        new_content = append_new_entry(original_text, snippet)
+        nets.append(normalized_entry)
 
-    with tmp_path.open("w", encoding="utf-8") as fh:
-        fh.write(new_content)
-    os.replace(tmp_path, pending_path)
+    payload["nets"] = nets
+    save_nets_payload(pending_path, payload)
 
     metadata_payload: Dict[str, Any] = {
         "submitted_by": (current_user or ""),
@@ -1237,37 +1296,11 @@ def write_pending_file(
     return pending_path
 
 
-def append_new_entry(original_text: str, snippet: str) -> str:
-    snippet_text = snippet.strip("\n")
-    combined = f"{original_text.rstrip()}\n\n{snippet_text}\n"
-    return combined
-
-
-def replace_existing_entry(original_text: str, original_id: str, snippet: str) -> Tuple[str, str]:
-    pattern = re.compile(
-        rf"(?ms)^  - id:\s*{re.escape(original_id)}\s*\n(?:^(?!  - id:).*\n?)*"
-    )
-    match = pattern.search(original_text)
-    if not match:
-        raise ValueError(f"Unable to locate net with id '{original_id}' in the current snapshot.")
-    matched_block = match.group(0)
-    trailing_newlines = "\n"
-    if matched_block.endswith("\n\n"):
-        trailing_newlines = "\n\n"
-    replacement = f"{snippet.strip()}{trailing_newlines}"
-    updated = original_text[: match.start()] + replacement + original_text[match.end() :]
-    return updated, matched_block
-
-
 def load_nets_map(path: Optional[Path]) -> Dict[str, Dict[str, Any]]:
     if not path or not path.exists():
         return {}
-    try:
-        with path.open("r", encoding="utf-8") as fh:
-            data = yaml.safe_load(fh) or {}
-    except (FileNotFoundError, yaml.YAMLError):
-        return {}
-    nets = data.get("nets", []) or []
+    payload = load_nets_payload(path)
+    nets = payload.get("nets", []) or []
     results: Dict[str, Dict[str, Any]] = {}
     for net in nets:
         if not isinstance(net, dict):
@@ -1460,9 +1493,9 @@ def build_form_state(
 
     source_hash = ""
     if source_file:
-        block_text = extract_entry_block(source_file, str(net.get("id") or ""))
-        if block_text:
-            source_hash = compute_block_hash(block_text)
+        existing_record = extract_entry_record(source_file, str(net.get("id") or ""))
+        if existing_record:
+            source_hash = compute_record_hash(existing_record)
 
     meta = {
         "manualTimeMode": False,
