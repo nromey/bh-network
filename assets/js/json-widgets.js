@@ -279,8 +279,17 @@
 
       // Determine the best "next" occurrence: always prefer earliest upcoming BHN.
       // If no BHN entries exist in the future window, fall back to earliest of any category.
+      const rawWeek = getWeekArray(data);
+      if (!Array.isArray(rawWeek)) {
+        if (DIAG) appendDiag(section, 'Live data loaded but weekly array missing; keeping fallback Next Net.');
+        return;
+      }
+      if (!rawWeek.length && !(data.next_net && getStartISO(data.next_net))) {
+        if (DIAG) appendDiag(section, 'Live data returned no occurrences; keeping fallback Next Net.');
+        return;
+      }
       const now = new Date();
-      const week = getWeekArray(data).slice();
+      const week = rawWeek.slice();
       const containerWeek = section.querySelector('#home-week-nets');
       const primaryCat = 'bhn'; // Force BHN as the "Next Net" category
 
@@ -304,22 +313,7 @@
         .concat(futureNext.filter((o) => isCat(o, primaryCat)));
       next = earliest(primaryPool);
       if (!next) {
-        // Only BHN nets should appear on the Next Net card; do not fallback to other categories.
-        if (DIAG) appendDiag(section, 'Live data loaded. No upcoming BHN Next Net found.');
-        // Update card to a neutral message
-        const card = section.querySelector('.next-net-card');
-        if (card) {
-          const title = card.querySelector('h3');
-          if (title) title.textContent = 'No upcoming Blind Hams net found';
-          const timeEl = card.querySelector('time');
-          if (timeEl) { timeEl.removeAttribute('datetime'); timeEl.textContent = '—'; }
-          const tzEl = card.querySelector('.next-net-tz');
-          if (tzEl) tzEl.textContent = '';
-          const dur = card.querySelector('.next-net-duration');
-          if (dur) dur.remove();
-          const desc = card.querySelector('.next-net-description') || card.querySelector('h4 ~ p');
-          if (desc) desc.textContent = '';
-        }
+        if (DIAG) appendDiag(section, 'Live data loaded but no upcoming BHN Next Net; keeping fallback.');
         return;
       }
 
@@ -589,6 +583,10 @@
       const arr = getWeekArray(data);
       if (!Array.isArray(arr)) {
         if (DIAG) appendDiag(container, 'Live data loaded but no weekly array found.');
+        return;
+      }
+      if (!arr.length) {
+        if (DIAG) appendDiag(container, 'Live data loaded but no weekly items found; keeping fallback.');
         return;
       }
 
@@ -888,6 +886,10 @@
       const arr = getWeekArray(data);
       if (!Array.isArray(arr)) {
         if (DIAG) appendDiag(section, 'Live data loaded but no weekly array found (category nets).');
+        continue;
+      }
+      if (!arr.length) {
+        if (DIAG) appendDiag(section, 'Live data loaded but no category items found; keeping fallback.');
         continue;
       }
       if (DIAG) appendDiag(section, `Category items loaded: ${arr.length}`);
