@@ -7,7 +7,7 @@ permalink: /news/
 # News
 
 {%- assign cqbh_posts = site.posts | where_exp: "post", "post.categories contains 'news' and post.categories contains 'cqbh'" -%}
-{%- assign site_news_posts = site.posts | where_exp: "post", "post.categories contains 'news' and post.categories contains 'bhdn'" -%}
+{%- assign site_news_posts = site.posts | where_exp: "post", "post.categories contains 'news' and post.categories contains 'bhdn'" %}
 
 <section class="news-section" id="site-news" data-pager data-default-size="5" data-pager-focus="heading" aria-labelledby="site-news-heading">
   <h2 id="site-news-heading">Site News</h2>
