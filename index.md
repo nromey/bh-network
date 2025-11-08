@@ -47,7 +47,7 @@ The **Blind Hams Digital Network** is a community built by and for blind and vis
 ## What you can do today
 - Browse current nets on our network (and a few partner nets). If we’re missing one, let us know! The new system makes it super easy to add them so don't be shy, the sky's the limit!
 - Bored? Want to see something cool that took way too long to make but looks positively normal? Check the dynamically generated NCO rotation for our flagship Saturday morning net:
-  **[The Blind Hams Digital Net — Nifty NER&trade;'s NCO Schedule](/nets/blind-hams/nco-schedule/)**
+  **[The Blind Hams Digital Net NCO Schedule](/nets/blind-hams/nco-schedule/)**
 - View nets in your time zone. Click the "My time" button on any net page and you'll see net times in you timezone. **Note: the my time code respects your time and day.** So if you're across the international dateline, the net schedules will tell you what time and day to join us.
 {% if site.widgets.visit_counter %}
 <section class="stats-section" role="region" aria-labelledby="site-stats-heading">
@@ -68,6 +68,10 @@ The **Blind Hams Digital Network** is a community built by and for blind and vis
 ---
 
 Questions, ideas, or something we should add? We’d love to hear from you.
+
+View our [Contact list](/contacts) or, or if that's too hard, get in touch with the team:
+* Got a complaint about what you hear on the network? Do you have comments, content whhich you'd like to be placed on this site,  or any suggestions for the web site or accompanying ham tools? Call Noel, [K5NER](https://www.qrz.com/db/k5ner)  on the Blind Hams Network, or view the contact list for email contacts. Contacts will remain confidential.
+* Got technical questions or want to ask a network related question? Give [N2DYI](https://www.qrz.com/db/n2dyi), Patrick, a call on air or email via the contact list.
 
 **73,**  
 **K5NER** — Webmaster and Net Manager, Blind Hams Network
