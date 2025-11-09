@@ -597,6 +597,7 @@
           .map((cat) => normalizeCategory(cat))
           .filter(Boolean)
       );
+      if (DIAG) appendDiag(container, `Weekly defaults: ${Array.from(defaultCats).join(', ') || '(none)'}`);
       const fallback = weekBlock.querySelector('.week-fallback');
       if (fallback) fallback.remove();
 
@@ -629,7 +630,7 @@
 
       // Build table rows
       const tfrag = document.createDocumentFragment();
-      week.forEach((occ) => {
+      week.forEach((occ, idx) => {
         const tr = document.createElement('tr');
         tr.setAttribute('data-category-item', '');
         const normCat = normalizeCategory(occ.category || '');
@@ -834,7 +835,7 @@
 
       // Replace contents
       tbody.innerHTML = '';
-      tbody.appendChild(tfrag);
+        tbody.appendChild(tfrag);
       // Clear items inside headings view container div
       // The first child elements are articles; keep container itself
       headingsView.innerHTML = '';
