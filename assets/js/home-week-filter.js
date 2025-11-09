@@ -17,17 +17,19 @@
       .filter(Boolean)
   );
 
+  const checkboxMap = new Map();
   const labelMap = new Map();
   checkboxes.forEach((cb) => {
     const value = normalize(cb.value);
     cb.value = value;
+    checkboxMap.set(value, cb);
     labelMap.set(value, cb.dataset.label || cb.dataset.originalLabel || value);
   });
 
   const applyDefaultSelection = () => {
     if (defaultSet.size) {
       checkboxes.forEach((cb) => {
-        cb.checked = defaultSet.has(normalize(cb.value));
+        cb.checked = defaultSet.has(cb.value);
       });
     } else if (primary) {
       checkboxes.forEach((cb) => {
@@ -113,7 +115,7 @@
 
   document.addEventListener("bhn:week-hydrated", (event) => {
     const target = event.detail && event.detail.container;
-    if (target && target.id !== section.id) return;
+    if (target !== section) return;
     applyDefaultSelection();
     update();
   });
