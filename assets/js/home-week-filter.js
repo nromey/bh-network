@@ -19,7 +19,9 @@
 
   const labelMap = new Map();
   checkboxes.forEach((cb) => {
-    labelMap.set(cb.value, cb.dataset.label || cb.value);
+    const value = normalize(cb.value);
+    cb.value = value;
+    labelMap.set(value, cb.dataset.label || cb.dataset.originalLabel || value);
   });
 
   const applyDefaultSelection = () => {
@@ -54,7 +56,7 @@
     }
     let visibleCount = 0;
     items.forEach((item) => {
-      const cat = item.dataset.category;
+      const cat = normalize(item.dataset.category);
       item.toggleAttribute("hidden", !selected.has(cat));
       if (!item.hasAttribute("hidden")) visibleCount += 1;
     });
@@ -65,7 +67,7 @@
   const collectSelected = () => {
     const selected = new Set();
     checkboxes.forEach((cb) => {
-      if (cb.checked) selected.add(cb.value);
+      if (cb.checked) selected.add(normalize(cb.value));
     });
     if (!selected.size && defaultSet.size) {
       defaultSet.forEach((cat) => selected.add(cat));
@@ -75,13 +77,14 @@
 
   const ensurePrimary = () => {
     if (!primary) return;
-    const hasPrimary = checkboxes.some((cb) => cb.value === primary);
+    const normalizedPrimary = normalize(primary);
+    const hasPrimary = checkboxes.some((cb) => cb.value === normalizedPrimary);
     if (!hasPrimary) {
       checkboxes.forEach((cb) => (cb.checked = true));
       return;
     }
     checkboxes.forEach((cb) => {
-      cb.checked = cb.value === primary;
+      cb.checked = cb.value === normalizedPrimary;
     });
   };
 
