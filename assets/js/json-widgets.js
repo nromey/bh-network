@@ -589,6 +589,10 @@
         if (DIAG) appendDiag(container, 'Live data loaded but no weekly items found; keeping fallback.');
         return;
       }
+      const weekBlock = container.querySelector('#home-week-nets');
+      if (!weekBlock) return;
+      const fallback = weekBlock.querySelector('.week-fallback');
+      if (fallback) fallback.remove();
 
       // Build chronologically, but rotate so we start at the next
       // upcoming occurrence and then circle back to recently past ones.
@@ -608,9 +612,6 @@
         // No future items in window: start from the most recent past (desc)
         week = allSorted.slice().sort((a, b) => new Date(getStartISO(b)) - new Date(getStartISO(a)));
       }
-      const weekBlock = container.querySelector('#home-week-nets');
-      if (!weekBlock) return;
-
       const tbody = weekBlock.querySelector('.view-table tbody');
       const headingsView = weekBlock.querySelector('.view-headings');
       if (!tbody || !headingsView) return;
@@ -881,6 +882,16 @@
       }
       if (!data) {
         if (DIAG) appendDiag(section, 'Live data fetch failed for category nets.');
+        const table = section.querySelector('.view-table tbody');
+        if (table) {
+          let fallback = section.querySelector('.category-fallback');
+          if (!fallback) {
+            fallback = document.createElement('p');
+            fallback.className = 'category-fallback';
+            fallback.textContent = 'Live data unavailable for category nets.';
+            section.appendChild(fallback);
+          }
+        }
         continue;
       }
       const arr = getWeekArray(data);
@@ -892,6 +903,8 @@
         if (DIAG) appendDiag(section, 'Live data loaded but no category items found; keeping fallback.');
         continue;
       }
+      const catFallback = section.querySelector('.category-fallback');
+      if (catFallback) catFallback.remove();
       if (DIAG) appendDiag(section, `Category items loaded: ${arr.length}`);
       const now = new Date();
       const normId = (s) => {
