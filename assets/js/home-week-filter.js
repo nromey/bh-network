@@ -9,6 +9,12 @@
   const status = section.querySelector('[data-week-filter-status]');
   const emptyMessage = section.querySelector('[data-week-empty]');
   const primary = section.dataset.primaryCategory || "";
+  const defaultSet = new Set(
+    String(section.dataset.defaultCategories || '')
+      .split(',')
+      .map((cat) => cat.trim())
+      .filter(Boolean)
+  );
 
   const labelMap = new Map();
   checkboxes.forEach((cb) => {
@@ -43,6 +49,9 @@
     checkboxes.forEach((cb) => {
       if (cb.checked) selected.add(cb.value);
     });
+    if (!selected.size && defaultSet.size) {
+      defaultSet.forEach((cat) => selected.add(cat));
+    }
     return selected;
   };
 

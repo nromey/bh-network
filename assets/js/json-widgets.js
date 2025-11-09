@@ -591,6 +591,12 @@
       }
       const weekBlock = container.querySelector('#home-week-nets');
       if (!weekBlock) return;
+      const defaultCats = new Set(
+        String(weekBlock.dataset.defaultCategories || '')
+          .split(',')
+          .map((cat) => normalizeCategory(cat))
+          .filter(Boolean)
+      );
       const fallback = weekBlock.querySelector('.week-fallback');
       if (fallback) fallback.remove();
 
@@ -626,7 +632,8 @@
       week.forEach((occ) => {
         const tr = document.createElement('tr');
         tr.setAttribute('data-category-item', '');
-        tr.dataset.category = normalizeCategory(occ.category || '');
+        const normCat = normalizeCategory(occ.category || '');
+        tr.dataset.category = normCat;
 
         // Net
         const tdNet = document.createElement('td');
@@ -711,6 +718,11 @@
         tdOther.textContent = other || '—';
         tr.appendChild(tdOther);
 
+        if (defaultCats.size && !defaultCats.has(normCat)) {
+          tr.setAttribute('hidden', '');
+        } else {
+          tr.removeAttribute('hidden');
+        }
         tfrag.appendChild(tr);
       });
 
@@ -721,7 +733,7 @@
         art.className = 'next-net-item';
         art.setAttribute('aria-labelledby', `week-net-${idx+1}`);
         art.setAttribute('data-category-item', '');
-        art.dataset.category = normalizeCategory(occ.category || '');
+        art.dataset.category = normCat;
 
         const h4 = document.createElement('h4');
         h4.id = `week-net-${idx+1}`;
@@ -812,6 +824,11 @@
         pWhere.textContent = 'Blind Hams Bridge';
         art.appendChild(pWhere);
 
+        if (defaultCats.size && !defaultCats.has(normCat)) {
+          art.setAttribute('hidden', '');
+        } else {
+          art.removeAttribute('hidden');
+        }
         hfrag.appendChild(art);
       });
 

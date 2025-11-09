@@ -110,7 +110,7 @@
   <details class="next-net-accordion">
     <summary id="week-nets-summary"><span>Show nets for the next week</span></summary>
     <div class="next-net-accordion-body" aria-labelledby="week-nets-summary">
-      <section class="nets-section home-week-nets" data-view="table" id="home-week-nets" data-primary-category="{{ primary_category }}">
+      <section class="nets-section home-week-nets" data-view="table" id="home-week-nets" data-primary-category="{{ primary_category }}" data-default-categories="{{ default_categories | join: ',' }}">
         <header class="nets-header">
           <h3>Week at a glance</h3>
           <fieldset class="week-category-filter" aria-label="Filter weekly nets by category">
