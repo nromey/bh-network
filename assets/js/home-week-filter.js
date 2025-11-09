@@ -9,10 +9,11 @@
   const status = section.querySelector('[data-week-filter-status]');
   const emptyMessage = section.querySelector('[data-week-empty]');
   const primary = section.dataset.primaryCategory || "";
+  const normalize = (cat) => String(cat || "").trim().toLowerCase();
   const defaultSet = new Set(
-    String(section.dataset.defaultCategories || '')
-      .split(',')
-      .map((cat) => cat.trim())
+    String(section.dataset.defaultCategories || "")
+      .split(",")
+      .map((cat) => normalize(cat))
       .filter(Boolean)
   );
 
@@ -20,6 +21,18 @@
   checkboxes.forEach((cb) => {
     labelMap.set(cb.value, cb.dataset.label || cb.value);
   });
+
+  const applyDefaultSelection = () => {
+    if (defaultSet.size) {
+      checkboxes.forEach((cb) => {
+        cb.checked = defaultSet.has(normalize(cb.value));
+      });
+    } else if (primary) {
+      checkboxes.forEach((cb) => {
+        cb.checked = normalize(cb.value) === normalize(primary);
+      });
+    }
+  };
 
   const getItems = () => Array.from(section.querySelectorAll('[data-category-item]'));
 
@@ -98,8 +111,10 @@
   document.addEventListener("bhn:week-hydrated", (event) => {
     const target = event.detail && event.detail.container;
     if (target && target.id !== section.id) return;
+    applyDefaultSelection();
     update();
   });
 
+  applyDefaultSelection();
   update();
 })();
