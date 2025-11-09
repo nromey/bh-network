@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate _data/next_net.yml with upcoming Blind Hams Network nets."""
+"""Generate _data/next_net.json with upcoming Blind Hams Network nets."""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -224,12 +224,6 @@ def load_nets_data(root: Path) -> dict:
     raise FileNotFoundError(f"Missing nets data file: {json_path} (or {yaml_path})")
 
 
-def dump_yaml(path: Path, data: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as fp:
-        yaml.safe_dump(data, fp, sort_keys=False, allow_unicode=False)
-
-
 def build_next_net(
     root: Path,
     category: str,
@@ -356,7 +350,7 @@ def main(argv: list[str] | None = None) -> int:
 
     script_dir = Path(__file__).resolve().parent
     root = find_repo_root(script_dir)
-    output_path = root / "_data" / "next_net.yml"
+    output_path = root / "_data" / "next_net.json"
 
     payload = build_next_net(
         root,
@@ -365,7 +359,10 @@ def main(argv: list[str] | None = None) -> int:
         args.horizon_days,
         args.week_window,
     )
-    dump_yaml(output_path, payload)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8") as fh:
+        json.dump(payload, fh, ensure_ascii=False, indent=2)
+        fh.write("\n")
     print(f"[info] Wrote {output_path.relative_to(root)}")
     return 0
 
