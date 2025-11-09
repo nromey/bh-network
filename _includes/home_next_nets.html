@@ -131,7 +131,6 @@
       <section class="nets-section home-week-nets" data-view="table" id="home-week-nets" data-primary-category="{{ primary_category }}">
         <header class="nets-header">
           <h3>Week at a glance</h3>
-          {%- if available_categories and available_categories != empty -%}
           <fieldset class="week-category-filter" aria-label="Filter weekly nets by category">
             <legend>Categories</legend>
             <div class="week-category-options">
@@ -166,7 +165,6 @@
             </div>
             <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-week-filter-status></span>
           </fieldset>
-          {%- endif -%}
           <fieldset class="view-toggle" aria-label="Display format for weekly nets">
             <legend class="sr-only">Display format</legend>
             <button type="button" data-view-button="table" aria-pressed="true">Table view</button>
