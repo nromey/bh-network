@@ -581,6 +581,7 @@
         return;
       }
       const arr = getWeekArray(data);
+      if (DIAG) appendDiag(container, `Weekly array size: ${Array.isArray(arr) ? arr.length : 'not array'}.`);
       if (!Array.isArray(arr)) {
         if (DIAG) appendDiag(container, 'Live data loaded but no weekly array found.');
         return;
