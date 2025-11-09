@@ -34,6 +34,11 @@
 
   const applySelection = (selected) => {
     const items = getItems();
+    if (!items.length) {
+      if (emptyMessage) emptyMessage.setAttribute("hidden", "");
+      if (status) status.textContent = "";
+      return;
+    }
     let visibleCount = 0;
     items.forEach((item) => {
       const cat = item.dataset.category;
