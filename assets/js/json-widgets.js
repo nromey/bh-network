@@ -630,11 +630,12 @@
 
       // Build table rows
       const tfrag = document.createDocumentFragment();
-      week.forEach((occ, idx) => {
-        const tr = document.createElement('tr');
+     week.forEach((occ, idx) => {
+       const tr = document.createElement('tr');
         tr.setAttribute('data-category-item', '');
-        const normCat = normalizeCategory(occ.category || '');
-        tr.dataset.category = normCat;
+       const normCat = normalizeCategory(occ.category || '');
+       tr.dataset.category = normCat;
+        tr.dataset.id = occ.id || '';
 
         // Net
         const tdNet = document.createElement('td');
