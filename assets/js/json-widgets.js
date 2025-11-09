@@ -736,7 +736,9 @@
         art.className = 'next-net-item';
         art.setAttribute('aria-labelledby', `week-net-${idx+1}`);
         art.setAttribute('data-category-item', '');
+        const normCat = normalizeCategory(occ.category || '');
         art.dataset.category = normCat;
+        art.dataset.id = occ.id || '';
 
         const h4 = document.createElement('h4');
         h4.id = `week-net-${idx+1}`;
