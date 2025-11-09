@@ -5,22 +5,8 @@
   {%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
 {%- endif -%}
 {%- assign primary_category = payload.primary_category | default: "bhn" -%}
-{%- capture categories_json -%}{{ payload.categories | jsonify }}{%- endcapture -%}
-{%- if categories_json == "" or categories_json == "null" -%}
-  {%- assign available_categories = "bhn,disability,general" | split: "," -%}
-{%- elsif categories_json | slice: 0,1 == "[" -%}
-  {%- assign available_categories = payload.categories -%}
-{%- else -%}
-  {%- assign available_categories = payload.categories | split: "," -%}
-{%- endif -%}
-{%- capture defaults_json -%}{{ payload.default_categories | jsonify }}{%- endcapture -%}
-{%- if defaults_json == "" or defaults_json == "null" -%}
-  {%- assign default_categories = primary_category | split: "," -%}
-{%- elsif defaults_json | slice: 0,1 == "[" -%}
-  {%- assign default_categories = payload.default_categories -%}
-{%- else -%}
-  {%- assign default_categories = payload.default_categories | split: "," -%}
-{%- endif -%}
+{%- assign available_categories = "bhn,disability,general" | split: "," -%}
+{%- assign default_categories = payload.default_categories | default: primary_category | split: "," -%}
 <section class="home-next-nets" aria-labelledby="next-net-heading" data-next-net-json="{{ json_src }}"
   data-tz-show-abbr="{%- if site.time_labels.show_abbr == false or site.time_labels.show_abbr == 'false' -%}false{%- elsif site.time_labels.show_abbr == true or site.time_labels.show_abbr == 'true' -%}true{%- else -%}true{%- endif -%}"
   data-tz-show-label="{%- if site.time_labels.show_label == false or site.time_labels.show_label == 'false' -%}false{%- elsif site.time_labels.show_label == true or site.time_labels.show_label == 'true' -%}true{%- else -%}true{%- endif -%}">
@@ -121,10 +107,6 @@
   {%- endif -%}
 
   {%- assign week = payload.week -%}
-  {%- assign available_categories = payload.categories | default: empty -%}
-  {%- assign default_categories = payload.default_categories | default: nil -%}
-  {%- if default_categories == nil or default_categories == empty -%}
-  {%- endif -%}
   <details class="next-net-accordion">
     <summary id="week-nets-summary"><span>Show nets for the next week</span></summary>
     <div class="next-net-accordion-body" aria-labelledby="week-nets-summary">
