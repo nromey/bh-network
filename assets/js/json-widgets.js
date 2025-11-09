@@ -842,7 +842,7 @@
 
       appendUpdatedAt(container, data);
       if (DIAG) appendDiag(container, `Live data loaded. Weekly items: ${week.length}.`);
-      document.dispatchEvent(new CustomEvent('bhn:week-hydrated', { detail: { container } }));
+      document.dispatchEvent(new CustomEvent('bhn:week-hydrated', { detail: { container: weekBlock } }));
 
       // Determine a representative tz for this container (if unified), or respect forced tz
       try {
