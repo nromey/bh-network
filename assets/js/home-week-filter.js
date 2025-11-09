@@ -6,7 +6,6 @@
   const checkboxes = Array.from(section.querySelectorAll('[data-category-toggle]'));
   if (!checkboxes.length) return;
 
-  const items = Array.from(section.querySelectorAll('[data-category-item]'));
   const status = section.querySelector('[data-week-filter-status]');
   const emptyMessage = section.querySelector('[data-week-empty]');
   const primary = section.dataset.primaryCategory || "";
@@ -15,6 +14,8 @@
   checkboxes.forEach((cb) => {
     labelMap.set(cb.value, cb.dataset.label || cb.value);
   });
+
+  const getItems = () => Array.from(section.querySelectorAll('[data-category-item]'));
 
   const describeSelection = (selected, visibleCount) => {
     if (!selected.size) return "No categories selected. Weekly nets hidden.";
@@ -26,6 +27,7 @@
   };
 
   const applySelection = (selected) => {
+    const items = getItems();
     let visibleCount = 0;
     items.forEach((item) => {
       const cat = item.dataset.category;
@@ -77,6 +79,12 @@
       }
       update();
     });
+  });
+
+  document.addEventListener("bhn:week-hydrated", (event) => {
+    const target = event.detail && event.detail.container;
+    if (target && target.id !== section.id) return;
+    update();
   });
 
   update();
