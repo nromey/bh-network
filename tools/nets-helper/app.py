@@ -1255,17 +1255,39 @@ def write_pending_file(
     if mode == "edit":
         if not original_id:
             raise ValueError("original_id required for edit mode")
-        target = original_id.strip().lower()
+        original_id_clean = str(original_id or "").strip()
+        target = original_id_clean.lower()
+        target_slug = slugify(original_id_clean)
         index = -1
         for idx, existing in enumerate(nets):
             if not isinstance(existing, dict):
                 continue
-            current_id = str(existing.get("id") or "").strip().lower()
-            if current_id == target:
+            current_raw = str(existing.get("id") or "").strip()
+            current_id = current_raw.lower()
+            current_slug = slugify(current_raw)
+            if current_id == target or (target_slug and current_slug == target_slug):
                 index = idx
                 break
         if index == -1:
-            raise ValueError(f"Unable to locate net with id '{original_id}' in the current snapshot.")
+            # Attempt to pull from canonical file so editors can recover even if the working snapshot is stale.
+            canonical_payload = load_nets_payload(nets_file)
+            canonical_nets = canonical_payload.get("nets", []) or []
+            for candidate in canonical_nets:
+                if not isinstance(candidate, dict):
+                    continue
+                raw_id = str(candidate.get("id") or "").strip()
+                cand_id = raw_id.lower()
+                cand_slug = slugify(raw_id)
+                if cand_id == target or (target_slug and cand_slug == target_slug):
+                    nets.append(candidate.copy())
+                    index = len(nets) - 1
+                    break
+        if index == -1:
+            available_ids = [str(existing.get("id") or "") for existing in nets if isinstance(existing, dict)]
+            raise ValueError(
+                f"Unable to locate net with id '{original_id}' in the current snapshot."
+                f" Available ids include: {', '.join(available_ids[:5])}"
+            )
         if expected_hash:
             current_hash = compute_record_hash(nets[index])
             if current_hash != expected_hash:
