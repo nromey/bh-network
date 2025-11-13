@@ -18,7 +18,7 @@ cd "$APP_DIR"
 # shellcheck disable=SC1091
 . "$VENV_DIR/bin/activate"
 
-export BHN_NETS_FILE="$ROOT/_data/nets.yml"
+export BHN_NETS_FILE="$ROOT/_data/nets.json"
 export BHN_NETS_OUTPUT_DIR="$ROOT/_data"
 
 exec flask --app app run --debug "$@"

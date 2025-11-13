@@ -4,6 +4,9 @@
 {%- else -%}
   {%- assign json_src = "https://data.blindhams.network/next_nets.json" -%}
 {%- endif -%}
+{%- assign primary_category = payload.primary_category | default: "bhn" -%}
+{%- assign available_categories = "bhn,disability,general" | split: "," -%}
+{%- assign default_categories = payload.default_categories | default: primary_category | split: "," -%}
 <section class="home-next-nets" aria-labelledby="next-net-heading" data-next-net-json="{{ json_src }}"
   data-tz-show-abbr="{%- if site.time_labels.show_abbr == false or site.time_labels.show_abbr == 'false' -%}false{%- elsif site.time_labels.show_abbr == true or site.time_labels.show_abbr == 'true' -%}true{%- else -%}true{%- endif -%}"
   data-tz-show-label="{%- if site.time_labels.show_label == false or site.time_labels.show_label == 'false' -%}false{%- elsif site.time_labels.show_label == true or site.time_labels.show_label == 'true' -%}true{%- else -%}true{%- endif -%}">
@@ -104,39 +107,35 @@
   {%- endif -%}
 
   {%- assign week = payload.week -%}
-  {%- assign available_categories = payload.categories | default: empty -%}
-  {%- assign default_categories = payload.default_categories | default: nil -%}
-  {%- if default_categories == nil or default_categories == empty -%}
-    {%- assign default_categories = payload.primary_category | split: "," -%}
-  {%- endif -%}
   <details class="next-net-accordion">
     <summary id="week-nets-summary"><span>Show nets for the next week</span></summary>
     <div class="next-net-accordion-body" aria-labelledby="week-nets-summary">
-      <section class="nets-section home-week-nets" data-view="table" id="home-week-nets" data-primary-category="{{ payload.primary_category }}">
+      <section class="nets-section home-week-nets" data-view="table" id="home-week-nets" data-primary-category="{{ primary_category }}" data-default-categories="{{ default_categories | join: ',' }}">
         <header class="nets-header">
           <h3>Week at a glance</h3>
-          {%- if available_categories and available_categories != empty -%}
           <fieldset class="week-category-filter" aria-label="Filter weekly nets by category">
             <legend>Categories</legend>
             <div class="week-category-options">
             {%- for cat in available_categories -%}
+              {%- assign cat_trim = cat | strip -%}
+              {%- if cat_trim == "" -%}{%- continue -%}{%- endif -%}
               {%- capture cat_label -%}
-                {%- case cat -%}
+                {%- case cat_trim -%}
                   {%- when "bhn" -%}Blind Hams Network
                   {%- when "disability" -%}Disability Nets
                   {%- when "general" -%}General Interest
-                  {%- else -%}{{ cat | capitalize }}
+                  {%- else -%}{{ cat_trim | capitalize }}
                 {%- endcase -%}
               {%- endcapture -%}
               <div class="week-category-option">
-                <input type="checkbox" id="week-cat-{{ cat }}" value="{{ cat }}" data-category-toggle data-label="{{ cat_label | strip }}" {% if default_categories contains cat %}checked{% endif %}>
-                <label for="week-cat-{{ cat }}">{{ cat_label | strip }}</label>
+                <input type="checkbox" id="week-cat-{{ cat_trim }}" value="{{ cat_trim }}" data-category-toggle data-label="{{ cat_label | strip }}" {% if default_categories contains cat_trim %}checked{% endif %}>
+                <label for="week-cat-{{ cat_trim }}">{{ cat_label | strip }}</label>
               </div>
             {%- endfor -%}
             </div>
             <div class="week-category-actions">
               {%- capture primary_label -%}
-                {%- case payload.primary_category -%}
+                {%- case primary_category -%}
                   {%- when "bhn" -%}Blind Hams only
                   {%- when "disability" -%}Disability only
                   {%- when "general" -%}General Interest only
@@ -148,7 +147,6 @@
             </div>
             <span class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-week-filter-status></span>
           </fieldset>
-          {%- endif -%}
           <fieldset class="view-toggle" aria-label="Display format for weekly nets">
             <legend class="sr-only">Display format</legend>
             <button type="button" data-view-button="table" aria-pressed="true">Table view</button>
@@ -338,7 +336,7 @@
   </details>
 </section>
 <script>
-  // Expose descriptions from `_data/nets.yml` for client hydration
+  // Expose descriptions from `_data/nets.json` for client hydration
   (function(){
     try {
       var map = {

@@ -6,15 +6,39 @@
   const checkboxes = Array.from(section.querySelectorAll('[data-category-toggle]'));
   if (!checkboxes.length) return;
 
-  const items = Array.from(section.querySelectorAll('[data-category-item]'));
   const status = section.querySelector('[data-week-filter-status]');
   const emptyMessage = section.querySelector('[data-week-empty]');
   const primary = section.dataset.primaryCategory || "";
+  const normalize = (cat) => String(cat || "").trim().toLowerCase();
+  const defaultSet = new Set(
+    String(section.dataset.defaultCategories || "")
+      .split(",")
+      .map((cat) => normalize(cat))
+      .filter(Boolean)
+  );
 
+  const checkboxMap = new Map();
   const labelMap = new Map();
   checkboxes.forEach((cb) => {
-    labelMap.set(cb.value, cb.dataset.label || cb.value);
+    const value = normalize(cb.value);
+    cb.value = value;
+    checkboxMap.set(value, cb);
+    labelMap.set(value, cb.dataset.label || cb.dataset.originalLabel || value);
   });
+
+  const applyDefaultSelection = () => {
+    if (defaultSet.size) {
+      checkboxes.forEach((cb) => {
+        cb.checked = defaultSet.has(cb.value);
+      });
+    } else if (primary) {
+      checkboxes.forEach((cb) => {
+        cb.checked = normalize(cb.value) === normalize(primary);
+      });
+    }
+  };
+
+  const getItems = () => Array.from(section.querySelectorAll('[data-category-item]'));
 
   const describeSelection = (selected, visibleCount) => {
     if (!selected.size) return "No categories selected. Weekly nets hidden.";
@@ -26,9 +50,15 @@
   };
 
   const applySelection = (selected) => {
+    const items = getItems();
+    if (!items.length) {
+      if (emptyMessage) emptyMessage.setAttribute("hidden", "");
+      if (status) status.textContent = "";
+      return;
+    }
     let visibleCount = 0;
     items.forEach((item) => {
-      const cat = item.dataset.category;
+      const cat = normalize(item.dataset.category);
       item.toggleAttribute("hidden", !selected.has(cat));
       if (!item.hasAttribute("hidden")) visibleCount += 1;
     });
@@ -39,20 +69,24 @@
   const collectSelected = () => {
     const selected = new Set();
     checkboxes.forEach((cb) => {
-      if (cb.checked) selected.add(cb.value);
+      if (cb.checked) selected.add(normalize(cb.value));
     });
+    if (!selected.size && defaultSet.size) {
+      defaultSet.forEach((cat) => selected.add(cat));
+    }
     return selected;
   };
 
   const ensurePrimary = () => {
     if (!primary) return;
-    const hasPrimary = checkboxes.some((cb) => cb.value === primary);
+    const normalizedPrimary = normalize(primary);
+    const hasPrimary = checkboxes.some((cb) => cb.value === normalizedPrimary);
     if (!hasPrimary) {
       checkboxes.forEach((cb) => (cb.checked = true));
       return;
     }
     checkboxes.forEach((cb) => {
-      cb.checked = cb.value === primary;
+      cb.checked = cb.value === normalizedPrimary;
     });
   };
 
@@ -79,5 +113,13 @@
     });
   });
 
+  document.addEventListener("bhn:week-hydrated", (event) => {
+    const target = event.detail && event.detail.container;
+    if (target !== section) return;
+    applyDefaultSelection();
+    update();
+  });
+
+  applyDefaultSelection();
   update();
 })();

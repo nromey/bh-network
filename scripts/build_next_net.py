@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Generate _data/next_net.yml with upcoming Blind Hams Network nets."""
+"""Generate _data/next_net.json with upcoming Blind Hams Network nets."""
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 import os
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
@@ -208,17 +209,19 @@ def upcoming_occurrences(net: Net, now: datetime, horizon_days: int) -> List[Occ
     return occs
 
 
-def load_yaml(path: Path) -> dict:
-    if not path.exists():
-        raise FileNotFoundError(f"Missing YAML file: {path}")
-    with path.open("r", encoding="utf-8") as fp:
-        return yaml.safe_load(fp) or {}
-
-
-def dump_yaml(path: Path, data: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as fp:
-        yaml.safe_dump(data, fp, sort_keys=False, allow_unicode=False)
+def load_nets_data(root: Path) -> dict:
+    json_path = root / "_data" / "nets.json"
+    yaml_path = root / "_data" / "nets.yml"
+    if json_path.exists():
+        with json_path.open("r", encoding="utf-8") as fp:
+            try:
+                return json.load(fp) or {}
+            except json.JSONDecodeError as exc:
+                raise RuntimeError(f"Failed to parse JSON nets file {json_path}: {exc}") from exc
+    if yaml_path.exists():
+        with yaml_path.open("r", encoding="utf-8") as fp:
+            return yaml.safe_load(fp) or {}
+    raise FileNotFoundError(f"Missing nets data file: {json_path} (or {yaml_path})")
 
 
 def build_next_net(
@@ -228,7 +231,7 @@ def build_next_net(
     horizon_days: int,
     week_window: int,
 ) -> dict:
-    data = load_yaml(root / "_data" / "nets.yml")
+    data = load_nets_data(root)
     tzname = data.get("time_zone") or DEFAULT_TZ
     tz = ZoneInfo(tzname)
     now = datetime.now(tz)
@@ -347,7 +350,7 @@ def main(argv: list[str] | None = None) -> int:
 
     script_dir = Path(__file__).resolve().parent
     root = find_repo_root(script_dir)
-    output_path = root / "_data" / "next_net.yml"
+    output_path = root / "_data" / "next_net.json"
 
     payload = build_next_net(
         root,
@@ -356,7 +359,10 @@ def main(argv: list[str] | None = None) -> int:
         args.horizon_days,
         args.week_window,
     )
-    dump_yaml(output_path, payload)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8") as fh:
+        json.dump(payload, fh, ensure_ascii=False, indent=2)
+        fh.write("\n")
     print(f"[info] Wrote {output_path.relative_to(root)}")
     return 0
 

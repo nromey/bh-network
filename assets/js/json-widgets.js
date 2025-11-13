@@ -279,8 +279,17 @@
 
       // Determine the best "next" occurrence: always prefer earliest upcoming BHN.
       // If no BHN entries exist in the future window, fall back to earliest of any category.
+      const rawWeek = getWeekArray(data);
+      if (!Array.isArray(rawWeek)) {
+        if (DIAG) appendDiag(section, 'Live data loaded but weekly array missing; keeping fallback Next Net.');
+        return;
+      }
+      if (!rawWeek.length && !(data.next_net && getStartISO(data.next_net))) {
+        if (DIAG) appendDiag(section, 'Live data returned no occurrences; keeping fallback Next Net.');
+        return;
+      }
       const now = new Date();
-      const week = getWeekArray(data).slice();
+      const week = rawWeek.slice();
       const containerWeek = section.querySelector('#home-week-nets');
       const primaryCat = 'bhn'; // Force BHN as the "Next Net" category
 
@@ -304,22 +313,7 @@
         .concat(futureNext.filter((o) => isCat(o, primaryCat)));
       next = earliest(primaryPool);
       if (!next) {
-        // Only BHN nets should appear on the Next Net card; do not fallback to other categories.
-        if (DIAG) appendDiag(section, 'Live data loaded. No upcoming BHN Next Net found.');
-        // Update card to a neutral message
-        const card = section.querySelector('.next-net-card');
-        if (card) {
-          const title = card.querySelector('h3');
-          if (title) title.textContent = 'No upcoming Blind Hams net found';
-          const timeEl = card.querySelector('time');
-          if (timeEl) { timeEl.removeAttribute('datetime'); timeEl.textContent = '—'; }
-          const tzEl = card.querySelector('.next-net-tz');
-          if (tzEl) tzEl.textContent = '';
-          const dur = card.querySelector('.next-net-duration');
-          if (dur) dur.remove();
-          const desc = card.querySelector('.next-net-description') || card.querySelector('h4 ~ p');
-          if (desc) desc.textContent = '';
-        }
+        if (DIAG) appendDiag(section, 'Live data loaded but no upcoming BHN Next Net; keeping fallback.');
         return;
       }
 
@@ -587,10 +581,26 @@
         return;
       }
       const arr = getWeekArray(data);
+      if (DIAG) appendDiag(container, `Weekly array size: ${Array.isArray(arr) ? arr.length : 'not array'}.`);
       if (!Array.isArray(arr)) {
         if (DIAG) appendDiag(container, 'Live data loaded but no weekly array found.');
         return;
       }
+      if (!arr.length) {
+        if (DIAG) appendDiag(container, 'Live data loaded but no weekly items found; keeping fallback.');
+        return;
+      }
+      const weekBlock = container.querySelector('#home-week-nets');
+      if (!weekBlock) return;
+      const defaultCats = new Set(
+        String(weekBlock.dataset.defaultCategories || '')
+          .split(',')
+          .map((cat) => normalizeCategory(cat))
+          .filter(Boolean)
+      );
+      if (DIAG) appendDiag(container, `Weekly defaults: ${Array.from(defaultCats).join(', ') || '(none)'}`);
+      const fallback = weekBlock.querySelector('.week-fallback');
+      if (fallback) fallback.remove();
 
       // Build chronologically, but rotate so we start at the next
       // upcoming occurrence and then circle back to recently past ones.
@@ -610,9 +620,6 @@
         // No future items in window: start from the most recent past (desc)
         week = allSorted.slice().sort((a, b) => new Date(getStartISO(b)) - new Date(getStartISO(a)));
       }
-      const weekBlock = container.querySelector('#home-week-nets');
-      if (!weekBlock) return;
-
       const tbody = weekBlock.querySelector('.view-table tbody');
       const headingsView = weekBlock.querySelector('.view-headings');
       if (!tbody || !headingsView) return;
@@ -624,10 +631,12 @@
 
       // Build table rows
       const tfrag = document.createDocumentFragment();
-      week.forEach((occ) => {
-        const tr = document.createElement('tr');
+     week.forEach((occ, idx) => {
+       const tr = document.createElement('tr');
         tr.setAttribute('data-category-item', '');
-        tr.dataset.category = normalizeCategory(occ.category || '');
+       const normCat = normalizeCategory(occ.category || '');
+       tr.dataset.category = normCat;
+        tr.dataset.id = occ.id || '';
 
         // Net
         const tdNet = document.createElement('td');
@@ -712,6 +721,11 @@
         tdOther.textContent = other || '—';
         tr.appendChild(tdOther);
 
+        if (defaultCats.size && !defaultCats.has(normCat)) {
+          tr.setAttribute('hidden', '');
+        } else {
+          tr.removeAttribute('hidden');
+        }
         tfrag.appendChild(tr);
       });
 
@@ -722,7 +736,9 @@
         art.className = 'next-net-item';
         art.setAttribute('aria-labelledby', `week-net-${idx+1}`);
         art.setAttribute('data-category-item', '');
-        art.dataset.category = normalizeCategory(occ.category || '');
+        const normCat = normalizeCategory(occ.category || '');
+        art.dataset.category = normCat;
+        art.dataset.id = occ.id || '';
 
         const h4 = document.createElement('h4');
         h4.id = `week-net-${idx+1}`;
@@ -813,12 +829,17 @@
         pWhere.textContent = 'Blind Hams Bridge';
         art.appendChild(pWhere);
 
+        if (defaultCats.size && !defaultCats.has(normCat)) {
+          art.setAttribute('hidden', '');
+        } else {
+          art.removeAttribute('hidden');
+        }
         hfrag.appendChild(art);
       });
 
       // Replace contents
       tbody.innerHTML = '';
-      tbody.appendChild(tfrag);
+        tbody.appendChild(tfrag);
       // Clear items inside headings view container div
       // The first child elements are articles; keep container itself
       headingsView.innerHTML = '';
@@ -826,6 +847,7 @@
 
       appendUpdatedAt(container, data);
       if (DIAG) appendDiag(container, `Live data loaded. Weekly items: ${week.length}.`);
+      document.dispatchEvent(new CustomEvent('bhn:week-hydrated', { detail: { container: weekBlock, defaults: Array.from(defaultCats) } }));
 
       // Determine a representative tz for this container (if unified), or respect forced tz
       try {
@@ -883,6 +905,16 @@
       }
       if (!data) {
         if (DIAG) appendDiag(section, 'Live data fetch failed for category nets.');
+        const table = section.querySelector('.view-table tbody');
+        if (table) {
+          let fallback = section.querySelector('.category-fallback');
+          if (!fallback) {
+            fallback = document.createElement('p');
+            fallback.className = 'category-fallback';
+            fallback.textContent = 'Live data unavailable for category nets.';
+            section.appendChild(fallback);
+          }
+        }
         continue;
       }
       const arr = getWeekArray(data);
@@ -890,6 +922,12 @@
         if (DIAG) appendDiag(section, 'Live data loaded but no weekly array found (category nets).');
         continue;
       }
+      if (!arr.length) {
+        if (DIAG) appendDiag(section, 'Live data loaded but no category items found; keeping fallback.');
+        continue;
+      }
+      const catFallback = section.querySelector('.category-fallback');
+      if (catFallback) catFallback.remove();
       if (DIAG) appendDiag(section, `Category items loaded: ${arr.length}`);
       const now = new Date();
       const normId = (s) => {

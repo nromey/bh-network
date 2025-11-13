@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 import textwrap
@@ -13,24 +14,24 @@ if str(BASE_DIR) not in sys.path:
 
 @pytest.fixture
 def sample_repo(tmp_path, monkeypatch):
-    nets_content = textwrap.dedent(
-        """
-        time_zone: America/New_York
+    nets_payload = {
+        "time_zone": "America/New_York",
+        "nets": [
+            {
+                "id": "alpha-net",
+                "category": "bhn",
+                "name": "Alpha Net",
+                "description": "Alpha description.",
+                "start_local": "10:00",
+                "duration_min": 60,
+                "rrule": "FREQ=WEEKLY;BYDAY=MO",
+                "time_zone": "America/New_York",
+            }
+        ],
+    }
 
-        nets:
-          - id: alpha-net
-            category: bhn
-            name: Alpha Net
-            description: "Alpha description."
-            start_local: "10:00"
-            duration_min: 60
-            rrule: "FREQ=WEEKLY;BYDAY=MO"
-            time_zone: America/New_York
-        """
-    ).strip() + "\n"
-
-    nets_file = tmp_path / "nets.yml"
-    nets_file.write_text(nets_content, encoding="utf-8")
+    nets_file = tmp_path / "nets.json"
+    nets_file.write_text(json.dumps(nets_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     pending_dir = tmp_path / "pending"
     pending_dir.mkdir()
@@ -57,7 +58,7 @@ def sample_repo(tmp_path, monkeypatch):
     subprocess.run(["git", "-c", "init.defaultBranch=main", "init"], cwd=tmp_path, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess.run(["git", "config", "user.name", "Test Bot"], cwd=tmp_path, check=True)
     subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmp_path, check=True)
-    subprocess.run(["git", "add", "nets.yml"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "nets.json"], cwd=tmp_path, check=True)
     subprocess.run(["git", "commit", "-m", "Initial nets"], cwd=tmp_path, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     return {
