@@ -761,18 +761,26 @@
       </section>
 
       <form id="netsForm" novalidate>
-        <section id="draftBanner" class="draft-banner" hidden aria-live="polite" aria-atomic="true">
-          <h2 id="draftBannerMessage">We found an unpublished draft from a previous session.</h2>
-          <div class="draft-actions">
-            <button type="button" id="draftRestoreBtn" class="restore">Restore draft</button>
-            <button type="button" id="draftDiscardBtn">Discard</button>
-          </div>
-          <div id="draftConfirm" class="draft-actions" hidden aria-live="polite" aria-atomic="true">
-            <span>Discard this draft?</span>
-            <button type="button" id="draftConfirmDiscard">Yes, discard</button>
-            <button type="button" id="draftCancelDiscard">Keep</button>
-          </div>
-        </section>
+      <section id="draftBanner" class="draft-banner" hidden aria-live="polite" aria-atomic="true">
+        <h2 id="draftBannerMessage">We found an unpublished draft from a previous session.</h2>
+        <div class="draft-actions">
+          <button type="button" id="draftRestoreBtn" class="restore">Restore draft</button>
+          <button type="button" id="draftDiscardBtn">Discard</button>
+        </div>
+        <div id="draftConfirm" class="draft-actions" hidden aria-live="polite" aria-atomic="true">
+          <span>Discard this draft?</span>
+          <button type="button" id="draftConfirmDiscard">Yes, discard</button>
+          <button type="button" id="draftCancelDiscard">Keep</button>
+        </div>
+      </section>
+      <div id="batchResumeBanner" class="draft-banner" hidden aria-live="polite" aria-atomic="true">
+        <h2>Staged nets waiting</h2>
+        <p>You still have <strong id="batchResumeCount">0</strong> staged net(s) from your last session.</p>
+        <div class="draft-actions">
+          <button type="button" id="batchResumeBtn" class="restore">Review staged batch</button>
+          <button type="button" id="batchDiscardBtn">Discard batch</button>
+        </div>
+      </div>
         <input type="hidden" name="source_key" id="source_key" value="{{ active_source_key }}">
         <input type="hidden" name="mode" id="formMode" value="add">
         <input type="hidden" name="original_id" id="original_id" value="">
@@ -1157,6 +1165,10 @@
       const draftConfirm = document.getElementById('draftConfirm');
       const draftConfirmDiscard = document.getElementById('draftConfirmDiscard');
       const draftCancelDiscard = document.getElementById('draftCancelDiscard');
+      const batchResumeBanner = document.getElementById('batchResumeBanner');
+      const batchResumeCount = document.getElementById('batchResumeCount');
+      const batchResumeBtn = document.getElementById('batchResumeBtn');
+      const batchDiscardBtn = document.getElementById('batchDiscardBtn');
       const autosaveStatus = document.getElementById('autosaveStatus');
       const modeInput = document.getElementById('formMode');
       const originalIdInput = document.getElementById('original_id');
@@ -1368,6 +1380,7 @@
           empty.className = 'batch-item';
           empty.textContent = 'No staged nets yet.';
           batchList.appendChild(empty);
+          updateBatchResumeBanner();
           return;
         }
         batchQueue.forEach((item, index) => {
@@ -1496,6 +1509,7 @@
             errors: null,
           };
         });
+        updateBatchResumeBanner();
       }
 
       function addPayloadToBatch(entry) {
@@ -1724,6 +1738,7 @@
         }
         loadBatchFromStorage();
         renderBatchQueue();
+        updateBatchResumeBanner();
       }
 
       setPendingReviewVisibility(false);
@@ -2700,6 +2715,23 @@
         }
       }
 
+      function updateBatchResumeBanner() {
+        if (!batchResumeBanner) {
+          return;
+        }
+        const count = batchQueue.length;
+        if (count && !batchSubmissionInFlight) {
+          if (batchResumeCount) {
+            batchResumeCount.textContent = count === 1 ? '1' : String(count);
+          }
+          batchResumeBanner.hidden = false;
+          batchResumeBanner.setAttribute('aria-hidden', 'false');
+        } else {
+          batchResumeBanner.hidden = true;
+          batchResumeBanner.setAttribute('aria-hidden', 'true');
+        }
+      }
+
       customFieldsContainer.addEventListener('click', (event) => {
         const button = event.target.closest('[data-action="remove"]');
         if (!button) return;
@@ -2874,8 +2906,15 @@
       loadPendingOverview();
       autoAssignId({ force: true });
 
-      window.addEventListener('beforeunload', () => {
+      window.addEventListener('beforeunload', (event) => {
         saveDraftToStorage();
+        if (batchQueue.length && !batchSubmissionInFlight) {
+          const message = 'You still have staged nets that have not been submitted.';
+          event.preventDefault();
+          event.returnValue = message;
+          return message;
+        }
+        return undefined;
       });
 
       if (draftRestoreBtn) {
@@ -3119,6 +3158,25 @@
             event.preventDefault();
             closeBatchModal();
           }
+        });
+      }
+
+      if (batchResumeBtn) {
+        batchResumeBtn.addEventListener('click', () => {
+          if (batchControls && typeof batchControls.scrollIntoView === 'function') {
+            batchControls.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+          if (submitBatchBtn && !submitBatchBtn.disabled) {
+            setTimeout(() => submitBatchBtn.focus({ preventScroll: true }), 300);
+          } else if (clearBatchBtn && !clearBatchBtn.disabled) {
+            setTimeout(() => clearBatchBtn.focus({ preventScroll: true }), 300);
+          }
+        });
+      }
+
+      if (batchDiscardBtn) {
+        batchDiscardBtn.addEventListener('click', () => {
+          clearBatch();
         });
       }
 
@@ -3802,6 +3860,7 @@
         if (pendingReviewSection) {
           pendingReviewSection.hidden = !pendingReviewVisible;
         }
+        updateBatchResumeBanner();
       }
 
       async function promotePending(key) {
