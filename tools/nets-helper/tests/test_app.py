@@ -136,7 +136,8 @@ def test_promote_pending_file_replaces_nets_file(sample_repo):
 
     result = nets_app.promote_pending_file(key, sample_repo["root"], sample_repo["nets_file"], current_user="publisher")
 
-    assert result["message"] == "Pending file promoted"
+    assert f"published to {sample_repo['nets_file'].name}" in result["message"]
+    assert result["active_source"] == "nets"
     nets_data = json.loads(sample_repo["nets_file"].read_text(encoding="utf-8"))
     assert any(net["id"] == "echo-net" for net in nets_data["nets"])
 
@@ -166,6 +167,9 @@ def test_api_save_and_promote_flow(client, sample_repo):
     assert body["net_id"] == "foxtrot-net"
     assert body["submitted_by"] == "reviewer"
     assert body["submission_note"] == "QA check"
+    assert body["active_source"].startswith("pending:")
+    assert body["pending_key"] == body["active_source"]
+    assert body["pending_name"].startswith("nets.pending.")
 
     pending_response = client.get("/api/pending")
     assert pending_response.status_code == 200
@@ -192,6 +196,8 @@ def test_api_save_and_promote_flow(client, sample_repo):
     result = promote_response.get_json()
     assert result["promoted"]
     assert result["user"] == "publisher"
+    assert result["active_source"] == "nets"
+    assert "published to" in result["message"]
 
     nets_data = json.loads(sample_repo["nets_file"].read_text(encoding="utf-8"))
     assert any(net["id"] == "foxtrot-net" for net in nets_data["nets"])
@@ -229,6 +235,8 @@ def test_api_promote_commit_flow(client, sample_repo):
     body = promote_response.get_json()
     assert body["commit"]["hash"]
     assert body["commit"]["message"].startswith("Publish nets helper")
+    assert body["active_source"] == "nets"
+    assert "published to" in body["message"]
 
     nets_data = json.loads(sample_repo["nets_file"].read_text(encoding="utf-8"))
     assert any(net["id"] == "golf-net" for net in nets_data["nets"])
@@ -277,3 +285,109 @@ def test_public_suggest_creates_pending(client, sample_repo):
     assert meta["submitted_via"] == "public_form"
     assert meta["contact_email"] == "alice@example.com"
     assert "Zoom" in meta.get("note", "")
+
+
+def test_api_batch_submit_success(client, sample_repo):
+    payload = {
+        "nets": [
+            {
+                "id": "bravo-net",
+                "category": "bhn",
+                "name": "Bravo Net",
+                "description": "Bravo description.",
+                "start_local": "12:00",
+                "duration_min": "45",
+                "rrule": "FREQ=WEEKLY;BYDAY=TU",
+                "time_zone": "America/New_York",
+                "mode": "add",
+            },
+            {
+                "id": "alpha-net",
+                "category": "bhn",
+                "name": "Alpha Net Updated",
+                "description": "Updated description.",
+                "start_local": "10:30",
+                "duration_min": "60",
+                "rrule": "FREQ=WEEKLY;BYDAY=MO",
+                "time_zone": "America/New_York",
+                "mode": "edit",
+                "original_id": "alpha-net",
+            },
+        ],
+        "note": "Batch note",
+    }
+
+    response = client.post("/api/batch/submit", json=payload, headers={"X-Forwarded-User": "reviewer"})
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["count"] == 2
+    assert body["pending_key"].startswith("pending:nets.pending.")
+    assert body["submitted_by"] == "reviewer"
+
+    pending_entries = nets_app.list_pending_files(sample_repo["root"])
+    assert len(pending_entries) == 1
+    pending_path = Path(pending_entries[0]["path"])
+    data = json.loads(pending_path.read_text(encoding="utf-8"))
+    ids = {net["id"] for net in data["nets"]}
+    assert "alpha-net" in ids
+    assert "bravo-net" in ids
+    for net in data["nets"]:
+        if net["id"] == "alpha-net":
+            assert net["name"] == "Alpha Net Updated"
+            assert net["description"] == "Updated description."
+            assert net["start_local"] == "10:30"
+        if net["id"] == "bravo-net":
+            assert net["description"] == "Bravo description."
+
+    meta = nets_app.load_pending_metadata(nets_app.pending_metadata_path(pending_path))
+    assert meta["submitted_by"] == "reviewer"
+    assert meta["batch_size"] == 2
+    assert meta["note"] == "Batch note"
+    assert meta["batch"] is True
+
+
+def test_api_batch_submit_validation_error(client, sample_repo):
+    payload = {
+        "nets": [
+            {
+                "id": "invalid-net",
+                "category": "bhn",
+                "name": "",
+                "description": "Missing name.",
+                "start_local": "09:00",
+                "duration_min": "30",
+                "rrule": "FREQ=WEEKLY;BYDAY=FR",
+                "time_zone": "America/New_York",
+                "mode": "add",
+            }
+        ]
+    }
+
+    response = client.post("/api/batch/submit", json=payload, headers={"X-Forwarded-User": "reviewer"})
+    assert response.status_code == 400
+    body = response.get_json()
+    assert "errors" in body
+    assert "0" in body["errors"]
+    assert "name" in body["errors"]["0"]
+    assert not list(sample_repo["pending_dir"].glob("nets.pending.*.json"))
+
+
+def test_api_batch_submit_requires_role(client, sample_repo):
+    payload = {
+        "nets": [
+            {
+                "id": "bravo-net",
+                "category": "bhn",
+                "name": "Bravo Net",
+                "description": "Bravo description.",
+                "start_local": "12:00",
+                "duration_min": "45",
+                "rrule": "FREQ=WEEKLY;BYDAY=TU",
+                "time_zone": "America/New_York",
+                "mode": "add",
+            }
+        ]
+    }
+
+    response = client.post("/api/batch/submit", json=payload)
+    assert response.status_code == 403

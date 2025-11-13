@@ -5,19 +5,22 @@ from __future__ import annotations
 
 import os
 import re
-from collections import OrderedDict
-from datetime import datetime, timezone
 import json
 import hashlib
 import shutil
 import subprocess
 import threading
 import unicodedata
+import textwrap
+import urllib.error
+import urllib.request
+from collections import OrderedDict
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import yaml
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, jsonify, render_template, request
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -418,8 +421,80 @@ def create_app() -> Flask:
         "reviewers": [str(user) for user in sorted(roles_data.get("reviewers", []))],
     }
 
+    def queue_ntfy_notification(title: str, message: str, tags: Optional[List[str]] = None) -> None:
+        endpoint = app.config.get("NTFY_ENDPOINT", "")
+        topic = app.config.get("NTFY_TOPIC", "")
+        if not endpoint or not topic:
+            return
+
+        def _send():
+            url = f"{endpoint.rstrip('/')}/{topic.lstrip('/')}"
+            data = message.encode("utf-8")
+            req = urllib.request.Request(url, data=data, method="POST")
+            req.add_header("Title", title)
+            if tags:
+                req.add_header("Tags", ",".join(tags))
+            token = app.config.get("NTFY_TOKEN")
+            if token:
+                req.add_header("Authorization", f"Bearer {token}")
+            try:
+                with urllib.request.urlopen(req, timeout=5):
+                    pass
+            except Exception:
+                # Ignore notification failures
+                return
+
+        threading.Thread(target=_send, daemon=True).start()
+
     @app.get("/")
     def index():
+        base_path = app.config.get("BASE_PATH", "/nets-helper").strip() or "/nets-helper"
+        if not base_path.startswith("/"):
+            base_path = f"/{base_path}"
+        base_path = base_path.rstrip("/") or "/"
+        redirect_location = base_path if base_path.endswith("/") else f"{base_path}/"
+        cookie_path = base_path or "/"
+
+        if request.cookies.get("bhn_logout") == "1":
+            response = app.make_response(("", 302))
+            response.headers["Location"] = redirect_location
+            response.delete_cookie("bhn_logout", path=cookie_path)
+            return response
+
+        if request.args.get("logout") == "1":
+            html = textwrap.dedent(
+                f"""
+                <!doctype html>
+                <html lang="en">
+                  <head>
+                    <meta charset="utf-8">
+                    <title>Signed out</title>
+                    <style>
+                      body {{ font-family: system-ui, -apple-system, Segoe UI, sans-serif; max-width: 36rem; margin: 6rem auto; padding: 2rem; line-height: 1.5; }}
+                      h1 {{ margin-top: 0; }}
+                      a {{ color: #1d4fa0; }}
+                      .hint {{ color: #374151; font-size: 0.95rem; margin-top: 1rem; }}
+                    </style>
+                  </head>
+                  <body>
+                    <h1>You are signed out</h1>
+                    <p>Your browser will ask for credentials again when you reopen the helper. You can <a href="{redirect_location}">return to the sign-in page</a> now.</p>
+                    <p class="hint">When prompted, enter the username and password you’d like to use next.</p>
+                  </body>
+                </html>
+                """
+            )
+            response = app.make_response((html, 401))
+            response.headers["WWW-Authenticate"] = 'Basic realm="Blind Hams Nets Helper"'
+            response.set_cookie(
+                "bhn_logout",
+                "1",
+                max_age=30,
+                path=cookie_path,
+                secure=True,
+                httponly=True,
+            )
+            return response
         source_key = request.args.get("source")
         current_user = get_current_user(app)
         context = load_context(app.config, source_key, current_user)
@@ -473,12 +548,16 @@ def create_app() -> Flask:
             message = str(exc)
             return jsonify({"errors": {"conflict": message, "original_id": message}}), 409
 
+        pending_key = f"pending:{pending_path.name}"
+
         return jsonify(
             {
-                "message": "Pending file created",
+                "message": "Draft saved for review.",
                 "pending_path": str(pending_path),
+                "pending_key": pending_key,
+                "pending_name": pending_path.name,
                 "snippet": snippet,
-                "active_source": context["active_source_key"],
+                "active_source": pending_key,
                 "mode": mode,
                 "net_id": normalized["id"],
                 "original_id": original_id,
@@ -486,6 +565,113 @@ def create_app() -> Flask:
                 "submission_note": submission_note,
             }
         )
+
+    @app.post("/api/batch/submit")
+    def api_batch_submit():
+        payload = request.get_json(force=True, silent=True) or {}
+        nets_payload = payload.get("nets")
+        if not isinstance(nets_payload, list) or not nets_payload:
+            return jsonify({"error": "Submit at least one net in the batch."}), 400
+
+        current_user = get_current_user(app)
+        context = load_context(app.config, "nets", current_user)
+        if not context["permissions"].get("can_review"):
+            return jsonify({"error": "You do not have permission to submit drafts."}), 403
+
+        default_time_zone = context["default_time_zone"]
+        accumulated_errors: Dict[str, Dict[str, str]] = {}
+        normalized_records: List[Dict[str, Any]] = []
+        dynamic_ids: List[str] = list(context["existing_ids"])
+
+        for idx, raw in enumerate(nets_payload):
+            if not isinstance(raw, dict):
+                accumulated_errors[str(idx)] = {"general": "Invalid net payload."}
+                continue
+            mode = (raw.get("mode") or "add").strip().lower()
+            if mode not in {"add", "edit"}:
+                accumulated_errors[str(idx)] = {"mode": "Only add or edit changes are supported in batch submissions."}
+                continue
+
+            record, errors = normalize_submission(raw, dynamic_ids, default_time_zone)
+            if errors:
+                accumulated_errors[str(idx)] = errors
+                continue
+
+            original_id = str(record.get("original_id") or "").strip()
+            if record["mode"] == "edit" and not original_id:
+                accumulated_errors[str(idx)] = {"original_id": "original_id is required for edit operations."}
+                continue
+
+            normalized_records.append(record)
+
+            if original_id:
+                dynamic_ids = [existing for existing in dynamic_ids if existing.lower() != original_id.lower()]
+            dynamic_ids.append(record["id"])
+
+        if accumulated_errors:
+            return jsonify({"errors": accumulated_errors}), 400
+        if not normalized_records:
+            return jsonify({"error": "No valid changes were provided."}), 400
+
+        changes = []
+        for record in normalized_records:
+            net_entry = record_to_entry(record)
+            changes.append(
+                {
+                    "entry": net_entry,
+                    "mode": record.get("mode", "add"),
+                    "original_id": record.get("original_id", ""),
+                }
+            )
+
+        submission_note = sanitize_optional(payload.get("note"))
+        metadata_payload = {
+            "batch_size": len(changes),
+        }
+        if submission_note:
+            metadata_payload["note"] = submission_note
+        pending_path = write_pending_batch(
+            changes,
+            app.config["NETS_FILE"],
+            app.config["OUTPUT_DIR"],
+            source_file=app.config["NETS_FILE"],
+            current_user=current_user,
+            metadata=metadata_payload,
+        )
+
+        pending_key = f"pending:{pending_path.name}"
+        response_payload = {
+            "message": f"Batch submitted with {len(changes)} change(s).",
+            "pending_key": pending_key,
+            "pending_name": pending_path.name,
+            "active_source": pending_key,
+            "count": len(changes),
+            "note": submission_note,
+            "submitted_by": current_user or "",
+        }
+
+        summary_lines = [
+            f"Submitted by: {current_user or 'unknown'}",
+            f"Changes: {len(changes)}",
+        ]
+        if submission_note:
+            summary_lines.append(f"Note: {submission_note}")
+        for change in changes[:5]:
+            entry = change.get("entry", {})
+            change_id = entry.get("id") or "(no id)"
+            change_name = entry.get("name") or ""
+            mode = change.get("mode", "add")
+            label = f"{change_id} — {change_name}" if change_name else change_id
+            summary_lines.append(f"- {mode}: {label}")
+        if len(changes) > 5:
+            summary_lines.append("…")
+        queue_ntfy_notification(
+            "Batch submitted",
+            "\n".join(summary_lines),
+            tags=["inbox"],
+        )
+
+        return jsonify(response_payload)
 
     @app.get("/api/pending")
     def api_pending():
@@ -514,11 +700,11 @@ def create_app() -> Flask:
         elif mode == "single":
             key = payload.get("key")
             if not isinstance(key, str):
-                return jsonify({"error": "Specify which pending file to delete."}), 400
+                return jsonify({"error": "Specify which draft to delete."}), 400
             try:
                 deleted = delete_single_pending(output_dir, key)
             except FileNotFoundError:
-                return jsonify({"error": "Pending file not found."}), 404
+                return jsonify({"error": "Draft not found."}), 404
         else:
             return jsonify({"error": "Unsupported delete mode."}), 400
 
@@ -528,12 +714,12 @@ def create_app() -> Flask:
     def api_pending_promote():
         current_user = get_current_user(app)
         if not user_can_promote(app.config["ROLES_DATA"], current_user):
-            return jsonify({"error": "You do not have permission to promote pending files."}), 403
+            return jsonify({"error": "You do not have permission to publish drafts."}), 403
 
         payload = request.get_json(force=True, silent=True) or {}
         key = payload.get("key")
         if not isinstance(key, str):
-            return jsonify({"error": "Specify which pending file to promote."}), 400
+            return jsonify({"error": "Specify which draft to publish."}), 400
 
         try:
             result = promote_pending_file(
@@ -543,22 +729,28 @@ def create_app() -> Flask:
                 current_user=current_user,
             )
         except FileNotFoundError:
-            return jsonify({"error": "Pending file not found."}), 404
+            return jsonify({"error": "Draft not found."}), 404
         except ValueError as exc:
             return jsonify({"error": str(exc)}), 400
 
-        return jsonify(result)
+        response_payload = result
+        queue_ntfy_notification(
+            "Draft published",
+            f"Published by: {current_user or 'unknown'}\nDraft: {result.get('promoted', '')}",
+            tags=["checkered_flag"],
+        )
+        return jsonify(response_payload)
 
     @app.post("/api/pending/promote_commit")
     def api_pending_promote_commit():
         current_user = get_current_user(app)
         if not user_can_promote(app.config["ROLES_DATA"], current_user):
-            return jsonify({"error": "You do not have permission to promote pending files."}), 403
+            return jsonify({"error": "You do not have permission to publish drafts."}), 403
 
         payload = request.get_json(force=True, silent=True) or {}
         key = payload.get("key")
         if not isinstance(key, str):
-            return jsonify({"error": "Specify which pending file to promote."}), 400
+            return jsonify({"error": "Specify which draft to publish."}), 400
 
         output_dir: Path = app.config["OUTPUT_DIR"]
         nets_file: Path = app.config["NETS_FILE"]
@@ -570,11 +762,11 @@ def create_app() -> Flask:
         pending_entries = list_pending_files(output_dir)
         pending_lookup = {entry["key"]: entry for entry in pending_entries}
         if key not in pending_lookup:
-            return jsonify({"error": "Pending file not found."}), 404
+            return jsonify({"error": "Draft not found."}), 404
 
         summary_list = summarize_pending_files([pending_lookup[key]], nets_file)
         if not summary_list:
-            return jsonify({"error": "Unable to summarize pending file."}), 400
+            return jsonify({"error": "Unable to summarize draft."}), 400
         summary_entry = summary_list[0]
 
         try:
@@ -585,7 +777,7 @@ def create_app() -> Flask:
                 current_user=current_user,
             )
         except FileNotFoundError:
-            return jsonify({"error": "Pending file not found."}), 404
+            return jsonify({"error": "Draft not found."}), 404
         except ValueError as exc:
             return jsonify({"error": str(exc)}), 400
 
@@ -603,13 +795,38 @@ def create_app() -> Flask:
             git_stage_paths(repo_root, paths_to_stage)
             if not git_has_staged_changes(repo_root):
                 run_git_command(repo_root, ["reset"])
-                return jsonify({
-                    "message": "Pending file promoted but no changes detected for commit.",
+                response_payload = {
+                    "message": "Draft published but no changes detected for commit.",
                     "promoted": promote_result.get("promoted", ""),
                     "backup": promote_result.get("backup", ""),
                     "changes": summary_entry.get("changes", []),
                     "stats": summary_entry.get("stats", {}),
-                })
+                }
+                publish_lines = [
+                    f"Published by: {current_user or 'unknown'}",
+                    f"Draft: {promote_result.get('promoted', '')}",
+                    "Commit: (skipped — no changes detected)",
+                ]
+                stats = summary_entry.get("stats", {}) or {}
+                publish_lines.append(
+                    f"Stats: added {stats.get('added', 0)}, updated {stats.get('updated', 0)}, removed {stats.get('removed', 0)}"
+                )
+                note = summary_entry.get("note")
+                if note:
+                    publish_lines.append(f"Note: {note}")
+                for change in summary_entry.get("changes", [])[:5]:
+                    change_id = change.get("id") or "(no id)"
+                    change_name = change.get("name") or ""
+                    label = f"{change_id} — {change_name}" if change_name else change_id
+                    publish_lines.append(f"- {change.get('type', 'updated')}: {label}")
+                if len(summary_entry.get("changes", [])) > 5:
+                    publish_lines.append("…")
+                queue_ntfy_notification(
+                    "Draft published",
+                    "\n".join(publish_lines),
+                    tags=["checkered_flag"],
+                )
+                return jsonify(response_payload)
 
             commit_msg = payload.get("commit_message")
             if not isinstance(commit_msg, str) or not commit_msg.strip():
@@ -637,23 +854,49 @@ def create_app() -> Flask:
                 pass
             return jsonify({"error": str(exc)}), 500
 
-        return jsonify(
-            {
-                "message": "Pending file promoted and committed.",
-                "promoted": promote_result.get("promoted", ""),
-                "backup": promote_result.get("backup", ""),
-                "changes": summary_entry.get("changes", []),
-                "stats": summary_entry.get("stats", {}),
-                "commit": {
-                    "hash": commit_hash,
-                    "short_hash": commit_hash[:7],
-                    "message": commit_msg.strip(),
-                    "branch": branch_name,
-                    "pushed": push_status.get("pushed", False),
-                    "push_message": push_status.get("message", ""),
-                },
-            }
+        response_payload = {
+            "message": promote_result.get("message", "Draft published."),
+            "promoted": promote_result.get("promoted", ""),
+            "backup": promote_result.get("backup", ""),
+            "changes": summary_entry.get("changes", []),
+            "stats": summary_entry.get("stats", {}),
+            "active_source": promote_result.get("active_source", "nets"),
+            "commit": {
+                "hash": commit_hash,
+                "short_hash": commit_hash[:7],
+                "message": commit_msg.strip(),
+                "branch": branch_name,
+                "pushed": push_status.get("pushed", False),
+                "push_message": push_status.get("message", ""),
+            },
+        }
+        publish_lines = [
+            f"Published by: {current_user or 'unknown'}",
+            f"Draft: {promote_result.get('promoted', '')}",
+            f"Commit: {commit_hash[:7]} on {branch_name}",
+        ]
+        stats = summary_entry.get("stats", {}) or {}
+        publish_lines.append(
+            f"Stats: added {stats.get('added', 0)}, updated {stats.get('updated', 0)}, removed {stats.get('removed', 0)}"
         )
+        note = summary_entry.get("note")
+        if note:
+            publish_lines.append(f"Note: {note}")
+        for change in summary_entry.get("changes", [])[:5]:
+            change_id = change.get("id") or "(no id)"
+            change_name = change.get("name") or ""
+            label = f"{change_id} — {change_name}" if change_name else change_id
+            publish_lines.append(f"- {change.get('type', 'updated')}: {label}")
+        if len(summary_entry.get("changes", [])) > 5:
+            publish_lines.append("…")
+        if push_status.get("push_message"):
+            publish_lines.append(push_status["push_message"])
+        queue_ntfy_notification(
+            "Draft published",
+            "\n".join(publish_lines),
+            tags=["checkered_flag"],
+        )
+        return jsonify(response_payload)
 
     @app.post("/api/public/suggest")
     def api_public_suggest():
@@ -874,6 +1117,10 @@ def load_config() -> Dict[str, Path]:
         "GIT_REMOTE": os.environ.get("BHN_NETS_REMOTE", "origin"),
         "GIT_BRANCH": os.environ.get("BHN_NETS_BRANCH", ""),
         "AUTO_PUSH": auto_push,
+        "BASE_PATH": (os.environ.get("BHN_NETS_BASE_PATH", "/nets-helper").strip() or "/nets-helper"),
+        "NTFY_ENDPOINT": os.environ.get("BHN_NTFY_ENDPOINT", "").strip(),
+        "NTFY_TOPIC": os.environ.get("BHN_NTFY_TOPIC", "").strip(),
+        "NTFY_TOKEN": os.environ.get("BHN_NTFY_TOKEN", "").strip(),
     }
 
 
@@ -886,15 +1133,11 @@ def load_context(config: Dict, source_key: Optional[str] = None, current_user: O
     for entry in pending_files:
         source_map[entry["key"]] = Path(entry["path"])
 
+    working_file = nets_file
+    active_source_key = "nets"
     if source_key and source_key in source_map:
         working_file = source_map[source_key]
         active_source_key = source_key
-    elif pending_file:
-        working_file = pending_file
-        active_source_key = f"pending:{pending_file.name}"
-    else:
-        working_file = nets_file
-        active_source_key = "nets"
     default_time_zone = "America/New_York"
     categories: List[str] = []
     existing_ids: List[str] = []
@@ -1224,33 +1467,17 @@ def build_json_preview(entry: Dict[str, Any]) -> str:
     return json.dumps(entry, ensure_ascii=False, indent=2)
 
 
-def write_pending_file(
-    net_entry: Dict[str, Any],
+def _apply_net_change(
+    nets: List[Dict[str, Any]],
+    change_entry: Dict[str, Any],
     nets_file: Path,
-    output_dir: Path,
-    source_file: Optional[Path] = None,
-    mode: str = "add",
+    *,
+    mode: str,
     original_id: str = "",
     expected_hash: Optional[str] = "",
-    current_user: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None,
-) -> Path:
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    pending_dir = output_dir / "pending"
-    pending_dir.mkdir(parents=True, exist_ok=True)
-    pending_name = f"nets.pending.{timestamp}.json"
-    pending_path = pending_dir / pending_name
-
-    base_file = source_file or nets_file
-    payload = load_nets_payload(base_file)
-    nets = []
-    for entry in payload.get("nets", []) or []:
-        if isinstance(entry, dict):
-            nets.append(entry.copy())
-        else:
-            nets.append(entry)
-
-    normalized_entry = normalize_net_entry(net_entry)
+    canonical_cache: Optional[List[Dict[str, Any]]] = None,
+) -> List[Dict[str, Any]]:
+    normalized_entry = normalize_net_entry(change_entry)
     mode = (mode or "add").strip().lower()
     if mode == "edit":
         if not original_id:
@@ -1269,10 +1496,10 @@ def write_pending_file(
                 index = idx
                 break
         if index == -1:
-            # Attempt to pull from canonical file so editors can recover even if the working snapshot is stale.
-            canonical_payload = load_nets_payload(nets_file)
-            canonical_nets = canonical_payload.get("nets", []) or []
-            for candidate in canonical_nets:
+            if canonical_cache is None:
+                canonical_payload = load_nets_payload(nets_file)
+                canonical_cache = canonical_payload.get("nets", []) or []
+            for candidate in canonical_cache:
                 if not isinstance(candidate, dict):
                     continue
                 raw_id = str(candidate.get("id") or "").strip()
@@ -1295,6 +1522,52 @@ def write_pending_file(
         nets[index] = normalized_entry
     else:
         nets.append(normalized_entry)
+    return canonical_cache
+
+
+def write_pending_snapshot(
+    changes: Iterable[Dict[str, Any]],
+    nets_file: Path,
+    output_dir: Path,
+    source_file: Optional[Path] = None,
+    current_user: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> Path:
+    changes_list = list(changes)
+    if not changes_list:
+        raise ValueError("No changes provided.")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    pending_dir = output_dir / "pending"
+    pending_dir.mkdir(parents=True, exist_ok=True)
+    pending_name = f"nets.pending.{timestamp}.json"
+    pending_path = pending_dir / pending_name
+
+    base_file = source_file or nets_file
+    payload = load_nets_payload(base_file)
+    nets = []
+    for entry in payload.get("nets", []) or []:
+        if isinstance(entry, dict):
+            nets.append(entry.copy())
+        else:
+            nets.append(entry)
+
+    canonical_cache: Optional[List[Dict[str, Any]]] = None
+    for change in changes_list:
+        entry_data = change.get("entry")
+        if not isinstance(entry_data, dict):
+            raise ValueError("Change entry must be a dictionary.")
+        change_mode = (change.get("mode") or "add").strip().lower()
+        original_id = str(change.get("original_id") or "").strip()
+        expected_hash = str(change.get("expected_hash") or "").strip()
+        canonical_cache = _apply_net_change(
+            nets,
+            entry_data,
+            nets_file,
+            mode=change_mode,
+            original_id=original_id,
+            expected_hash=expected_hash,
+            canonical_cache=canonical_cache,
+        )
 
     payload["nets"] = nets
     save_nets_payload(pending_path, payload)
@@ -1302,10 +1575,7 @@ def write_pending_file(
     metadata_payload: Dict[str, Any] = {
         "submitted_by": (current_user or ""),
         "submitted_at": datetime.now(timezone.utc).isoformat(),
-        "mode": mode,
     }
-    if original_id:
-        metadata_payload["original_id"] = original_id
     if metadata:
         for key, value in metadata.items():
             if value in (None, "", []):
@@ -1316,6 +1586,63 @@ def write_pending_file(
     write_pending_metadata(meta_path, metadata_payload)
 
     return pending_path
+
+
+def write_pending_file(
+    net_entry: Dict[str, Any],
+    nets_file: Path,
+    output_dir: Path,
+    source_file: Optional[Path] = None,
+    mode: str = "add",
+    original_id: str = "",
+    expected_hash: Optional[str] = "",
+    current_user: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> Path:
+    change = {
+        "entry": net_entry,
+        "mode": mode,
+        "original_id": original_id,
+        "expected_hash": expected_hash or "",
+    }
+    metadata_payload = {
+        "mode": (mode or "add").strip().lower(),
+    }
+    if original_id:
+        metadata_payload["original_id"] = original_id
+    if metadata:
+        metadata_payload.update(metadata)
+    return write_pending_snapshot(
+        [change],
+        nets_file,
+        output_dir,
+        source_file=source_file,
+        current_user=current_user,
+        metadata=metadata_payload,
+    )
+
+
+def write_pending_batch(
+    changes: Iterable[Dict[str, Any]],
+    nets_file: Path,
+    output_dir: Path,
+    source_file: Optional[Path] = None,
+    current_user: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> Path:
+    metadata_payload = {
+        "batch": True,
+    }
+    if metadata:
+        metadata_payload.update(metadata)
+    return write_pending_snapshot(
+        changes,
+        nets_file,
+        output_dir,
+        source_file=source_file,
+        current_user=current_user,
+        metadata=metadata_payload,
+    )
 
 
 def load_nets_map(path: Optional[Path]) -> Dict[str, Dict[str, Any]]:
@@ -1348,6 +1675,71 @@ def net_signature(net: Dict[str, Any]) -> str:
         return json.dumps(sanitized, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
+def _ordered_field_keys(*nets: Dict[str, Any]) -> List[str]:
+    """Return a stable list of field keys present in either net."""
+    seen: List[str] = []
+
+    def add_key(candidate: str) -> None:
+        if candidate and candidate not in seen:
+            seen.append(candidate)
+
+    ordered_candidates = list(BASE_FIELD_KEYS) + list(OPTIONAL_FIELD_KEYS)
+    for key in ordered_candidates:
+        for net in nets:
+            if isinstance(net, dict) and key in net:
+                add_key(key)
+                break
+
+    for net in nets:
+        if not isinstance(net, dict):
+            continue
+        for key in net.keys():
+            add_key(key)
+
+    return seen
+
+
+def _format_diff_value(value: Any) -> str:
+    if value in (None, ""):
+        return ""
+    if isinstance(value, (list, dict)):
+        try:
+            return json.dumps(value, ensure_ascii=False, sort_keys=True)
+        except TypeError:
+            return str(value)
+    return str(value)
+
+
+def compute_field_diffs(before: Optional[Dict[str, Any]], after: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Return per-field differences between two net entries."""
+    keys = _ordered_field_keys(before or {}, after or {})
+    diffs: List[Dict[str, Any]] = []
+    for key in keys:
+        prev_value = (before or {}).get(key)
+        next_value = (after or {}).get(key)
+        if before is None:
+            if next_value in (None, "", [], {}):
+                continue
+            status = "added"
+        elif after is None:
+            if prev_value in (None, "", [], {}):
+                continue
+            status = "removed"
+        else:
+            if prev_value == next_value:
+                continue
+            status = "changed"
+        diffs.append(
+            {
+                "field": key,
+                "before": _format_diff_value(prev_value),
+                "after": _format_diff_value(next_value),
+                "status": status,
+            }
+        )
+    return diffs
+
+
 def summarize_pending_files(pending_entries: List[Dict[str, str]], canonical_file: Path) -> List[Dict[str, Any]]:
     canonical_map = load_nets_map(canonical_file)
     canonical_signatures = {key: net_signature(net) for key, net in canonical_map.items()}
@@ -1359,7 +1751,7 @@ def summarize_pending_files(pending_entries: List[Dict[str, str]], canonical_fil
         pending_signatures = {key: net_signature(net) for key, net in pending_map.items()}
 
         stats = {"added": 0, "updated": 0, "removed": 0, "unchanged": 0}
-        changes: List[Dict[str, str]] = []
+        changes: List[Dict[str, Any]] = []
 
         seen = set()
         for key, net in pending_map.items():
@@ -1369,11 +1761,37 @@ def summarize_pending_files(pending_entries: List[Dict[str, str]], canonical_fil
             canonical_net = canonical_map.get(key)
             if not canonical_net:
                 stats["added"] += 1
-                changes.append({"id": display_id, "name": display_name, "type": "added"})
+                field_diffs = compute_field_diffs(None, net)
+                changes.append(
+                    {
+                        "id": display_id,
+                        "name": display_name,
+                        "type": "added",
+                        "load_id": display_id,
+                        "category": str(net.get("category") or ""),
+                        "start_local": str(net.get("start_local") or ""),
+                        "time_zone": str(net.get("time_zone") or ""),
+                        "field_diffs": field_diffs,
+                        "field_summary": [diff["field"] for diff in field_diffs],
+                    }
+                )
             else:
                 if pending_signatures[key] != canonical_signatures.get(key):
                     stats["updated"] += 1
-                    changes.append({"id": display_id, "name": display_name, "type": "updated"})
+                    field_diffs = compute_field_diffs(canonical_net, net)
+                    changes.append(
+                        {
+                            "id": display_id,
+                            "name": display_name,
+                            "type": "updated",
+                            "load_id": display_id,
+                            "category": str(net.get("category") or ""),
+                            "start_local": str(net.get("start_local") or ""),
+                            "time_zone": str(net.get("time_zone") or ""),
+                            "field_diffs": field_diffs,
+                            "field_summary": [diff["field"] for diff in field_diffs],
+                        }
+                    )
                 else:
                     stats["unchanged"] += 1
 
@@ -1381,16 +1799,23 @@ def summarize_pending_files(pending_entries: List[Dict[str, str]], canonical_fil
             if key in pending_map:
                 continue
             stats["removed"] += 1
+            field_diffs = compute_field_diffs(canonical_net, None)
             changes.append(
                 {
                     "id": str(canonical_net.get("id") or ""),
                     "name": str(canonical_net.get("name") or ""),
                     "type": "removed",
+                    "load_id": "",
+                    "category": str(canonical_net.get("category") or ""),
+                    "start_local": str(canonical_net.get("start_local") or ""),
+                    "time_zone": str(canonical_net.get("time_zone") or ""),
+                    "field_diffs": field_diffs,
+                    "field_summary": [diff["field"] for diff in field_diffs],
                 }
             )
 
         stats["total"] = len(pending_map)
-        stats["changed"] = len([c for c in changes if c["type"] != "unchanged"])
+        stats["changed"] = stats["added"] + stats["updated"] + stats["removed"]
 
         summary_entry = {
             "key": entry["key"],
@@ -1434,10 +1859,11 @@ def promote_pending_file(key: str, output_dir: Path, nets_file: Path, current_us
     remove_pending_metadata(pending_path)
 
     return {
-        "message": "Pending file promoted",
+        "message": f"{pending_entry['name']} published to {nets_file.name}.",
         "promoted": pending_entry["name"],
         "backup": str(backup_path) if backup_path.exists() else "",
         "user": current_user,
+        "active_source": "nets",
     }
 
 

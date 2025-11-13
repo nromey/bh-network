@@ -154,6 +154,36 @@
         gap: 0.4rem;
         margin: 0;
       }
+      .monthly-setpos-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+      #optionalFields summary {
+        cursor: pointer;
+        outline: none;
+      }
+      #optionalFields summary::-webkit-details-marker {
+        display: none;
+      }
+      #optionalFields[open] summary .section-heading:after {
+        content: " (expanded)";
+        font-size: 0.95rem;
+        color: #6b7280;
+      }
+      #optionalFields:not([open]) summary .section-heading:after {
+        content: " (collapsed)";
+        font-size: 0.95rem;
+        color: #6b7280;
+      }
+      .monthly-setpos-options label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-weight: 500;
+        margin: 0;
+      }
       .rrule-description {
         margin-top: 0.5rem;
         font-size: 0.95rem;
@@ -279,12 +309,49 @@
         color: #444;
         margin-bottom: 0.5rem;
       }
-      .pending-card ul {
+      .pending-change-list {
         margin: 0.5rem 0 0;
-        padding-left: 1.25rem;
+        padding-left: 0;
+        list-style: none;
+        display: grid;
+        gap: 0.75rem;
       }
-      .pending-card ul li {
+      .pending-change {
+        margin: 0;
+      }
+      .pending-change-head {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        font-weight: 600;
+      }
+      .pending-change-title {
+        flex: 1 1 auto;
+      }
+      .pending-change-open {
+        flex: 0 0 auto;
+      }
+      .pending-change-meta {
+        font-size: 0.9rem;
+        color: #374151;
+        margin-top: 0.25rem;
+      }
+      .pending-diff-list {
+        list-style: disc;
+        margin: 0.4rem 0 0.25rem 1.25rem;
+        padding-left: 0.5rem;
+      }
+      .pending-diff {
+        font-size: 0.95rem;
         margin-bottom: 0.25rem;
+      }
+      .pending-diff code {
+        font-size: 0.9rem;
+      }
+      .pending-diff-more {
+        font-size: 0.9rem;
+        color: #4b5563;
       }
       .pending-card .actions {
         display: flex;
@@ -311,6 +378,135 @@
       .pending-note-inline {
         font-size: 0.9rem;
         color: #374151;
+      }
+      .batch-controls {
+        border: 1px solid #9ca3af;
+        border-radius: 0.5rem;
+        padding: 1rem 1.25rem;
+        margin: 1.5rem 0;
+        background: rgba(17, 24, 39, 0.04);
+      }
+      .batch-controls h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.2rem;
+      }
+      .batch-summary {
+        margin: 0 0 0.75rem;
+        font-size: 0.95rem;
+        color: #374151;
+      }
+      .batch-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 0.75rem;
+      }
+      .batch-item {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.75rem 0.9rem;
+        background: #fff;
+      }
+      .batch-item-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 600;
+      }
+      .batch-item-mode {
+        font-size: 0.85rem;
+        padding: 0.1rem 0.6rem;
+        border-radius: 999px;
+        background: rgba(42, 106, 209, 0.15);
+        color: #1d4fa0;
+        font-weight: 600;
+      }
+     .batch-item-meta {
+       font-size: 0.9rem;
+       color: #4b5563;
+       margin-top: 0.25rem;
+     }
+      .batch-item-actions {
+        margin-top: 0.75rem;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .batch-item-error {
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        color: #b3261e;
+      }
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .modal-dialog {
+        background: #fff;
+        color: #111;
+        max-width: 32rem;
+        width: calc(100% - 2rem);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        box-shadow: 0 20px 40px rgba(17, 24, 39, 0.25);
+      }
+      .modal-dialog h2 {
+        margin-top: 0;
+        font-size: 1.35rem;
+      }
+      .modal-dialog textarea {
+        width: 100%;
+        min-height: 5rem;
+        margin-top: 0.5rem;
+      }
+      .modal-actions {
+        margin-top: 1.25rem;
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      .header-meta {
+        margin: 0.75rem 0 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1.25rem;
+        align-items: center;
+      }
+      .header-meta .signed-in {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #1f2937;
+      }
+      .logout-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.4rem 0.85rem;
+        border-radius: 0.4rem;
+        border: 1px solid #1d4fa0;
+        background: #2a6ad1;
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+      .logout-link:hover,
+      .logout-link:focus-visible {
+        background: #1d4fa0;
+        outline: none;
+      }
+      .pending-toggle {
+        margin: 0 0 1rem;
+      }
+      .pending-toggle button {
+        margin-top: 0.5rem;
       }
       button.secondary {
         background: #f3f4f6;
@@ -485,11 +681,17 @@
   <body>
     <header>
       <h1>Blind Hams Nets Helper</h1>
+      <div class="header-meta">
+        {% if pending_context.user %}
+        <p class="signed-in">Signed in as <strong>{{ pending_context.user }}</strong>{% if roles %} ({{ roles|join(', ') }}){% endif %}.</p>
+        {% endif %}
+        <a class="logout-link" href="?logout=1">Log out</a>
+      </div>
       <p>Welcome to the Net Helper — your accessible workspace for drafting nets that will appear on the Blind Hams Digital Network home page and nets listings.</p>
       <p>Fill in the form below to add nets to the queue. When you've reviewed your entries, save them and a webmaster can handle final edits, approvals, and publishing. If you spot anything that needs tweaking, just edit your draft before saving — no worries.</p>
       <p>Need to change details on a published net later on? No problem — updates will flow through the same review path so everything stays tidy and consistent.</p>
       <p class="hint">
-        Fields marked with <span aria-hidden="true">*</span><span class="sr-only">required</span> are required. Snapshot controls live near the bottom of the page if you need to review or switch files.
+        Fields marked with <span aria-hidden="true">*</span><span class="sr-only">required</span> are required. Draft controls live near the bottom of the page if you need to review or switch between saved work.
       </p>
     </header>
 
@@ -497,37 +699,37 @@
       <div id="srAnnounce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
       <section id="pendingStatus" class="pending-status" aria-live="polite">
-        <h2>Working snapshot</h2>
+        <h2>Draft queue</h2>
         {% if pending_context.has_pending %}
-        <p><strong>Unpublished nets were found.</strong> Keep appending to the latest pending file below, or switch to a different snapshot if you need to review older work.</p>
+        <p><strong>Drafts waiting for review.</strong> Keep building on the newest draft below, or switch to another draft if you need to revisit earlier work.</p>
         {% else %}
-        <p><strong>No pending files yet.</strong> The next save will create a fresh pending copy from <code>{{ canonical_file.name }}</code>.</p>
+        <p><strong>No drafts yet.</strong> The next save will create a fresh draft based on <code>{{ canonical_file.name }}</code>.</p>
         {% endif %}
         <div class="pending-actions">
-          <label for="sourcePicker"><span class="sr-only">Working snapshot</span></label>
-          <select id="sourcePicker" name="sourcePicker" aria-label="Select working snapshot">
+          <label for="sourcePicker"><span class="sr-only">Draft selector</span></label>
+          <select id="sourcePicker" name="sourcePicker" aria-label="Select draft or starting point">
             {% for option in source_options %}
             <option value="{{ option.key }}" data-is-pending="{{ 'true' if option.is_pending else 'false' }}" data-name="{{ option.name }}" {% if option.active %}selected{% endif %}>
               {{ option.label }}
             </option>
             {% endfor %}
           </select>
-          <button type="button" id="deleteSelected" class="danger" {% if not pending_context.has_pending %}disabled{% endif %}>Delete selected pending</button>
-          <button type="button" id="deleteAllPending" class="danger" {% if not pending_context.has_pending %}disabled{% endif %}>Delete all pending</button>
+          <button type="button" id="deleteSelected" class="danger" {% if not pending_context.has_pending %}disabled{% endif %}>Delete selected draft</button>
+          <button type="button" id="deleteAllPending" class="danger" {% if not pending_context.has_pending %}disabled{% endif %}>Delete all drafts</button>
         </div>
-        <p class="hint" id="currentSnapshot">Currently editing: <code>{{ working_file.name }}</code></p>
+        <p class="hint" id="currentSnapshot">Currently editing from <code>{{ working_file.name }}</code></p>
         <p class="hint" id="pendingStatusHint">
           {% if pending_context.has_pending %}
-          Default selection is the newest pending file. Pick another to review an older snapshot, or choose “Start fresh from {{ canonical_file.name }}” to begin a new list.
+          Default selection is your newest draft. Choose another to review older edits, or pick “Start fresh from {{ canonical_file.name }}” to begin a new list.
           {% else %}
-          Submissions will be based on {{ canonical_file.name }} until a pending copy exists.
+          New drafts start from {{ canonical_file.name }} until you create one.
           {% endif %}
-      </p>
-    </section>
+        </p>
+      </section>
 
       <section id="editControls" class="edit-controls" aria-labelledby="editControlsHeading">
         <h2 id="editControlsHeading">Edit an existing net</h2>
-        <p class="hint">Load a net from the current snapshot to update its details. Saving writes a pending file so a webmaster can review it before publishing.</p>
+        <p class="hint">Load a net from the current copy to update its details. Saving adds your changes to the draft queue for review before anything goes live.</p>
         <div class="search-group">
           <label for="netSearch">Filter by ID or name</label>
           <input type="text" id="netSearch" name="netSearch" placeholder="Type to filter…" aria-describedby="netSearchHint">
@@ -544,11 +746,17 @@
         </div>
       </section>
 
-      <section id="pendingReview" class="pending-review" aria-labelledby="pendingReviewHeading">
-        <h2 id="pendingReviewHeading">Pending submissions</h2>
-        <p class="hint" id="pendingReviewHint">Review queued changes before promoting them to the live nets file.</p>
+      <div class="pending-toggle">
+        <button type="button" class="secondary" id="pendingToggleBtn" aria-expanded="false" aria-controls="pendingReview">
+          Review drafts (none waiting)
+        </button>
+      </div>
+
+      <section id="pendingReview" class="pending-review" aria-labelledby="pendingReviewHeading" hidden>
+        <h2 id="pendingReviewHeading">Draft review queue</h2>
+        <p class="hint" id="pendingReviewHint">Review saved drafts and publish when they're ready to go live.</p>
         <div id="pendingList" class="pending-list" aria-live="polite" aria-busy="false">
-          <p class="pending-empty">Loading pending files…</p>
+          <p class="pending-empty">Loading drafts…</p>
         </div>
       </section>
 
@@ -578,7 +786,7 @@
           <legend>Net details</legend>
 
           <input type="hidden" id="id" name="id">
-          <p class="hint" id="idDisplay" aria-live="polite">ID will be generated from the net name.</p>
+          <p class="hint" id="idDisplay" aria-live="off">ID will be generated from the net name.</p>
 
           <div class="field-header">
             <label for="name">Net name <span aria-hidden="true">*</span></label>
@@ -724,15 +932,16 @@
                 </label>
               </div>
               <div id="monthlyWeekdayContainer" hidden>
-                <label for="monthlySetPos">Week
-                  <select id="monthlySetPos">
-                    <option value="1">First</option>
-                    <option value="2">Second</option>
-                    <option value="3">Third</option>
-                    <option value="4">Fourth</option>
-                    <option value="-1">Last</option>
-                  </select>
-                </label>
+                <div id="monthlySetPosContainer">
+                  <span class="hint">Which week(s) of the month?</span>
+                  <div class="monthly-setpos-options" role="group" aria-label="Select week positions">
+                    <label><input type="checkbox" value="1" class="monthly-setpos-option">First</label>
+                    <label><input type="checkbox" value="2" class="monthly-setpos-option">Second</label>
+                    <label><input type="checkbox" value="3" class="monthly-setpos-option">Third</label>
+                    <label><input type="checkbox" value="4" class="monthly-setpos-option">Fourth</label>
+                    <label><input type="checkbox" value="-1" class="monthly-setpos-option">Last</label>
+                  </div>
+                </div>
                 <label for="monthlyWeekday">Weekday
                   <select id="monthlyWeekday">
                     <option value="MO">Monday</option>
@@ -822,10 +1031,8 @@
           </div>
         </fieldset>
 
-        <h2 class="section-heading">Optional fields</h2>
-        <fieldset>
-          <legend>Optional fields</legend>
-          <p class="hint">Fill in only what applies to this net.</p>
+        <details id="optionalFields">
+          <summary><span class="section-heading">Optional extras</span></summary>
           <div class="optional-grid">
             {% for key in ["location", "peanut", "zoom", "notes"] %}
             <div>
@@ -838,27 +1045,38 @@
             </div>
             {% endfor %}
           </div>
-        </fieldset>
 
-        <h2 class="section-heading">Custom fields</h2>
-        <fieldset>
-          <legend>Custom fields</legend>
-          <p class="hint">Need a field that is not listed above? Add it here.</p>
-          <div id="customFields"></div>
-          <button type="button" id="addCustomField">Add custom field</button>
-        </fieldset>
+          <div class="custom-field-block">
+            <h3>Custom fields</h3>
+            <p class="hint">Need a field that is not listed above? Add it here.</p>
+            <div id="customFields"></div>
+            <button type="button" id="addCustomField">Add custom field</button>
+          </div>
+        </details>
 
         <div class="actions">
+          <button type="button" id="addToBatchBtn" class="primary">Add to batch</button>
           <button type="button" id="previewBtn" class="primary">Preview JSON</button>
-          <button type="button" id="saveBtn">Create pending file</button>
+          <button type="button" id="saveBtn">Save draft for review</button>
         </div>
         <div class="submission-note">
           <label for="submission_note">Submission note (optional)</label>
           <textarea id="submission_note" name="submission_note" aria-describedby="submissionNoteHint"></textarea>
-          <p class="hint" id="submissionNoteHint">This note appears to publishers when reviewing the pending file (for example &ldquo;Rachel &ndash; added AllStar node details&rdquo;).</p>
+          <p class="hint" id="submissionNoteHint">This note appears to publishers when reviewing the draft (for example &ldquo;Rachel &ndash; added AllStar node details&rdquo;).</p>
         </div>
+        <p class="hint" id="saveDraftHint" hidden>Saving a draft is disabled while reviewing a submitted batch. Use “Add to batch” and “Submit batch” to update this draft.</p>
         <p id="autosaveStatus" class="autosave-status" hidden aria-live="polite"></p>
       </form>
+
+      <section id="batchControls" class="batch-controls" hidden aria-labelledby="batchHeading">
+        <h2 id="batchHeading">Batch queue</h2>
+        <p id="batchSummary" class="batch-summary">No staged nets yet. Add nets to the batch to see them listed here.</p>
+        <ul id="batchList" class="batch-list" aria-live="polite"></ul>
+        <div class="actions">
+          <button type="button" id="submitBatchBtn" class="primary" disabled>Submit batch for publication</button>
+          <button type="button" id="clearBatchBtn" class="secondary" disabled>Clear batch</button>
+        </div>
+      </section>
 
       <div aria-live="polite" id="liveStatus" class="status" hidden></div>
 
@@ -879,6 +1097,19 @@
         <button type="button" data-action="remove">Remove</button>
       </div>
     </template>
+
+    <div id="batchModal" class="modal-backdrop" hidden>
+      <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="batchModalTitle">
+        <h2 id="batchModalTitle">Submit batch for publication</h2>
+        <p id="batchModalCount">You are about to submit 0 staged nets.</p>
+        <label for="batchNoteInput">Note to publishers (optional)</label>
+        <textarea id="batchNoteInput" placeholder="e.g., Added updated contact info for two nets."></textarea>
+        <div class="modal-actions">
+          <button type="button" id="batchModalConfirm" class="primary">Submit batch</button>
+          <button type="button" id="batchModalCancel" class="secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
 
     <script>
       const pendingContext = {{ pending_context|tojson }};
@@ -939,10 +1170,24 @@
       const netSearchLoadBtn = document.getElementById('netSearchLoadBtn');
       const editControlsSection = document.getElementById('editControls');
       const pendingReviewSection = document.getElementById('pendingReview');
+      const pendingToggleBtn = document.getElementById('pendingToggleBtn');
       const pendingReviewHint = document.getElementById('pendingReviewHint');
       const pendingListContainer = document.getElementById('pendingList');
+      const batchControls = document.getElementById('batchControls');
+      const batchSummary = document.getElementById('batchSummary');
+      const batchList = document.getElementById('batchList');
+      const addToBatchBtn = document.getElementById('addToBatchBtn');
+      const submitBatchBtn = document.getElementById('submitBatchBtn');
+      const clearBatchBtn = document.getElementById('clearBatchBtn');
+      const batchModal = document.getElementById('batchModal');
+      const batchModalCount = document.getElementById('batchModalCount');
+      const batchModalNote = document.getElementById('batchNoteInput');
+      const batchModalConfirm = document.getElementById('batchModalConfirm');
+      const batchModalCancel = document.getElementById('batchModalCancel');
       const idField = document.getElementById('id');
       const idDisplay = document.getElementById('idDisplay');
+      const saveDraftHint = document.getElementById('saveDraftHint');
+      const submissionNoteContainer = document.querySelector('.submission-note');
       const initialExistingIds = {{ existing_ids|tojson }};
       const initialExistingIdsLower = new Set(initialExistingIds.map((id) => String(id || '').toLowerCase()));
       const connectionConfigs = [
@@ -984,6 +1229,12 @@
       ];
       const AUTO_SAVE_KEY_ACTIVE = 'bhn:nets-helper:draft:active';
       const AUTO_SAVE_KEY_PENDING = 'bhn:nets-helper:draft:pending';
+      const canPromote = Boolean(pendingContext && pendingContext.permissions && pendingContext.permissions.can_promote);
+      const canReview = Boolean(pendingContext && pendingContext.permissions && pendingContext.permissions.can_review);
+      const BATCH_STORAGE_KEY = 'bhn:nets-helper:batch:queue:v1';
+      let batchQueue = [];
+      let batchModalReturnFocus = null;
+      let batchSubmissionInFlight = false;
       const AUTO_SAVE_DEBOUNCE_MS = 3000;
       const AUTO_SAVE_ANNOUNCE_MS = 60000;
       let autoSaveTimer = null;
@@ -993,11 +1244,492 @@
       let activeDraftPayload = null;
       let netIndex = [];
       let filteredNetIndex = [];
+      let pendingReviewVisible = false;
       const editingState = {
         active: false,
         originalId: '',
         label: '',
       };
+
+      function pendingCountLabel(count) {
+        if (!count) {
+          return 'none waiting';
+        }
+        if (count === 1) {
+          return '1 waiting';
+        }
+        return `${count} waiting`;
+      }
+
+      function updatePendingReviewToggle(count) {
+        if (!pendingToggleBtn) {
+          return;
+        }
+        const label = count ? `Review drafts (${pendingCountLabel(count)})` : 'Review drafts (none waiting)';
+        pendingToggleBtn.textContent = label;
+        pendingToggleBtn.setAttribute('aria-expanded', pendingReviewVisible ? 'true' : 'false');
+      }
+
+      function setPendingReviewVisibility(show) {
+        pendingReviewVisible = !!show;
+        if (pendingReviewSection) {
+          pendingReviewSection.hidden = !pendingReviewVisible;
+        }
+        if (pendingToggleBtn) {
+          pendingToggleBtn.setAttribute('aria-expanded', pendingReviewVisible ? 'true' : 'false');
+        }
+      }
+
+      function updateSaveDraftState(sourceKey) {
+        if (!saveBtn) {
+          return;
+        }
+        const isPendingSource = typeof sourceKey === 'string' && sourceKey.startsWith('pending:');
+        if (!canPromote) {
+          saveBtn.hidden = true;
+          saveBtn.disabled = true;
+          if (saveDraftHint) {
+            saveDraftHint.hidden = true;
+          }
+          return;
+        }
+        if (isPendingSource) {
+          saveBtn.hidden = true;
+          saveBtn.disabled = true;
+          if (saveDraftHint) {
+            saveDraftHint.hidden = false;
+          }
+        } else {
+          saveBtn.hidden = false;
+          saveBtn.disabled = false;
+          if (saveDraftHint) {
+            saveDraftHint.hidden = true;
+          }
+        }
+      }
+
+      function buildBatchKey(payload) {
+        const mode = (payload.mode || 'add').toLowerCase();
+        if (mode === 'edit' && payload.original_id) {
+          return `edit|${String(payload.original_id).toLowerCase()}`;
+        }
+        return `add|${String(payload.id || '').toLowerCase()}`;
+      }
+
+      function buildBatchLabel(payload) {
+        const id = payload.id || '(no id)';
+        const name = payload.name ? ` — ${payload.name}` : '';
+        return `${id}${name}`;
+      }
+
+      function markBatchErrors(errorMap) {
+        batchQueue.forEach((item) => {
+          item.errors = null;
+        });
+        if (!errorMap || typeof errorMap !== 'object') {
+          return;
+        }
+        Object.entries(errorMap).forEach(([index, errors]) => {
+          const idx = Number.parseInt(index, 10);
+          if (Number.isNaN(idx) || idx < 0 || idx >= batchQueue.length) {
+            return;
+          }
+          batchQueue[idx].errors = errors;
+        });
+      }
+
+      function renderBatchQueue() {
+        if (!batchControls) {
+          return;
+        }
+        if (!canReview) {
+          batchControls.hidden = true;
+          return;
+        }
+        batchControls.hidden = false;
+        const hasItems = batchQueue.length > 0;
+        if (batchSummary) {
+          batchSummary.textContent = hasItems
+            ? `Batch contains ${batchQueue.length} staged net${batchQueue.length === 1 ? '' : 's'}.`
+            : 'No staged nets yet. Add nets to the batch to see them listed here.';
+        }
+        if (submitBatchBtn) {
+          submitBatchBtn.disabled = !hasItems || batchSubmissionInFlight;
+        }
+        if (clearBatchBtn) {
+          clearBatchBtn.disabled = !hasItems || batchSubmissionInFlight;
+        }
+        if (!batchList) {
+          return;
+        }
+        batchList.innerHTML = '';
+        if (!hasItems) {
+          const empty = document.createElement('li');
+          empty.className = 'batch-item';
+          empty.textContent = 'No staged nets yet.';
+          batchList.appendChild(empty);
+          return;
+        }
+        batchQueue.forEach((item, index) => {
+          const li = document.createElement('li');
+          li.className = 'batch-item';
+          const header = document.createElement('div');
+          header.className = 'batch-item-header';
+          const title = document.createElement('span');
+          title.textContent = `${index + 1}. ${item.label}`;
+          const modeBadge = document.createElement('span');
+          modeBadge.className = 'batch-item-mode';
+          if (item.mode === 'edit') {
+            modeBadge.textContent = 'Mode: Edit';
+            modeBadge.setAttribute('aria-label', 'Batch item mode: edit');
+          } else {
+            modeBadge.textContent = 'Mode: Add';
+            modeBadge.setAttribute('aria-label', 'Batch item mode: add');
+          }
+          header.append(title, modeBadge);
+          li.appendChild(header);
+          const metaParts = [];
+          if (item.payload && item.payload.category) {
+            metaParts.push(String(item.payload.category));
+          }
+          if (item.payload && item.payload.start_local) {
+            metaParts.push(`starts ${item.payload.start_local}`);
+          }
+          if (item.payload && item.payload.time_zone) {
+            metaParts.push(item.payload.time_zone);
+          }
+          if (metaParts.length) {
+            const meta = document.createElement('div');
+            meta.className = 'batch-item-meta';
+            meta.textContent = metaParts.join(' • ');
+            li.appendChild(meta);
+          }
+          const actions = document.createElement('div');
+          actions.className = 'batch-item-actions';
+          const loadBtn = document.createElement('button');
+          loadBtn.type = 'button';
+          loadBtn.className = 'secondary';
+          loadBtn.dataset.action = 'load';
+          loadBtn.dataset.index = String(index);
+          loadBtn.textContent = 'Load into form';
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'secondary';
+          removeBtn.dataset.action = 'remove';
+          removeBtn.dataset.index = String(index);
+          removeBtn.textContent = 'Remove';
+          actions.append(loadBtn, removeBtn);
+          li.appendChild(actions);
+          if (item.errors) {
+            const errorBlock = document.createElement('div');
+            errorBlock.className = 'batch-item-error';
+            const messages = Object.values(item.errors);
+            errorBlock.textContent = messages.join(' ');
+            li.appendChild(errorBlock);
+          }
+          batchList.appendChild(li);
+        });
+      }
+
+      function saveBatchToStorage() {
+        if (typeof localStorage === 'undefined') {
+          return;
+        }
+        try {
+          if (!batchQueue.length) {
+            localStorage.removeItem(BATCH_STORAGE_KEY);
+            return;
+          }
+          const data = {
+            version: 1,
+            items: batchQueue.map((item) => ({
+              payload: item.payload,
+              formState: item.formState,
+              label: item.label,
+              mode: item.mode,
+              key: item.key,
+            })),
+          };
+          localStorage.setItem(BATCH_STORAGE_KEY, JSON.stringify(data));
+        } catch (error) {
+          console.warn('Unable to save batch queue', error);
+        }
+      }
+
+      function clearBatchStorage() {
+        if (typeof localStorage === 'undefined') {
+          return;
+        }
+        try {
+          localStorage.removeItem(BATCH_STORAGE_KEY);
+        } catch (error) {
+          console.warn('Unable to clear stored batch queue', error);
+        }
+      }
+
+      function loadBatchFromStorage() {
+        if (typeof localStorage === 'undefined') {
+          return;
+        }
+        let data = null;
+        try {
+          const raw = localStorage.getItem(BATCH_STORAGE_KEY);
+          if (!raw) {
+            return;
+          }
+          data = JSON.parse(raw);
+        } catch (error) {
+          console.warn('Unable to load stored batch queue', error);
+          return;
+        }
+        if (!data || !Array.isArray(data.items)) {
+          return;
+        }
+        batchQueue = data.items.map((item) => {
+          const payload = item && typeof item.payload === 'object' ? item.payload : {};
+          return {
+            payload,
+            formState: item && typeof item.formState === 'object' ? item.formState : null,
+            label: item && item.label ? item.label : buildBatchLabel(payload),
+            mode: (item && item.mode) ? String(item.mode).toLowerCase() : 'add',
+            key: item && item.key ? item.key : buildBatchKey(payload),
+            errors: null,
+          };
+        });
+      }
+
+      function addPayloadToBatch(entry) {
+        const existingIndex = batchQueue.findIndex((item) => item.key === entry.key);
+        if (existingIndex >= 0) {
+          batchQueue.splice(existingIndex, 1, entry);
+          return { index: existingIndex, updated: true };
+        }
+        batchQueue.push(entry);
+        return { index: batchQueue.length - 1, updated: false };
+      }
+
+      async function handleAddToBatch() {
+        if (!canReview) {
+          showStatus('You do not have permission to stage drafts.', 'error');
+          return;
+        }
+        clearStatus();
+        const payload = collectFormData();
+        const formState = collectDraftPayload();
+        try {
+          const response = await fetch(buildApiUrl('api/preview'), requestOptions(payload));
+          const body = await parseResponse(response);
+          if (!response.ok) {
+            renderErrors(body.errors || {});
+            return;
+          }
+          const entry = {
+            key: buildBatchKey(payload),
+            payload,
+            formState: JSON.parse(JSON.stringify(formState || {})),
+            label: buildBatchLabel(payload),
+            mode: (payload.mode || 'add').toLowerCase(),
+            errors: null,
+          };
+          const result = addPayloadToBatch(entry);
+          markBatchErrors(null);
+          saveBatchToStorage();
+          renderBatchQueue();
+          resetFormAfterSave();
+          if (body.snippet) {
+            jsonPreview.textContent = body.snippet;
+          }
+          const message = result.updated
+            ? `${entry.label} updated in the batch.`
+            : `${entry.label} added to batch.`;
+          showStatus(message, 'success');
+        } catch (error) {
+          renderErrors({ general: error.message });
+        }
+      }
+
+      function loadBatchItem(index) {
+        if (!canReview || index < 0 || index >= batchQueue.length) {
+          return;
+        }
+        const item = batchQueue[index];
+        batchQueue.splice(index, 1);
+        markBatchErrors(null);
+        saveBatchToStorage();
+        renderBatchQueue();
+        const formState = item.formState || {
+          values: item.payload || {},
+          meta: {
+            editing: {
+              isEditing: item.mode === 'edit',
+              originalId: item.payload && item.payload.original_id ? item.payload.original_id : '',
+              label: item.label,
+            },
+          },
+        };
+        applyFormState(formState, { announceMessage: 'Staged net restored for editing.' });
+        showStatus('Loaded staged net into the form. Update the details and add it back to the batch when ready.', 'success');
+      }
+
+      function removeBatchItem(index) {
+        if (!canReview || index < 0 || index >= batchQueue.length) {
+          return;
+        }
+        batchQueue.splice(index, 1);
+        markBatchErrors(null);
+        if (batchQueue.length) {
+          saveBatchToStorage();
+        } else {
+          clearBatchStorage();
+        }
+        renderBatchQueue();
+        showStatus('Staged net removed from batch.', 'success');
+      }
+
+      function clearBatch() {
+        if (!canReview || !batchQueue.length) {
+          return;
+        }
+        if (!window.confirm('Remove all staged nets from this batch?')) {
+          return;
+        }
+        batchQueue = [];
+        markBatchErrors(null);
+        clearBatchStorage();
+        renderBatchQueue();
+        showStatus('Batch cleared.', 'success');
+      }
+
+      function openBatchModal() {
+        if (!canReview || !batchQueue.length || !batchModal) {
+          return;
+        }
+        batchModalReturnFocus = document.activeElement;
+        batchModal.hidden = false;
+        const count = batchQueue.length;
+        if (batchModalCount) {
+          batchModalCount.textContent = `You are about to submit ${count} staged net${count === 1 ? '' : 's'}.`;
+        }
+        if (batchModalNote) {
+          batchModalNote.value = '';
+          setTimeout(() => {
+            try {
+              batchModalNote.focus({ preventScroll: true });
+            } catch (_err) {}
+          }, 0);
+        }
+      }
+
+      function closeBatchModal({ focusRestore = true } = {}) {
+        if (!batchModal) {
+          return;
+        }
+        batchModal.hidden = true;
+        if (batchModalConfirm) {
+          batchModalConfirm.disabled = false;
+        }
+        if (focusRestore && batchModalReturnFocus && typeof batchModalReturnFocus.focus === 'function') {
+          try {
+            batchModalReturnFocus.focus({ preventScroll: true });
+          } catch (_err) {}
+        }
+        batchModalReturnFocus = null;
+      }
+
+      async function submitBatchRequest() {
+        if (!canReview || !batchQueue.length || batchSubmissionInFlight) {
+          closeBatchModal();
+          return;
+        }
+        batchSubmissionInFlight = true;
+        if (batchModalConfirm) {
+          batchModalConfirm.disabled = true;
+        }
+        if (submitBatchBtn) {
+          submitBatchBtn.disabled = true;
+        }
+        clearStatus();
+        const payload = {
+          nets: batchQueue.map((item) => item.payload),
+        };
+        const note = batchModalNote ? batchModalNote.value.trim() : '';
+        if (note) {
+          payload.note = note;
+        }
+        try {
+          const response = await fetch(buildApiUrl('api/batch/submit'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const body = await parseResponse(response);
+          if (!response.ok) {
+            if (body && body.errors) {
+              markBatchErrors(body.errors);
+              renderBatchQueue();
+              showStatus('Please fix the highlighted nets before submitting.', 'error');
+            } else {
+              showStatus(body && body.error ? body.error : 'Unable to submit batch.', 'error');
+            }
+            return;
+          }
+          batchQueue = [];
+          clearBatchStorage();
+          renderBatchQueue();
+          closeBatchModal();
+          showStatus(body.message || 'Batch submitted.', 'success');
+          if (body.active_source) {
+            updateActiveSource(body.active_source);
+          } else {
+            updateActiveSource('nets');
+          }
+          await loadPendingOverview();
+          setPendingReviewVisibility(false);
+        } catch (error) {
+          showStatus(error.message || 'Unable to submit batch.', 'error');
+        } finally {
+          batchSubmissionInFlight = false;
+          if (batchModalConfirm) {
+            batchModalConfirm.disabled = false;
+          }
+          if (submitBatchBtn) {
+            submitBatchBtn.disabled = batchQueue.length === 0;
+          }
+        }
+      }
+
+      function initializeBatchUI() {
+        if (!canPromote && saveBtn) {
+          saveBtn.hidden = true;
+          saveBtn.disabled = true;
+        }
+        if (!canPromote && submissionNoteContainer) {
+          submissionNoteContainer.hidden = true;
+        }
+        if (!canReview) {
+          if (batchControls) {
+            batchControls.hidden = true;
+          }
+          if (addToBatchBtn) {
+            addToBatchBtn.hidden = true;
+            addToBatchBtn.disabled = true;
+          }
+          if (submitBatchBtn) {
+            submitBatchBtn.hidden = true;
+          }
+          if (clearBatchBtn) {
+            clearBatchBtn.hidden = true;
+          }
+          return;
+        }
+        loadBatchFromStorage();
+        renderBatchQueue();
+      }
+
+      setPendingReviewVisibility(false);
+      updatePendingReviewToggle((pendingContext && Array.isArray(pendingContext.pending) && pendingContext.pending.length) ? pendingContext.pending.length : 0);
+      initializeBatchUI();
+      updateSaveDraftState((pendingContext && pendingContext.active_source) || 'nets');
 
       function buildApiUrl(path) {
         const trimmed = String(path || '').replace(/^\//, '');
@@ -1127,7 +1859,8 @@
       const monthlyDayContainer = document.getElementById('monthlyDayContainer');
       const monthlyWeekdayContainer = document.getElementById('monthlyWeekdayContainer');
       const monthlyDay = document.getElementById('monthlyDay');
-      const monthlySetPos = document.getElementById('monthlySetPos');
+      const monthlySetPosContainer = document.getElementById('monthlySetPosContainer');
+      const monthlySetPosOptions = Array.from(document.querySelectorAll('.monthly-setpos-option'));
       const monthlyWeekday = document.getElementById('monthlyWeekday');
       const applyRruleButton = document.getElementById('applyRrule');
       const netNameInput = document.getElementById('name');
@@ -1323,13 +2056,17 @@
         const name = netNameInput ? netNameInput.value.trim() : '';
         if (!name) {
           idField.value = '';
-          updateIdDisplay('');
+          if (force) {
+            updateIdDisplay('');
+          }
           return;
         }
         const base = slugify(name) || 'net';
         const unique = generateUniqueId(base);
         idField.value = unique;
-        updateIdDisplay(unique);
+        if (force) {
+          updateIdDisplay(unique);
+        }
       }
 
       function resolveConnectionFields(config) {
@@ -1408,7 +2145,7 @@
       function setConnectionState(config, enable, { announceChanges = true, allowPrompt = true, initialize = false } = {}) {
         const hasData = connectionHasData(config);
         if (enable) {
-          setConnectionSectionVisibility(config, true);
+          setConnectionSectionVisibility(config, true, { focusFirst: !initialize });
           config.checkbox.setAttribute('aria-expanded', 'true');
           if (!initialize && announceChanges) {
             announce(`${config.label} connection expanded.`);
@@ -1949,6 +2686,20 @@
         syncLoadSelectedButton();
       }
 
+      function focusNetSelector() {
+        if (netList && !netList.disabled) {
+          netList.focus({ preventScroll: true });
+          return;
+        }
+        if (netSearchInput && !netSearchInput.disabled) {
+          netSearchInput.focus({ preventScroll: true });
+          return;
+        }
+        if (sourcePicker) {
+          sourcePicker.focus({ preventScroll: true });
+        }
+      }
+
       customFieldsContainer.addEventListener('click', (event) => {
         const button = event.target.closest('[data-action="remove"]');
         if (!button) return;
@@ -2017,14 +2768,33 @@
             const day = Math.min(Math.max(parseInt(monthlyDay.value, 10) || 1, 1), 31);
             parts.push(`BYMONTHDAY=${day}`);
           } else {
+            const selectedPositions = monthlySetPosOptions
+              .filter((cb) => cb.checked)
+              .map((cb) => parseInt(cb.value, 10))
+              .filter((value) => !Number.isNaN(value));
+            if (!selectedPositions.length) {
+              showStatus('Select at least one week position for the monthly pattern.', 'error');
+              monthlySetPosContainer?.querySelector('input')?.focus();
+              return;
+            }
+            const deduped = Array.from(new Set(selectedPositions)).sort((a, b) => {
+              if (a === b) return 0;
+              if (a === -1) return 1;
+              if (b === -1) return -1;
+              return a - b;
+            });
             parts.push(`BYDAY=${monthlyWeekday.value}`);
-            parts.push(`BYSETPOS=${monthlySetPos.value}`);
+            parts.push(`BYSETPOS=${deduped.join(',')}`);
           }
         }
 
         rruleInput.value = parts.join(';');
         updateRruleDescription();
         announce('RRULE updated from builder.');
+        try {
+          rruleBuilderDetails.open = false;
+          builderFreq.focus({ preventScroll: true });
+        } catch (_err) {}
       });
 
       rruleInput.addEventListener('input', () => {
@@ -2034,6 +2804,8 @@
       if (netNameInput) {
         netNameInput.addEventListener('input', () => {
           autoAssignId();
+        });
+        netNameInput.addEventListener('blur', () => {
           updateRruleDescription();
         });
       }
@@ -2268,9 +3040,94 @@
 
       if (pendingListContainer) {
         pendingListContainer.addEventListener('click', (event) => {
+          const loadBtn = event.target.closest('button[data-load-id]');
+          if (loadBtn && loadBtn.dataset.loadId) {
+            loadNetForEdit(loadBtn.dataset.loadId);
+            return;
+          }
           const promoteBtn = event.target.closest('button[data-action="promote"]');
           if (promoteBtn && promoteBtn.dataset.key) {
             promotePending(promoteBtn.dataset.key);
+          }
+        });
+      }
+
+      if (addToBatchBtn) {
+        addToBatchBtn.addEventListener('click', () => {
+          handleAddToBatch();
+        });
+      }
+
+      if (submitBatchBtn) {
+        submitBatchBtn.addEventListener('click', () => {
+          if (!canReview) {
+            showStatus('You do not have permission to submit batches.', 'error');
+            return;
+          }
+          if (!batchQueue.length) {
+            showStatus('No staged nets to submit yet.', 'error');
+            return;
+          }
+          openBatchModal();
+        });
+      }
+
+      if (clearBatchBtn) {
+        clearBatchBtn.addEventListener('click', () => {
+          clearBatch();
+        });
+      }
+
+      if (batchList) {
+        batchList.addEventListener('click', (event) => {
+          const button = event.target.closest('button[data-action]');
+          if (!button) {
+            return;
+          }
+          const index = Number.parseInt(button.dataset.index || '-1', 10);
+          const action = button.dataset.action;
+          if (action === 'load') {
+            loadBatchItem(index);
+          } else if (action === 'remove') {
+            removeBatchItem(index);
+          }
+        });
+      }
+
+      if (batchModalCancel) {
+        batchModalCancel.addEventListener('click', () => {
+          if (!batchSubmissionInFlight) {
+            closeBatchModal();
+          }
+        });
+      }
+
+      if (batchModalConfirm) {
+        batchModalConfirm.addEventListener('click', () => {
+          submitBatchRequest();
+        });
+      }
+
+      if (batchModal) {
+        batchModal.addEventListener('click', (event) => {
+          if (event.target === batchModal && !batchSubmissionInFlight) {
+            closeBatchModal();
+          }
+        });
+        batchModal.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && !batchSubmissionInFlight) {
+            event.preventDefault();
+            closeBatchModal();
+          }
+        });
+      }
+
+      if (pendingToggleBtn) {
+        pendingToggleBtn.addEventListener('click', () => {
+          const shouldShow = !pendingReviewVisible;
+          setPendingReviewVisibility(shouldShow);
+          if (shouldShow) {
+            loadPendingOverview();
           }
         });
       }
@@ -2283,9 +3140,10 @@
               return;
             }
           }
-          exitEditMode({ silent: true });
+          exitEditMode({ silent: false });
           clearDraft();
-          prepareFormForNewNet({ announceMessage: 'Edit mode cleared. Ready to add a new net.' });
+          prepareFormForNewNet({ announceMessage: null, focus: false });
+          focusNetSelector();
         });
       }
 
@@ -2300,8 +3158,10 @@
             return;
           }
           jsonPreview.textContent = body.snippet;
-          showStatus(`Success — pending file saved to ${body.pending_path}`, 'success');
-          updateActiveSource(body.active_source);
+          showStatus(body.message || 'Draft saved for review.', 'success');
+          const nextSource = body.active_source || (pendingContext && pendingContext.active_source) || 'nets';
+          updateActiveSource(nextSource);
+          await loadPendingOverview();
           resetFormAfterSave();
         } catch (error) {
           renderErrors({ general: error.message });
@@ -2382,6 +3242,7 @@
         if (pendingContext) {
           pendingContext.active_source = sourceKey;
         }
+        updateSaveDraftState(sourceKey);
         exitEditMode({ silent: true });
         loadNetIndex(sourceKey);
       }
@@ -2396,6 +3257,7 @@
         if (pendingContext) {
           pendingContext.active_source = value;
         }
+        updateSaveDraftState(value);
         updateSourceSelectionUI();
         const url = new URL(window.location.href);
         url.searchParams.set('source', value);
@@ -2407,11 +3269,11 @@
       function handleDeleteSelected() {
         const option = selectedSourceOption();
         if (!option || option.dataset.isPending !== 'true') {
-          showStatus('Select a pending file before deleting.', 'error');
+          showStatus('Select a draft before deleting.', 'error');
           return;
         }
         const label = option.dataset.name || option.textContent.trim() || option.value;
-        if (!window.confirm(`Delete pending file “${label}”? This cannot be undone.`)) {
+        if (!window.confirm(`Delete draft “${label}”? This cannot be undone.`)) {
           return;
         }
         deletePending('single', option.value, 'nets');
@@ -2421,7 +3283,7 @@
         if (!pendingContext || !pendingContext.has_pending) {
           return;
         }
-        if (!window.confirm('Delete all pending files? This cannot be undone.')) {
+        if (!window.confirm('Delete all drafts? This cannot be undone.')) {
           return;
         }
         deletePending('all', null, 'nets');
@@ -2441,10 +3303,19 @@
           });
           const body = await parseResponse(response);
           if (!response.ok) {
-            showStatus(body.error || 'Unable to delete pending file.', 'error');
+            showStatus(body.error || 'Unable to delete draft.', 'error');
             return;
           }
-          announce('Pending files removed.');
+          const removedCount = Array.isArray(body.deleted) ? body.deleted.length : 0;
+          let removalMessage;
+          if (removedCount > 1) {
+            removalMessage = `${removedCount} drafts removed.`;
+          } else if (removedCount === 1) {
+            removalMessage = 'Draft removed.';
+          } else {
+            removalMessage = mode === 'single' ? 'Draft removed.' : 'Drafts removed.';
+          }
+          announce(removalMessage);
           const next = nextSource || 'nets';
           updateActiveSource(next);
           await loadPendingOverview();
@@ -2500,10 +3371,10 @@
         }
         if (pendingContext && pendingContext.has_pending) {
           pendingStatusHint.textContent = pendingContext.options && pendingContext.options.length
-            ? 'Default selection is the newest pending file. Pick another to review an older snapshot, or choose “Start fresh from nets.json” to begin a new list.'
-            : 'Pending files detected. Select one from the menu to review or edit.';
+            ? 'Default selection is your newest draft. Choose another to review older edits, or pick “Start fresh from nets.json” to begin a new list.'
+            : 'Drafts detected. Use the menu to review or switch between drafts.';
         } else {
-          pendingStatusHint.textContent = 'Submissions will be based on nets.json until a pending copy exists.';
+          pendingStatusHint.textContent = 'New drafts start from nets.json until you create one.';
         }
       }
 
@@ -2659,8 +3530,9 @@
           const response = await fetch(url.toString());
           const body = await parseResponse(response);
           if (!response.ok) {
-            showStatus(body.error || 'Unable to load pending submissions.', 'error');
+            showStatus(body.error || 'Unable to load drafts for review.', 'error');
             renderPendingOverview({ pending_files: [] });
+            updatePendingReviewToggle(0);
             return;
           }
           pendingContext.options = Array.isArray(body.options) ? body.options : pendingContext.options || [];
@@ -2671,17 +3543,20 @@
           if (body.active_source) {
             pendingContext.active_source = body.active_source;
           }
+          updateSaveDraftState(pendingContext.active_source || 'nets');
+          const pendingCount = pendingContext.pending.length;
+          updatePendingReviewToggle(pendingCount);
           if (pendingReviewHint) {
             if (pendingContext.permissions && pendingContext.permissions.can_promote) {
-              pendingReviewHint.textContent = 'Review queued changes and promote them when you are ready.';
+              pendingReviewHint.textContent = 'Review drafts and publish them when you are ready.';
             } else {
-              pendingReviewHint.textContent = 'Review queued changes. A publisher will promote them after approval.';
+              pendingReviewHint.textContent = 'Review drafts. A publisher will publish them after approval.';
             }
           }
           renderPendingOverview(body);
           refreshSourceOptions(pendingContext.options, pendingContext.active_source);
           updatePendingStatusHint();
-          // no pending files to review
+          // no drafts to review
         } catch (error) {
           showStatus(error.message, 'error');
         } finally {
@@ -2752,13 +3627,14 @@
         const permissions = data.permissions || pendingContext.permissions || {};
         const canPromote = Boolean(permissions.can_promote);
         pendingListContainer.innerHTML = '';
+        updatePendingReviewToggle(files.length);
         if (!files.length) {
           const empty = document.createElement('p');
           empty.className = 'pending-empty';
-          empty.textContent = 'No pending submissions right now.';
+          empty.textContent = 'No drafts waiting for review.';
           pendingListContainer.appendChild(empty);
           if (pendingReviewSection) {
-            pendingReviewSection.hidden = false;
+            pendingReviewSection.hidden = !pendingReviewVisible;
           }
           return;
         }
@@ -2803,18 +3679,101 @@
           const changes = Array.isArray(file.changes) ? file.changes : [];
           if (changes.length) {
             const list = document.createElement('ul');
+            list.className = 'pending-change-list';
+            const TYPE_LABELS = { added: 'Added', updated: 'Updated', removed: 'Removed' };
+            const FIELD_LIMIT = 6;
+            const formatDiffValue = (value) => {
+              if (value === null || value === undefined || value === '') {
+                return '—';
+              }
+              return String(value);
+            };
             changes.forEach((change) => {
               const item = document.createElement('li');
-              const changeType = change.type || 'updated';
-              const changeLabel = change.name ? `${change.id} — ${change.name}` : change.id;
-              item.textContent = `${changeType.toUpperCase()}: ${changeLabel}`;
+              item.className = 'pending-change';
+              const changeType = (change && change.type) || 'updated';
+              const typeLabel = TYPE_LABELS[changeType] || 'Updated';
+              const changeLabel = change.name ? `${change.id} — ${change.name}` : change.id || '';
+
+              const head = document.createElement('div');
+              head.className = 'pending-change-head';
+              const title = document.createElement('span');
+              title.className = 'pending-change-title';
+              title.textContent = changeLabel ? `${typeLabel}: ${changeLabel}` : typeLabel;
+              head.appendChild(title);
+              const loadId = change.load_id;
+              if (loadId) {
+                const loadBtn = document.createElement('button');
+                loadBtn.type = 'button';
+                loadBtn.className = 'secondary pending-change-open';
+                loadBtn.dataset.loadId = loadId;
+                loadBtn.textContent = 'Open in editor';
+                head.appendChild(loadBtn);
+              }
+              item.appendChild(head);
+
+              const metaParts = [];
+              if (change.category) {
+                metaParts.push(String(change.category).toUpperCase());
+              }
+              if (change.start_local) {
+                metaParts.push(`starts ${change.start_local}`);
+              }
+              if (change.time_zone) {
+                metaParts.push(change.time_zone);
+              }
+              if (metaParts.length) {
+                const metaLine = document.createElement('div');
+                metaLine.className = 'pending-change-meta';
+                metaLine.textContent = metaParts.join(' • ');
+                item.appendChild(metaLine);
+              }
+
+              const fieldDiffs = Array.isArray(change.field_diffs) ? change.field_diffs : [];
+              if (fieldDiffs.length) {
+                const diffList = document.createElement('ul');
+                diffList.className = 'pending-diff-list';
+                fieldDiffs.slice(0, FIELD_LIMIT).forEach((diff) => {
+                  const diffItem = document.createElement('li');
+                  diffItem.className = 'pending-diff';
+                  const fieldCode = document.createElement('code');
+                  fieldCode.textContent = diff.field || '(field)';
+                  diffItem.appendChild(fieldCode);
+                  let description;
+                  const beforeValue = formatDiffValue(diff.before);
+                  const afterValue = formatDiffValue(diff.after);
+                  if (diff.status === 'added') {
+                    description = `added ${afterValue}`;
+                  } else if (diff.status === 'removed') {
+                    description = `removed (was ${beforeValue})`;
+                  } else {
+                    description = `${beforeValue} -> ${afterValue}`;
+                  }
+                  diffItem.appendChild(document.createTextNode(`: ${description}`));
+                  diffList.appendChild(diffItem);
+                });
+                const remaining = fieldDiffs.length - FIELD_LIMIT;
+                if (remaining > 0) {
+                  const moreItem = document.createElement('li');
+                  moreItem.className = 'pending-diff-more';
+                  moreItem.textContent = `…${remaining} more field${remaining === 1 ? '' : 's'}`;
+                  diffList.appendChild(moreItem);
+                }
+                item.appendChild(diffList);
+              } else {
+                const noFieldDiffs = document.createElement('p');
+                noFieldDiffs.className = 'pending-empty';
+                noFieldDiffs.textContent = 'No field-level differences recorded for this draft.';
+                item.appendChild(noFieldDiffs);
+              }
+
               list.appendChild(item);
             });
             card.appendChild(list);
           } else {
             const noChanges = document.createElement('p');
             noChanges.className = 'pending-empty';
-            noChanges.textContent = 'No differences detected in this pending file.';
+            noChanges.textContent = 'No differences detected in this draft.';
             card.appendChild(noChanges);
           }
 
@@ -2833,7 +3792,7 @@
             promoteBtn.className = 'primary';
             promoteBtn.dataset.action = 'promote';
             promoteBtn.dataset.key = file.key;
-            promoteBtn.textContent = 'Promote to live';
+            promoteBtn.textContent = 'Publish to live';
             actions.appendChild(promoteBtn);
             card.appendChild(actions);
           }
@@ -2841,7 +3800,7 @@
           pendingListContainer.appendChild(card);
         });
         if (pendingReviewSection) {
-          pendingReviewSection.hidden = false;
+          pendingReviewSection.hidden = !pendingReviewVisible;
         }
       }
 
@@ -2852,8 +3811,13 @@
         const entries = pendingContext.pending || [];
         const file = entries.find((entry) => entry.key === key);
         let summaryLines = [];
+        const TYPE_LABELS = { added: 'Added', updated: 'Updated', removed: 'Removed' };
         if (file && Array.isArray(file.changes) && file.changes.length) {
-          summaryLines = file.changes.map((change) => `• ${change.type || 'updated'}: ${change.id || ''} ${change.name ? `— ${change.name}` : ''}`.trim());
+          summaryLines = file.changes.map((change) => {
+            const typeLabel = TYPE_LABELS[change.type] || 'Updated';
+            const namePart = change.name ? ` — ${change.name}` : '';
+            return `• ${typeLabel}: ${change.id || ''}${namePart}`.trim();
+          });
         }
         if (!summaryLines.length && file && file.stats) {
           const stats = file.stats;
@@ -2862,15 +3826,15 @@
         if (!summaryLines.length) {
           summaryLines.push('• No detailed change list available');
         }
-        const confirmMessage = `Publish the following changes to live and push to GitHub?\n\n${summaryLines.join('\n')}\n\nThis action updates _data/nets.json and creates a git commit.`;
+        const confirmMessage = `Publish this draft to live and push to GitHub?\n\n${summaryLines.join('\n')}\n\nThis updates _data/nets.json and creates a git commit.`;
         const confirmed = window.confirm(confirmMessage);
         if (!confirmed) {
-          announce('Promotion cancelled.');
+          announce('Publish cancelled.');
           return;
         }
 
         clearStatus();
-        showStatus('Publishing pending changes…');
+        showStatus('Publishing draft…');
         try {
           const response = await fetch(buildApiUrl('api/pending/promote_commit'), {
             method: 'POST',
@@ -2879,10 +3843,10 @@
           });
           const body = await parseResponse(response);
           if (!response.ok) {
-            showStatus(body.error || 'Unable to promote pending file.', 'error');
+            showStatus(body.error || 'Unable to publish draft.', 'error');
             return;
           }
-          let message = body.message || 'Pending file promoted and committed.';
+          let message = body.message || 'Draft published and committed.';
           if (body.commit) {
             const commit = body.commit;
             if (commit.hash) {
@@ -2893,7 +3857,8 @@
             }
           }
           showStatus(message, 'success');
-          updateActiveSource('nets');
+          const activeSource = body.active_source || 'nets';
+          updateActiveSource(activeSource);
           await loadPendingOverview();
         } catch (error) {
           showStatus(error.message, 'error');
@@ -3113,8 +4078,14 @@
 
       function updateBuilderVisibility() {
         const freq = builderFreq.value;
-        weeklyOptions.hidden = freq !== 'WEEKLY';
-        monthlyOptions.hidden = freq !== 'MONTHLY';
+        const showWeekly = freq === 'WEEKLY';
+        const showMonthly = freq === 'MONTHLY';
+        weeklyOptions.hidden = !showWeekly;
+        weeklyOptions.style.display = showWeekly ? '' : 'none';
+        weeklyOptions.setAttribute('aria-hidden', showWeekly ? 'false' : 'true');
+        monthlyOptions.hidden = !showMonthly;
+        monthlyOptions.style.display = showMonthly ? '' : 'none';
+        monthlyOptions.setAttribute('aria-hidden', showMonthly ? 'false' : 'true');
       }
 
       function updateRruleDescription() {
@@ -3190,10 +4161,43 @@
             return `${netName} repeats ${everyText} on day ${day} of the month${timeText}.`;
           }
           if (pairs.BYDAY && pairs.BYSETPOS) {
-            const weekday = weekdayName(pairs.BYDAY);
-            const pos = positionName(parseInt(pairs.BYSETPOS, 10));
-            if (weekday && pos) {
-              return `${netName} repeats ${everyText} on the ${pos} ${weekday}${timeText}.`;
+            const weekdayTokens = pairs.BYDAY.split(',').map((token) => token.trim()).filter(Boolean);
+            const setPositions = pairs.BYSETPOS.split(',').map((token) => parseInt(token, 10)).filter((value) => !Number.isNaN(value));
+            if (setPositions.length) {
+              if (weekdayTokens.length === 1) {
+                const weekday = weekdayName(weekdayTokens[0]);
+                if (weekday) {
+                  const labels = setPositions.map((pos) => positionName(pos)).filter(Boolean);
+                  if (labels.length) {
+                    const posText = formatList(labels);
+                    return `${netName} repeats ${everyText} on the ${posText} ${weekday}${timeText}.`;
+                  }
+                  return `${netName} repeats ${everyText} on ${weekday}${timeText}.`;
+                }
+              } else {
+                const weekdayLabels = weekdayTokens.map((token) => weekdayName(token)).filter(Boolean);
+                if (weekdayLabels.length === setPositions.length && weekdayLabels.length) {
+                  const combos = setPositions
+                    .map((pos, index) => {
+                      const posLabel = positionName(pos);
+                      const weekday = weekdayLabels[index];
+                      if (!posLabel || !weekday) {
+                        return null;
+                      }
+                      return `the ${posLabel} ${weekday}`;
+                    })
+                    .filter(Boolean);
+                  if (combos.length) {
+                    const comboText = formatList(combos);
+                    return `${netName} repeats ${everyText} on ${comboText}${timeText}.`;
+                  }
+                }
+              }
+              const weekdayFallback = weekdayTokens.map((token) => weekdayName(token)).filter(Boolean);
+              if (weekdayFallback.length) {
+                const fallbackText = formatList(weekdayFallback);
+                return `${netName} repeats ${everyText} on ${fallbackText} each month${timeText}.`;
+              }
             }
           }
           return `${netName} repeats ${everyText}${timeText}.`;
@@ -3203,6 +4207,7 @@
       }
 
       function weekdayName(code) {
+        const normalized = String(code || '').toUpperCase().slice(-2);
         const map = {
           MO: 'Monday',
           TU: 'Tuesday',
@@ -3212,18 +4217,57 @@
           SA: 'Saturday',
           SU: 'Sunday',
         };
-        return map[code?.toUpperCase()] || '';
+        return map[normalized] || '';
+      }
+
+      function ordinalSuffix(value) {
+        const abs = Math.abs(value);
+        const mod100 = abs % 100;
+        if (mod100 >= 11 && mod100 <= 13) {
+          return 'th';
+        }
+        switch (abs % 10) {
+          case 1:
+            return 'st';
+          case 2:
+            return 'nd';
+          case 3:
+            return 'rd';
+          default:
+            return 'th';
+        }
       }
 
       function positionName(value) {
-        const map = {
-          1: 'first',
-          2: 'second',
-          3: 'third',
-          4: 'fourth',
-          '-1': 'last',
-        };
-        return map[value] || null;
+        switch (value) {
+          case 1:
+            return 'first';
+          case 2:
+            return 'second';
+          case 3:
+            return 'third';
+          case 4:
+            return 'fourth';
+          case 5:
+            return 'fifth';
+          case 6:
+            return 'sixth';
+          case -1:
+            return 'last';
+          case -2:
+            return 'second to last';
+          case -3:
+            return 'third to last';
+          default:
+            if (Number.isInteger(value) && value > 0) {
+              return `${value}${ordinalSuffix(value)}`;
+            }
+            if (Number.isInteger(value) && value < 0) {
+              const positive = Math.abs(value);
+              return `${positive}${ordinalSuffix(positive)} to last`;
+            }
+            return null;
+        }
       }
 
       function formatList(items) {

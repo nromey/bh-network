@@ -13,7 +13,7 @@ Use this when a push is rejected with “remote contains work that you do not ha
 - `git fetch origin`
 - `git rebase origin/main`
 
-3) If you hit conflicts in generated files (e.g., `_data/next_net.yml`), regenerate then continue:
+3) If you hit conflicts in generated files (e.g., `_data/next_net.json`), regenerate then continue:
 - `python3 scripts/build_next_net.py`
 - `git add _data/next_net.yml`
 - `git rebase --continue`
@@ -46,7 +46,7 @@ Use this when a push is rejected with “remote contains work that you do not ha
 4) Resolve conflicts
 - For regular source files: open the file(s), fix the conflict markers, then `git add <files>` and `git rebase --continue`.
 - For generated artifacts (this repo):
-  - `_data/next_net.yml` is produced by `scripts/build_next_net.py`. Prefer “regenerate” over manual merging:
+  - `_data/next_net.json` is produced by `scripts/build_next_net.py`. Prefer “regenerate” over manual merging:
     - `python3 scripts/build_next_net.py`
     - `git add _data/next_net.yml`
     - `git rebase --continue`
@@ -76,7 +76,7 @@ Use this when a push is rejected with “remote contains work that you do not ha
 ## Repo‑specific notes
 
 - Generated files:
-  - `_data/next_net.yml` comes from `scripts/build_next_net.py`.
+  - `_data/next_net.json` comes from `scripts/build_next_net.py`.
   - `_data/bhn_ncos_schedule.yml` comes from `scripts/build_bhn_data.py`.
   - When they conflict, regenerate instead of hand‑editing.
 - CI commits:
@@ -103,4 +103,3 @@ Bottom line: Your approach of keeping the sensitive material outside the repo an
 ---
 
 Questions or improvements? Open an Issue with the exact command you ran and the error you saw; include `git status -sb` output. We can refine this doc as needed.
-
