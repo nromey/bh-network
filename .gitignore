@@ -39,3 +39,6 @@ codex_binary
 # Some tools create either `file.Zone.Identifier` or `file:Zone.Identifier`
 *.Zone.Identifier
 *:[Zz]one.Identifier
+
+# Local service file
+bhn-nets-helper.service
