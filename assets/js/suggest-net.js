@@ -144,8 +144,43 @@
         form.reset();
         toggleRecurrencePane();
       } else {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || 'Could not submit your net. Please try again.');
+        let errorMessage = 'Could not submit your net. Please try again.';
+        let data;
+        try {
+          data = await response.json();
+        } catch (parseError) {
+          data = null;
+        }
+
+        if (data && typeof data === 'object') {
+          if (typeof data.error === 'string' && data.error.trim()) {
+            errorMessage = data.error.trim();
+          } else if (data.errors && typeof data.errors === 'object') {
+            const entries = Object.entries(data.errors)
+              .map(([field, message]) => ({
+                field,
+                message: typeof message === 'string' ? message.trim() : '',
+              }))
+              .filter((entry) => entry.message);
+            if (entries.length) {
+              const formatted = entries.map(({ field, message }) => {
+                const prettyField = field
+                  .replace(/_/g, ' ')
+                  .replace(/\b\w/g, (char) => char.toUpperCase());
+                return `${prettyField}: ${message}`;
+              });
+              errorMessage = formatted.join(' ');
+            }
+          }
+        } else if (response.statusText) {
+          errorMessage = `${errorMessage} (HTTP ${response.status} ${response.statusText})`;
+        }
+
+        if (errorMessage === 'Could not submit your net. Please try again.' && response.status >= 400) {
+          errorMessage = `${errorMessage} (HTTP ${response.status})`;
+        }
+
+        throw new Error(errorMessage);
       }
     } catch (error) {
       setStatus(error.message, 'error');
