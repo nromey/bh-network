@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here.
 
+## 2025-11-14
+
+- Suggest-a-Net improvements
+  - Client now surfaces detailed error text from `/api/public/suggest`, making validation failures actionable for submitters.
+  - Added a Netlify function proxy for the public form so submissions authenticate to the data host without exposing credentials; the path gracefully retries when the upstream is unavailable.
+  - Public submissions now trigger an ntfy notification (“New net suggestion”) with the net name, generated ID, category, and contact info so reviewers know when to check the queue.
+- Nets helper draft review
+  - Review cards now include a “Delete draft” button (for reviewers/publishers) that calls the existing `/api/pending` delete flow in place, removing the need to switch back to the selector when rejecting a submission.
+
 ## 2025-02-16
 
 - Nets data migration to JSON
