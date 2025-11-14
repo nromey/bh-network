@@ -1011,6 +1011,20 @@ def create_app() -> Flask:
         except ValueError as exc:
             return jsonify({"error": str(exc)}), 400
 
+        summary_lines = [
+            f"Submission: {normalized.get('name', '(no name)')}",
+            f"Generated ID: {normalized.get('id', '(no id)')}",
+            f"Category: {normalized.get('category', '(unknown)')}",
+            f"Contact: {contact_name or 'anonymous'} <{contact_email}>",
+        ]
+        if additional_info:
+            summary_lines.append(f"Notes: {additional_info[:200]}")
+        queue_ntfy_notification(
+            "New net suggestion",
+            "\n".join(summary_lines),
+            tags=["mailbox"],
+        )
+
         return jsonify(
             {
                 "message": "Submission received. A moderator will review it soon.",
