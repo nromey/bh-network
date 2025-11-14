@@ -3087,6 +3087,11 @@
           const promoteBtn = event.target.closest('button[data-action="promote"]');
           if (promoteBtn && promoteBtn.dataset.key) {
             promotePending(promoteBtn.dataset.key);
+            return;
+          }
+          const deleteBtn = event.target.closest('button[data-action="delete-draft"]');
+          if (deleteBtn && deleteBtn.dataset.key) {
+            handleInlineDraftDelete(deleteBtn.dataset.key, deleteBtn.dataset.label || '');
           }
         });
       }
@@ -3380,6 +3385,19 @@
         } catch (error) {
           showStatus(error.message, 'error');
         }
+      }
+
+      function handleInlineDraftDelete(key, label) {
+        if (!key) {
+          return;
+        }
+        const displayName = label || key;
+        if (!window.confirm(`Delete draft “${displayName}”? This cannot be undone.`)) {
+          return;
+        }
+        const activeKey = pendingContext && pendingContext.active_source;
+        const nextSource = activeKey === key ? 'nets' : activeKey;
+        deletePending('single', key, nextSource || 'nets');
       }
 
       function updateSourceSelectionUI() {
@@ -3696,13 +3714,16 @@
           }
           return;
         }
+        const canDeleteDrafts = Boolean(permissions.can_review || permissions.can_promote);
         files.forEach((file) => {
           const card = document.createElement('div');
           card.className = 'pending-card';
           card.dataset.key = file.key;
+          const cardLabel = file.label || file.name || file.key;
+          card.dataset.label = cardLabel;
 
           const title = document.createElement('h3');
-          title.textContent = file.label || file.name || file.key;
+          title.textContent = cardLabel;
           card.appendChild(title);
 
           const meta = document.createElement('div');
@@ -3842,17 +3863,34 @@
             card.appendChild(note);
           }
 
-          if (canPromote) {
+          if (canPromote || canDeleteDrafts) {
             const actions = document.createElement('div');
             actions.className = 'actions';
-            const promoteBtn = document.createElement('button');
-            promoteBtn.type = 'button';
-            promoteBtn.className = 'primary';
-            promoteBtn.dataset.action = 'promote';
-            promoteBtn.dataset.key = file.key;
-            promoteBtn.textContent = 'Publish to live';
-            actions.appendChild(promoteBtn);
-            card.appendChild(actions);
+            let actionCount = 0;
+            if (canPromote) {
+              const promoteBtn = document.createElement('button');
+              promoteBtn.type = 'button';
+              promoteBtn.className = 'primary';
+              promoteBtn.dataset.action = 'promote';
+              promoteBtn.dataset.key = file.key;
+              promoteBtn.textContent = 'Publish to live';
+              actions.appendChild(promoteBtn);
+              actionCount += 1;
+            }
+            if (canDeleteDrafts) {
+              const deleteBtn = document.createElement('button');
+              deleteBtn.type = 'button';
+              deleteBtn.className = 'danger';
+              deleteBtn.dataset.action = 'delete-draft';
+              deleteBtn.dataset.key = file.key;
+              deleteBtn.dataset.label = cardLabel;
+              deleteBtn.textContent = 'Delete draft';
+              actions.appendChild(deleteBtn);
+              actionCount += 1;
+            }
+            if (actionCount) {
+              card.appendChild(actions);
+            }
           }
 
           pendingListContainer.appendChild(card);
