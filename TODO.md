@@ -13,6 +13,10 @@
   - Surface who staged each pending file and when (pull from auth header and embed in the summary).
   - Add a “reject/archive” action so reviewers can clear stale bundles without deleting backups.
   - Emit an optional Telegram notification when a new pending bundle is ready for review (later phase; wire up bot token + chat ID).
+  - **Batch publish workflow**: allow reviewers to mark multiple drafts as “ready”, edit them if needed, and publish them in a single commit/push. Requires:
+    - Metadata/state for pending files (`pending_status: ready|draft|rejected`) plus UI controls to mark/unmark readiness.
+    - Ability to queue multiple approved drafts, preview the combined change set, and publish once (merging pending files in order and generating a consolidated summary/backups/commit).
+    - Optional “Ready queue” view and clear affordances to remove or re-queue drafts before publishing.
 - Nets helper UI polish
   - Replace free-form mode fields with checkbox-driven sections (DMR, AllStar, EchoLink, HF, etc.) that expose their inputs only when selected; validate/announce when data is removed.
   - Add polite announcements for key actions (saving pending file, expanding mode sections, clearing data) and improve RRULE prose (“repeats every day”, “second Thursday”, etc.).
