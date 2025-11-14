@@ -7,4 +7,4 @@ http://www.blindhams.network/*  https://www.blindhams.network/:splat  301!
 
 # Proxy data to avoid CORS in production
 /data/*  https://data.blindhams.network/:splat  200
-/api/public/suggest  https://data.blindhams.network/nets-helper/api/public/suggest  200
+/api/public/suggest  /.netlify/functions/suggest-net  200
