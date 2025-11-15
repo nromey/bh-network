@@ -199,6 +199,59 @@ caption { text-align:left; font-weight:600; margin-bottom:.5rem; }
 .pager-cat-active { display:flex; gap:.5rem; flex-wrap:wrap; }
 .pager-cat-chip { background:#fff; color:#000; border:2px solid #fff; padding:.15rem .5rem; }
 
+/* Responsive tweaks for mobile / large type use */
+.view-toggle {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.75rem;
+}
+.view-toggle button,
+.view-toggle .time-utc-toggle {
+  flex: 1 1 auto;
+  min-width: 8rem;
+}
+.view-toggle .time-utc-toggle {
+  text-align: left;
+}
+.next-net-card,
+.next-net-item,
+.net-desc,
+.home-next-nets,
+.nets-section,
+.home-week-nets {
+  word-break: break-word;
+}
+.home-week-nets .view-table,
+.nets-section .view-table {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.home-week-nets table,
+.nets-section table {
+  min-width: 100%;
+}
+@media (max-width: 720px) {
+  body {
+    line-height: 1.6;
+  }
+  .nets-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .view-toggle button,
+  .view-toggle .time-utc-toggle {
+    min-width: 0;
+  }
+  .view-toggle {
+    width: 100%;
+  }
+  .home-next-nets,
+  .nets-section {
+    padding: 1.25rem;
+  }
+}
+
 /* UTC add-on chip and toggle label */
 .next-net-utc { color:#aaa; }
 .time-utc-toggle { margin-left:.75rem; }
