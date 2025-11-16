@@ -3760,7 +3760,7 @@
             const list = document.createElement('ul');
             list.className = 'pending-change-list';
             const TYPE_LABELS = { added: 'Added', updated: 'Updated', removed: 'Removed' };
-            const FIELD_LIMIT = 6;
+            const FIELD_LIMIT = Number.POSITIVE_INFINITY;
             const formatDiffValue = (value) => {
               if (value === null || value === undefined || value === '') {
                 return '—';
@@ -3831,13 +3831,6 @@
                   diffItem.appendChild(document.createTextNode(`: ${description}`));
                   diffList.appendChild(diffItem);
                 });
-                const remaining = fieldDiffs.length - FIELD_LIMIT;
-                if (remaining > 0) {
-                  const moreItem = document.createElement('li');
-                  moreItem.className = 'pending-diff-more';
-                  moreItem.textContent = `…${remaining} more field${remaining === 1 ? '' : 's'}`;
-                  diffList.appendChild(moreItem);
-                }
                 item.appendChild(diffList);
               } else {
                 const noFieldDiffs = document.createElement('p');
