@@ -1083,6 +1083,46 @@ def create_app() -> Flask:
             }
         )
 
+    @app.get("/api/pending/<path:pending_key>/net/<net_id>")
+    def api_pending_net_detail(pending_key: str, net_id: str):
+        normalized_key = normalize_pending_key(pending_key)
+        if not normalized_key:
+            return jsonify({"error": "Invalid pending key."}), 400
+        pending_source_key = f"pending:{normalized_key}"
+        pending_path = (app.config["OUTPUT_DIR"] / "pending" / normalized_key).resolve()
+        if not pending_path.is_file():
+            return jsonify({"error": "Pending draft not found."}), 404
+        current_user = get_current_user(app)
+        context = load_context(app.config, pending_source_key, current_user)
+        target_net, actual_id = find_net_by_id(context["nets_data"], net_id)
+        if not target_net:
+            return jsonify({"error": "Net not found in the pending snapshot."}), 404
+
+        metadata_entry = context.get("pending_metadata", {}).get(pending_source_key, {})
+        canonical_map = load_nets_map(app.config["NETS_FILE"])
+        is_new_entry = actual_id not in canonical_map
+        form_state = build_form_state(
+            target_net,
+            context["default_time_zone"],
+            context["active_source_key"],
+            context["working_file"],
+            metadata=metadata_entry,
+            treat_as_new=is_new_entry,
+        )
+        label = build_edit_label(actual_id, target_net.get("name"))
+        return jsonify(
+            {
+                "net": form_state,
+                "original_id": actual_id,
+                "active_source": context["active_source_key"],
+                "label": label,
+                "metadata": form_state.get("metadata", {}),
+                "permissions": context["permissions"],
+                "user": context["current_user"],
+                "pending_key": pending_source_key,
+            }
+        )
+
     return app
 
 
@@ -1290,6 +1330,15 @@ def pending_label_from_name(filename: str) -> Tuple[str, Optional[str]]:
         return filename, None
     label = dt.astimezone(timezone.utc).strftime("Created %Y-%m-%d %H:%M:%S UTC")
     return label, dt.isoformat()
+
+
+def normalize_pending_key(raw_key: str) -> str:
+    if not raw_key:
+        return ""
+    value = raw_key
+    if value.startswith("pending:"):
+        value = value.split("pending:", 1)[1]
+    return value.strip()
 
 
 def build_source_options(pending_files: List[Dict[str, str]], nets_file: Path, active_key: str) -> List[Dict[str, str]]:
@@ -1925,6 +1974,8 @@ def build_form_state(
     active_source: str,
     source_file: Optional[Path] = None,
     metadata: Optional[Dict[str, Any]] = None,
+    *,
+    treat_as_new: bool = False,
 ) -> Dict[str, Any]:
     values: Dict[str, str] = {}
     for key in BASE_FIELD_KEYS:
@@ -1959,6 +2010,8 @@ def build_form_state(
         if existing_record:
             source_hash = compute_record_hash(existing_record)
 
+    is_new_entry = treat_as_new
+    original_id_value = "" if is_new_entry else str(net.get("id") or "")
     meta = {
         "manualTimeMode": False,
         "startPicker": values.get("start_local", ""),
@@ -1966,15 +2019,15 @@ def build_form_state(
         "categoryChoice": values.get("category", ""),
         "sourceKey": active_source,
         "editing": {
-            "isEditing": True,
-            "originalId": str(net.get("id") or ""),
+            "isEditing": not is_new_entry,
+            "originalId": original_id_value,
             "label": build_edit_label(str(net.get("id") or ""), net.get("name")),
             "sourceHash": source_hash,
         },
     }
 
-    values["original_id"] = str(net.get("id") or "")
-    values["mode"] = "edit"
+    values["original_id"] = original_id_value
+    values["mode"] = "add" if is_new_entry else "edit"
     values["source_hash"] = source_hash
     metadata = metadata or {}
     values["submission_note"] = str(metadata.get("note", "") or "")

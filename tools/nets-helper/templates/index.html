@@ -3081,7 +3081,7 @@
         pendingListContainer.addEventListener('click', (event) => {
           const loadBtn = event.target.closest('button[data-load-id]');
           if (loadBtn && loadBtn.dataset.loadId) {
-            loadNetForEdit(loadBtn.dataset.loadId);
+            loadNetForEdit(loadBtn.dataset.loadId, loadBtn.dataset.pendingKey || '');
             return;
           }
           const promoteBtn = event.target.closest('button[data-action="promote"]');
@@ -3786,6 +3786,7 @@
                 loadBtn.type = 'button';
                 loadBtn.className = 'secondary pending-change-open';
                 loadBtn.dataset.loadId = loadId;
+                loadBtn.dataset.pendingKey = file.key || '';
                 loadBtn.textContent = 'Open in editor';
                 head.appendChild(loadBtn);
               }
@@ -3955,7 +3956,7 @@
         }
       }
 
-      async function loadNetForEdit(netId) {
+      async function loadNetForEdit(netId, pendingKey = '') {
         if (!netId) {
           return;
         }
@@ -3965,10 +3966,17 @@
         }
         syncLoadSelectedButton();
         try {
-          const url = new URL(buildApiUrl(`api/nets/${encodeURIComponent(netId)}`));
-          const sourceKey = sourceInput ? sourceInput.value : pendingContext && pendingContext.active_source;
-          if (sourceKey) {
-            url.searchParams.set('source', sourceKey);
+          let url;
+          if (pendingKey) {
+            url = new URL(
+              buildApiUrl(`api/pending/${encodeURIComponent(pendingKey)}/net/${encodeURIComponent(netId)}`)
+            );
+          } else {
+            url = new URL(buildApiUrl(`api/nets/${encodeURIComponent(netId)}`));
+            const sourceKey = sourceInput ? sourceInput.value : pendingContext && pendingContext.active_source;
+            if (sourceKey) {
+              url.searchParams.set('source', sourceKey);
+            }
           }
           const response = await fetch(url.toString());
           const body = await parseResponse(response);
