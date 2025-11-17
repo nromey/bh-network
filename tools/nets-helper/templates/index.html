@@ -1072,7 +1072,7 @@
           <textarea id="submission_note" name="submission_note" aria-describedby="submissionNoteHint"></textarea>
           <p class="hint" id="submissionNoteHint">This note appears to publishers when reviewing the draft (for example &ldquo;Rachel &ndash; added AllStar node details&rdquo;).</p>
         </div>
-        <p class="hint" id="saveDraftHint" hidden>Saving a draft is disabled while reviewing a submitted batch. Use “Add to batch” and “Submit batch” to update this draft.</p>
+        <p class="hint" id="saveDraftHint" hidden>Saving updates the currently selected draft. Publish from the review queue when you are ready.</p>
         <p id="autosaveStatus" class="autosave-status" hidden aria-live="polite"></p>
       </form>
 
@@ -1305,18 +1305,10 @@
           }
           return;
         }
-        if (isPendingSource) {
-          saveBtn.hidden = true;
-          saveBtn.disabled = true;
-          if (saveDraftHint) {
-            saveDraftHint.hidden = false;
-          }
-        } else {
-          saveBtn.hidden = false;
-          saveBtn.disabled = false;
-          if (saveDraftHint) {
-            saveDraftHint.hidden = true;
-          }
+        saveBtn.hidden = false;
+        saveBtn.disabled = false;
+        if (saveDraftHint) {
+          saveDraftHint.hidden = !isPendingSource;
         }
       }
 
