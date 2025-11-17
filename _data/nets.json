@@ -263,6 +263,20 @@
       "mode": "add",
       "allstar": "517310-517317",
       "echolink": "*blind*"
+    },
+    {
+      "id": "science-net",
+      "category": "general",
+      "name": "Science Net",
+      "description": "Science news, discussion and a little trivia",
+      "start_local": "21:00",
+      "duration_min": 120,
+      "rrule": "FREQ=WEEKLY;BYDAY=SA",
+      "time_zone": "America/New_York",
+      "location": "https://thecanadahub.ca",
+      "mode": "edit",
+      "allstar": "517300 (east)517301 (west)517302 (phones/repeater phone)",
+      "echolink": "590387 ve7nz-l"
     }
   ]
 }
