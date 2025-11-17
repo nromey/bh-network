@@ -529,9 +529,19 @@ def create_app() -> Flask:
         entry = record_to_entry(normalized)
         snippet = build_json_preview(entry)
         submission_note = sanitize_optional(data.get("submission_note"))
-        metadata: Dict[str, Any] = {}
+        active_source_key = context["active_source_key"]
+        existing_metadata = {}
+        overwrite_pending_path: Optional[Path] = None
+        if active_source_key.startswith("pending:"):
+            overwrite_pending_path = context.get("working_file")
+            existing_metadata = context.get("pending_metadata", {}).get(active_source_key, {}) or {}
+
+        metadata: Dict[str, Any] = dict(existing_metadata)
         if submission_note:
             metadata["note"] = submission_note
+        elif "note" in metadata and not submission_note:
+            metadata.pop("note", None)
+
         try:
             pending_path = write_pending_file(
                 entry,
@@ -543,6 +553,7 @@ def create_app() -> Flask:
                 expected_hash=source_hash,
                 current_user=current_user,
                 metadata=metadata,
+                pending_path=overwrite_pending_path,
             )
         except ValueError as exc:
             message = str(exc)
@@ -1593,15 +1604,19 @@ def write_pending_snapshot(
     source_file: Optional[Path] = None,
     current_user: Optional[str] = None,
     metadata: Optional[Dict[str, Any]] = None,
+    pending_path: Optional[Path] = None,
 ) -> Path:
     changes_list = list(changes)
     if not changes_list:
         raise ValueError("No changes provided.")
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     pending_dir = output_dir / "pending"
     pending_dir.mkdir(parents=True, exist_ok=True)
-    pending_name = f"nets.pending.{timestamp}.json"
-    pending_path = pending_dir / pending_name
+    if pending_path:
+        pending_path = Path(pending_path)
+    else:
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        pending_name = f"nets.pending.{timestamp}.json"
+        pending_path = pending_dir / pending_name
 
     base_file = source_file or nets_file
     payload = load_nets_payload(base_file)
@@ -1633,10 +1648,15 @@ def write_pending_snapshot(
     payload["nets"] = nets
     save_nets_payload(pending_path, payload)
 
-    metadata_payload: Dict[str, Any] = {
-        "submitted_by": (current_user or ""),
-        "submitted_at": datetime.now(timezone.utc).isoformat(),
-    }
+    metadata_payload: Dict[str, Any] = {}
+    if metadata and "submitted_by" in metadata:
+        metadata_payload["submitted_by"] = metadata["submitted_by"]
+    else:
+        metadata_payload["submitted_by"] = current_user or ""
+    if metadata and "submitted_at" in metadata:
+        metadata_payload["submitted_at"] = metadata["submitted_at"]
+    else:
+        metadata_payload["submitted_at"] = datetime.now(timezone.utc).isoformat()
     if metadata:
         for key, value in metadata.items():
             if value in (None, "", []):
@@ -1659,6 +1679,7 @@ def write_pending_file(
     expected_hash: Optional[str] = "",
     current_user: Optional[str] = None,
     metadata: Optional[Dict[str, Any]] = None,
+    pending_path: Optional[Path] = None,
 ) -> Path:
     change = {
         "entry": net_entry,
@@ -1680,6 +1701,7 @@ def write_pending_file(
         source_file=source_file,
         current_user=current_user,
         metadata=metadata_payload,
+        pending_path=pending_path,
     )
 
 
