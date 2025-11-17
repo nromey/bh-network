@@ -1099,15 +1099,13 @@ def create_app() -> Flask:
             return jsonify({"error": "Net not found in the pending snapshot."}), 404
 
         metadata_entry = context.get("pending_metadata", {}).get(pending_source_key, {})
-        canonical_map = load_nets_map(app.config["NETS_FILE"])
-        is_new_entry = actual_id not in canonical_map
         form_state = build_form_state(
             target_net,
             context["default_time_zone"],
             context["active_source_key"],
             context["working_file"],
             metadata=metadata_entry,
-            treat_as_new=is_new_entry,
+            treat_as_new=False,
         )
         label = build_edit_label(actual_id, target_net.get("name"))
         return jsonify(
