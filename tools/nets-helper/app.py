@@ -421,6 +421,161 @@ def create_app() -> Flask:
         "reviewers": [str(user) for user in sorted(roles_data.get("reviewers", []))],
     }
 
+    @app.post("/api/pending/batch_publish")
+    def api_pending_batch_publish():
+        """Publish multiple drafts at once, skipping failures."""
+
+        current_user = get_current_user(app)
+        if not user_can_promote(app.config["ROLES_DATA"], current_user):
+            return jsonify({"error": "You do not have permission to publish drafts."}), 403
+
+        payload = request.get_json(force=True, silent=True) or {}
+        requested_keys = payload.get("keys")
+        normalized_keys: Optional[List[str]] = None
+        if requested_keys is not None:
+            if not isinstance(requested_keys, list):
+                return jsonify({"error": "Submit a list of drafts to publish."}), 400
+            cleaned: List[str] = []
+            for raw_key in requested_keys:
+                if not isinstance(raw_key, str):
+                    continue
+                normalized = normalize_pending_key(raw_key)
+                if not normalized:
+                    continue
+                cleaned.append(f"pending:{normalized}")
+            normalized_keys = list(dict.fromkeys(cleaned))
+            if not normalized_keys:
+                return jsonify({"error": "No valid drafts selected."}), 400
+
+        output_dir: Path = app.config["OUTPUT_DIR"]
+        nets_file: Path = app.config["NETS_FILE"]
+        repo_root: Path = app.config["REPO_ROOT"]
+        remote_name: str = app.config.get("GIT_REMOTE", "origin")
+        branch_name: str = app.config.get("GIT_BRANCH") or git_current_branch(repo_root)
+        auto_push: bool = app.config.get("AUTO_PUSH", True)
+
+        pending_entries = list_pending_files(output_dir)
+        pending_lookup = {entry["key"]: entry for entry in pending_entries}
+        failed: List[Dict[str, Any]] = []
+        if not pending_entries and normalized_keys is None:
+            return jsonify({"error": "No drafts to publish."}), 400
+
+        publish_order = normalized_keys or [entry["key"] for entry in pending_entries]
+        if normalized_keys is not None:
+            for key in normalized_keys:
+                if key not in pending_lookup:
+                    failed.append({"key": key, "error": "Draft not found."})
+            publish_order = [key for key in publish_order if key in pending_lookup]
+            if not publish_order:
+                return jsonify({"error": "Selected drafts are no longer available.", "failed": failed}), 400
+
+        published: List[Dict[str, Any]] = []
+        staged_paths: set[Path] = set()
+        commit_changes: List[Dict[str, Any]] = []
+        commit_stats = {"added": 0, "updated": 0, "removed": 0}
+
+        for key in publish_order:
+            entry = pending_lookup.get(key)
+            if not entry:
+                failed.append({"key": key, "error": "Draft not found."})
+                continue
+            summary_entry: Dict[str, Any] = {}
+            try:
+                summaries = summarize_pending_files([entry], nets_file)
+                if summaries:
+                    summary_entry = summaries[0]
+                result = promote_pending_file(
+                    key,
+                    output_dir,
+                    nets_file,
+                    current_user=current_user,
+                )
+            except Exception as exc:  # pragma: no cover - propagate error details
+                failed.append({"key": key, "error": str(exc)})
+                continue
+
+            if summary_entry:
+                commit_changes.extend(summary_entry.get("changes", []))
+                stats = summary_entry.get("stats", {}) or {}
+                for field in commit_stats:
+                    commit_stats[field] += stats.get(field, 0)
+
+            try:
+                staged_paths.add(nets_file.relative_to(repo_root))
+            except ValueError:
+                staged_paths.add(nets_file)
+            backup_path = result.get("backup")
+            if backup_path:
+                backup = Path(backup_path)
+                try:
+                    staged_paths.add(backup.relative_to(repo_root))
+                except ValueError:
+                    staged_paths.add(backup)
+
+            published.append(
+                {
+                    "key": key,
+                    "label": entry.get("label") or entry.get("name") or key,
+                    "result": result,
+                    "summary": summary_entry,
+                }
+            )
+
+        commit_hash = None
+        push_status = {"pushed": False, "message": "Push skipped"}
+        if published:
+            try:
+                git_stage_paths(repo_root, sorted(staged_paths))
+                if git_has_staged_changes(repo_root):
+                    change_labels = [item.get("label") or item.get("key") for item in published[:5]]
+                    changes_text = ", ".join(label for label in change_labels if label) or "nets update"
+                    commit_msg = f"Batch publish: {len(published)} draft(s) — {changes_text}"
+                    commit_hash = git_commit(repo_root, commit_msg.strip(), author=current_user or "nets-helper")
+                    if auto_push:
+                        try:
+                            git_push(repo_root, remote_name, branch_name)
+                            push_status = {"pushed": True, "message": f"Pushed to {remote_name}/{branch_name}"}
+                        except RuntimeError as exc:
+                            push_status = {"pushed": False, "message": str(exc)}
+                else:
+                    run_git_command(repo_root, ["reset"])
+            except Exception as exc:  # pragma: no cover - git errors
+                try:
+                    run_git_command(repo_root, ["reset", "--mixed"])
+                except RuntimeError:
+                    pass
+                return (
+                    jsonify({"error": f"Commit/push failed: {exc}", "published": published, "failed": failed}),
+                    500,
+                )
+
+        summary = {
+            "published": published,
+            "failed": failed,
+            "commit": {
+                "hash": commit_hash,
+                "short_hash": commit_hash[:7] if commit_hash else None,
+                "branch": branch_name,
+                "pushed": push_status.get("pushed", False),
+                "push_message": push_status.get("message", ""),
+            },
+            "stats": commit_stats,
+            "changes": commit_changes,
+        }
+        aria_lines = []
+        if published:
+            aria_lines.append(f"Published {len(published)} draft(s) successfully.")
+        if failed:
+            aria_lines.append(f"{len(failed)} draft(s) could not be published.")
+        if push_status.get("push_message"):
+            aria_lines.append(push_status["push_message"])
+        summary["aria_message"] = " ".join(aria_lines)
+
+        status_code = 200 if published else 400
+        if not published and not failed:
+            summary["error"] = "No drafts were published."
+        return jsonify(summary), status_code
+
     def queue_ntfy_notification(title: str, message: str, tags: Optional[List[str]] = None) -> None:
         endpoint = app.config.get("NTFY_ENDPOINT", "")
         topic = app.config.get("NTFY_TOPIC", "")
@@ -1615,8 +1770,15 @@ def write_pending_snapshot(
         pending_path = Path(pending_path)
     else:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        pending_name = f"nets.pending.{timestamp}.json"
-        pending_path = pending_dir / pending_name
+        counter = 0
+        while True:
+            suffix = f"_{counter}" if counter else ""
+            pending_name = f"nets.pending.{timestamp}{suffix}.json"
+            candidate = pending_dir / pending_name
+            if not candidate.exists():
+                pending_path = candidate
+                break
+            counter += 1
 
     base_file = source_file or nets_file
     payload = load_nets_payload(base_file)

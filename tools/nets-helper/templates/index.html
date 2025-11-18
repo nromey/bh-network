@@ -283,9 +283,66 @@
         margin-bottom: 1.5rem;
         background: rgba(17, 24, 39, 0.04);
       }
+      .queue-controls {
+        border: 1px solid #2563eb;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        margin: 1rem 0;
+        background: rgba(37, 99, 235, 0.08);
+      }
+      .queue-controls p {
+        margin: 0 0 0.5rem;
+      }
+      .queue-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .queue-toggle {
+        border-style: dashed;
+      }
+      .queue-toggle[data-queued="true"],
+      .queue-toggle[aria-pressed="true"] {
+        background: #1d4fa0;
+        color: #fff;
+        border-color: #15356f;
+      }
       .pending-review h2 {
         margin-top: 0;
         font-size: 1.2rem;
+      }
+      .publish-queue {
+        border: 1px solid #0f766e;
+        border-radius: 0.5rem;
+        padding: 1rem 1.25rem;
+        margin: 1rem 0 1.5rem;
+        background: rgba(15, 118, 110, 0.08);
+      }
+      .publish-queue h3 {
+        margin-top: 0;
+        font-size: 1.1rem;
+      }
+      .publish-queue ul {
+        margin: 0.5rem 0 0;
+        padding-left: 1rem;
+      }
+      .publish-queue li {
+        margin-bottom: 0.35rem;
+      }
+      .publish-queue .actions {
+        margin-top: 0.75rem;
+      }
+      .queue-count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.5rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        background: #0f766e;
+        color: #fff;
+        margin-left: 0.35rem;
       }
       .pending-list {
         margin: 0;
@@ -755,6 +812,15 @@
       <section id="pendingReview" class="pending-review" aria-labelledby="pendingReviewHeading" hidden>
         <h2 id="pendingReviewHeading">Draft review queue</h2>
         <p class="hint" id="pendingReviewHint">Review saved drafts and publish when they're ready to go live.</p>
+        <div id="publishQueueBar" class="publish-queue" hidden aria-live="polite" aria-atomic="true">
+          <h3>Queued for publication <span id="publishQueueBadge" class="queue-count-badge" hidden>0</span></h3>
+          <p id="publishQueueSummary" class="hint">No drafts queued yet. Select drafts below to build a publish list.</p>
+          <ul id="publishQueueList"></ul>
+          <div class="queue-actions">
+            <button type="button" id="publishQueueBtn" class="primary" disabled>Publish queued drafts</button>
+            <button type="button" id="clearQueueBtn" class="secondary" disabled>Clear queued</button>
+          </div>
+        </div>
         <div id="pendingList" class="pending-list" aria-live="polite" aria-busy="false">
           <p class="pending-empty">Loading drafts…</p>
         </div>
@@ -1178,6 +1244,14 @@
       const netList = document.getElementById('netList');
       const netListStatus = document.getElementById('netListStatus');
       const netLoadSelectedBtn = document.getElementById('netLoadSelectedBtn');
+      const publishQueueBar = document.getElementById('publishQueueBar');
+      const publishQueueSummary = document.getElementById('publishQueueSummary');
+      const publishQueueList = document.getElementById('publishQueueList');
+      const publishQueueBadge = document.getElementById('publishQueueBadge');
+      const publishQueueBtn = document.getElementById('publishQueueBtn');
+      const publishQueueClearBtn = document.getElementById('clearQueueBtn');
+      let queuedDrafts = new Map();
+      let queuePublishInFlight = false;
       const netSearchInput = document.getElementById('netSearch');
       const netSearchLoadBtn = document.getElementById('netSearchLoadBtn');
       const editControlsSection = document.getElementById('editControls');
@@ -1289,6 +1363,162 @@
         }
         if (pendingToggleBtn) {
           pendingToggleBtn.setAttribute('aria-expanded', pendingReviewVisible ? 'true' : 'false');
+        }
+      }
+
+      function queueSummaryText() {
+        const count = queuedDrafts.size;
+        if (!count) {
+          if (queuePublishInFlight) {
+            return 'Publishing queued drafts…';
+          }
+          return 'No drafts queued yet. Select drafts below to build a publish list.';
+        }
+        const labels = Array.from(queuedDrafts.values()).filter(Boolean);
+        const preview = labels.slice(0, 3).join(', ');
+        if (labels.length > 3) {
+          return `${count} drafts queued (${preview}, …).`;
+        }
+        if (labels.length) {
+          return `${count} draft${count === 1 ? '' : 's'} queued: ${preview}.`;
+        }
+        return `${count} draft${count === 1 ? '' : 's'} queued.`;
+      }
+
+      function renderPublishQueueList() {
+        if (!publishQueueList) {
+          return;
+        }
+        publishQueueList.innerHTML = '';
+        if (!queuedDrafts.size) {
+          publishQueueList.hidden = true;
+          return;
+        }
+        publishQueueList.hidden = false;
+        let index = 1;
+        queuedDrafts.forEach((label, key) => {
+          const item = document.createElement('li');
+          const text = document.createElement('span');
+          text.textContent = `${index}. ${label || key}`;
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'secondary';
+          removeBtn.dataset.action = 'queue-remove';
+          removeBtn.dataset.key = key;
+          removeBtn.dataset.label = label || key;
+          removeBtn.textContent = 'Remove';
+          item.append(text, document.createTextNode(' '), removeBtn);
+          publishQueueList.appendChild(item);
+          index += 1;
+        });
+      }
+
+      function updateQueueControls() {
+        if (!publishQueueBar) {
+          return;
+        }
+        if (!canPromote) {
+          publishQueueBar.hidden = true;
+          return;
+        }
+        renderPublishQueueList();
+        const count = queuedDrafts.size;
+        const shouldShow = count > 0 || queuePublishInFlight;
+        publishQueueBar.hidden = !shouldShow;
+        if (publishQueueSummary) {
+          publishQueueSummary.textContent = queueSummaryText();
+        }
+        if (publishQueueBadge) {
+          if (count) {
+            publishQueueBadge.textContent = count;
+            publishQueueBadge.hidden = false;
+          } else {
+            publishQueueBadge.hidden = true;
+          }
+        }
+        if (publishQueueBtn) {
+          publishQueueBtn.disabled = !count || queuePublishInFlight;
+        }
+        if (publishQueueClearBtn) {
+          publishQueueClearBtn.disabled = !count || queuePublishInFlight;
+        }
+      }
+
+      function setQueueButtonState(button, isQueued) {
+        if (!button) {
+          return;
+        }
+        button.dataset.queued = isQueued ? 'true' : 'false';
+        button.setAttribute('aria-pressed', isQueued ? 'true' : 'false');
+        button.textContent = isQueued ? 'Queued — remove' : 'Queue for publication';
+        button.classList.toggle('primary', isQueued);
+        button.classList.toggle('secondary', !isQueued);
+      }
+
+      function syncQueueButtonsForKey(key) {
+        if (!pendingListContainer) {
+          return;
+        }
+        const buttons = pendingListContainer.querySelectorAll('button[data-action="queue-toggle"]');
+        buttons.forEach((button) => {
+          if (button.dataset.key === key) {
+            setQueueButtonState(button, queuedDrafts.has(key));
+          }
+        });
+      }
+
+      function refreshQueueButtons() {
+        if (!pendingListContainer) {
+          return;
+        }
+        const buttons = pendingListContainer.querySelectorAll('button[data-action="queue-toggle"]');
+        buttons.forEach((button) => {
+          setQueueButtonState(button, queuedDrafts.has(button.dataset.key));
+        });
+      }
+
+      function toggleQueuedDraft(key, label) {
+        if (!canPromote || !key) {
+          return;
+        }
+        if (queuedDrafts.has(key)) {
+          queuedDrafts.delete(key);
+          announce(`${label || key} removed from publish queue.`);
+        } else {
+          queuedDrafts.set(key, label || key);
+          announce(`${label || key} queued for publication.`);
+        }
+        syncQueueButtonsForKey(key);
+        updateQueueControls();
+      }
+
+      function clearQueuedDrafts(options = {}) {
+        if (!queuedDrafts.size) {
+          return;
+        }
+        queuedDrafts = new Map();
+        if (!options.silent) {
+          announce('Cleared publish queue selections.');
+        }
+        refreshQueueButtons();
+        updateQueueControls();
+      }
+
+      function pruneQueuedDrafts(validKeys) {
+        if (!queuedDrafts.size) {
+          updateQueueControls();
+          return;
+        }
+        let changed = false;
+        queuedDrafts.forEach((_value, key) => {
+          if (!validKeys.has(key)) {
+            queuedDrafts.delete(key);
+            changed = true;
+          }
+        });
+        if (changed) {
+          refreshQueueButtons();
+          updateQueueControls();
         }
       }
 
@@ -3076,6 +3306,11 @@
             loadNetForEdit(loadBtn.dataset.loadId, loadBtn.dataset.pendingKey || '');
             return;
           }
+          const queueBtn = event.target.closest('button[data-action="queue-toggle"]');
+          if (queueBtn && queueBtn.dataset.key) {
+            toggleQueuedDraft(queueBtn.dataset.key, queueBtn.dataset.label || queueBtn.dataset.key);
+            return;
+          }
           const promoteBtn = event.target.closest('button[data-action="promote"]');
           if (promoteBtn && promoteBtn.dataset.key) {
             promotePending(promoteBtn.dataset.key);
@@ -3085,6 +3320,19 @@
           if (deleteBtn && deleteBtn.dataset.key) {
             handleInlineDraftDelete(deleteBtn.dataset.key, deleteBtn.dataset.label || '');
           }
+        });
+        pendingListContainer.addEventListener('dblclick', (event) => {
+          if (!canPromote) {
+            return;
+          }
+          if (event.target.closest('button, a, input, textarea, select, label')) {
+            return;
+          }
+          const card = event.target.closest('.pending-card');
+          if (!card || !card.dataset.key) {
+            return;
+          }
+          toggleQueuedDraft(card.dataset.key, card.dataset.label || card.dataset.key);
         });
       }
 
@@ -3186,6 +3434,41 @@
           }
         });
       }
+
+      if (publishQueueBtn) {
+        publishQueueBtn.addEventListener('click', () => {
+          publishQueuedDrafts();
+        });
+      }
+
+      if (publishQueueClearBtn) {
+        publishQueueClearBtn.addEventListener('click', () => {
+          if (!queuedDrafts.size) {
+            showStatus('No drafts queued yet.', 'error');
+            return;
+          }
+          clearQueuedDrafts();
+        });
+      }
+
+      if (publishQueueList) {
+        publishQueueList.addEventListener('click', (event) => {
+          const removeBtn = event.target.closest('button[data-action="queue-remove"]');
+          if (!removeBtn || !removeBtn.dataset.key) {
+            return;
+          }
+          const key = removeBtn.dataset.key;
+          const label = removeBtn.dataset.label || queuedDrafts.get(key) || key;
+          if (queuedDrafts.has(key)) {
+            queuedDrafts.delete(key);
+            announce(`${label} removed from publish queue.`);
+            refreshQueueButtons();
+            updateQueueControls();
+          }
+        });
+      }
+
+      updateQueueControls();
 
       if (exitEditModeBtn) {
         exitEditModeBtn.addEventListener('click', () => {
@@ -3692,6 +3975,8 @@
         }
         const files = Array.isArray(data.pending_files) ? data.pending_files : [];
         pendingContext.pending = files;
+        const validKeys = new Set(files.map((file) => file.key));
+        pruneQueuedDrafts(validKeys);
         const permissions = data.permissions || pendingContext.permissions || {};
         const canPromote = Boolean(permissions.can_promote);
         pendingListContainer.innerHTML = '';
@@ -3704,6 +3989,7 @@
           if (pendingReviewSection) {
             pendingReviewSection.hidden = !pendingReviewVisible;
           }
+          updateQueueControls();
           return;
         }
         const canDeleteDrafts = Boolean(permissions.can_review || permissions.can_promote);
@@ -3854,6 +4140,16 @@
             actions.className = 'actions';
             let actionCount = 0;
             if (canPromote) {
+              const queueBtn = document.createElement('button');
+              queueBtn.type = 'button';
+              queueBtn.className = 'queue-toggle secondary';
+              queueBtn.dataset.action = 'queue-toggle';
+              queueBtn.dataset.key = file.key;
+              queueBtn.dataset.label = cardLabel;
+              setQueueButtonState(queueBtn, queuedDrafts.has(file.key));
+              actions.appendChild(queueBtn);
+              actionCount += 1;
+
               const promoteBtn = document.createElement('button');
               promoteBtn.type = 'button';
               promoteBtn.className = 'primary';
@@ -3884,6 +4180,7 @@
         if (pendingReviewSection) {
           pendingReviewSection.hidden = !pendingReviewVisible;
         }
+        updateQueueControls();
         updateBatchResumeBanner();
       }
 
@@ -3945,6 +4242,69 @@
           await loadPendingOverview();
         } catch (error) {
           showStatus(error.message, 'error');
+        }
+      }
+
+      async function publishQueuedDrafts() {
+        const keys = Array.from(queuedDrafts.keys());
+        if (!keys.length) {
+          showStatus('Queue is empty. Select drafts to publish first.', 'error');
+          return;
+        }
+        const confirmMessage = `Publish ${keys.length} queued draft${keys.length === 1 ? '' : 's'}? This updates _data/nets.json.`;
+        if (!window.confirm(confirmMessage)) {
+          announce('Batch publish cancelled.');
+          return;
+        }
+        queuePublishInFlight = true;
+        updateQueueControls();
+        clearStatus();
+        showStatus('Publishing queued drafts…');
+        try {
+          const response = await fetch(buildApiUrl('api/pending/batch_publish'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keys }),
+          });
+          const body = await parseResponse(response);
+          const published = Array.isArray(body.published) ? body.published : [];
+          const failed = Array.isArray(body.failed) ? body.failed : [];
+          if (published.length) {
+            published.forEach((item) => {
+              if (item && item.key) {
+                queuedDrafts.delete(item.key);
+              }
+            });
+          }
+          if (failed.length) {
+            const failedSet = new Set(failed.map((item) => item.key));
+            queuedDrafts = new Map(Array.from(queuedDrafts.entries()).filter(([key]) => failedSet.has(key)));
+          }
+          const summaryParts = [];
+          if (published.length) {
+            summaryParts.push(`${published.length} draft${published.length === 1 ? '' : 's'} published.`);
+          }
+          if (failed.length) {
+            summaryParts.push(`${failed.length} draft${failed.length === 1 ? '' : 's'} need attention.`);
+          }
+          if (body.commit && body.commit.push_message) {
+            summaryParts.push(body.commit.push_message);
+          }
+          if (body.commit && body.commit.hash) {
+            summaryParts.push(`Commit ${body.commit.short_hash || body.commit.hash} on ${body.commit.branch || 'main'}.`);
+          }
+          const ariaMessage = body.aria_message || summaryParts.join(' ') || 'Batch publish complete.';
+          announce(ariaMessage);
+          const statusType = response.ok ? 'success' : (published.length ? 'success' : 'error');
+          const message = summaryParts.join(' ') || body.error || 'Batch publish complete.';
+          showStatus(message, statusType);
+          refreshQueueButtons();
+          await loadPendingOverview();
+        } catch (error) {
+          showStatus(error.message, 'error');
+        } finally {
+          queuePublishInFlight = false;
+          updateQueueControls();
         }
       }
 

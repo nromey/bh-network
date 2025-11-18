@@ -6,6 +6,31 @@ import json
 import app as nets_app
 
 
+def _create_pending_net(sample_repo, net_id, name, start_time="14:00"):
+    record, errors = nets_app.normalize_submission(
+        {
+            "id": net_id,
+            "category": "bhn",
+            "name": name,
+            "description": f"{name} description.",
+            "start_local": start_time,
+            "duration_min": "30",
+            "rrule": "FREQ=WEEKLY;BYDAY=MO",
+            "time_zone": "America/New_York",
+        },
+        ["alpha-net"],
+        "America/New_York",
+    )
+    assert not errors
+    pending_path = nets_app.write_pending_file(
+        nets_app.record_to_entry(record),
+        sample_repo["nets_file"],
+        sample_repo["root"],
+        current_user="reviewer",
+    )
+    return pending_path
+
+
 def test_normalize_submission_add_success():
     data = {
         "id": "bravo-net",
@@ -391,3 +416,56 @@ def test_api_batch_submit_requires_role(client, sample_repo):
 
     response = client.post("/api/batch/submit", json=payload)
     assert response.status_code == 403
+
+
+def test_api_batch_publish_selected_keys_only(client, sample_repo):
+    first_pending = _create_pending_net(sample_repo, "hotel-net", "Hotel Net", start_time="16:00")
+    second_pending = _create_pending_net(sample_repo, "india-net", "India Net", start_time="17:00")
+
+    response = client.post(
+        "/api/pending/batch_publish",
+        json={"keys": [f"pending:{first_pending.name}"]},
+        headers={"X-Forwarded-User": "publisher"},
+    )
+    assert response.status_code == 200
+    body = response.get_json()
+    assert len(body["published"]) == 1
+    assert body["published"][0]["key"] == f"pending:{first_pending.name}"
+    assert not body["failed"]
+
+    remaining = nets_app.list_pending_files(sample_repo["root"])
+    assert any(entry["key"] == f"pending:{second_pending.name}" for entry in remaining)
+    assert all(entry["key"] != f"pending:{first_pending.name}" for entry in remaining)
+
+    nets_data = json.loads(sample_repo["nets_file"].read_text(encoding="utf-8"))
+    ids = {net["id"] for net in nets_data["nets"]}
+    assert "hotel-net" in ids
+    assert "india-net" not in ids
+
+
+def test_api_batch_publish_mixed_keys_returns_failures(client, sample_repo):
+    pending_path = _create_pending_net(sample_repo, "juliet-net", "Juliet Net")
+    missing_key = "pending:not-real"
+
+    response = client.post(
+        "/api/pending/batch_publish",
+        json={"keys": [f"pending:{pending_path.name}", missing_key]},
+        headers={"X-Forwarded-User": "publisher"},
+    )
+    assert response.status_code == 200
+    body = response.get_json()
+    assert len(body["published"]) == 1
+    assert len(body["failed"]) == 1
+    assert body["failed"][0]["key"] == missing_key
+
+
+def test_api_batch_publish_invalid_only_errors(client):
+    response = client.post(
+        "/api/pending/batch_publish",
+        json={"keys": ["pending:not-real"]},
+        headers={"X-Forwarded-User": "publisher"},
+    )
+    assert response.status_code == 400
+    body = response.get_json()
+    assert body["failed"]
+    assert "error" in body
