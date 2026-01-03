@@ -277,6 +277,20 @@
       "mode": "edit",
       "allstar": "517300 (east)517301 (west)517302 (phones/repeater phone)",
       "echolink": "590387 ve7nz-l"
+    },
+    {
+      "id": "trans-canada-net",
+      "category": "general",
+      "name": "Trans-Canada Net",
+      "description": "Check-ins from across Canada and beyond; question of the week.",
+      "start_local": "13:00",
+      "duration_min": 90,
+      "rrule": "FREQ=WEEKLY;BYDAY=SU",
+      "time_zone": "America/New_York",
+      "mode": "edit",
+      "allstar": "517300 517301",
+      "echolink": "ve7nz/l",
+      "notes": "Hosted by The Canada Hub, www.thecanadahub.ca"
     }
   ]
 }
