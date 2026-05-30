@@ -241,30 +241,6 @@
       "echolink": "710459"
     },
     {
-      "id": "the-blind-hams-digital-pace-politics-and-current-events-net",
-      "category": "bhn",
-      "name": "The Blind Hams Digital Pace (Politics and Current Events) net",
-      "description": "The PACE net meets on the second and third Thursday of the week at 7 PM Eastern on the Blind Hams Digital Network. The PACE net is a roundtable net that discusses topics related to politics andcurrent events. We don't shy away from controversy and all topics are  welcome.",
-      "start_local": "19:00",
-      "duration_min": 90,
-      "rrule": "FREQ=MONTHLY;BYDAY=TH;BYSETPOS=2,4,-1",
-      "mode": "add",
-      "allstar": "517310-517317",
-      "echolink": "*blind*"
-    },
-    {
-      "id": "the-blind-hams-network-pace-politics-and-current-events-net",
-      "category": "bhn",
-      "name": "The Blind Hams Network PACE (Politics and Current Events Net)",
-      "description": "A roundtable net that discusses topics in politics and current events. See the Blind Hams network page for the current topic(s).",
-      "start_local": "19:00",
-      "duration_min": 90,
-      "rrule": "FREQ=MONTHLY;BYDAY=TH;BYSETPOS=2,4,-1",
-      "mode": "add",
-      "allstar": "517310-517317",
-      "echolink": "*blind*"
-    },
-    {
       "id": "science-net",
       "category": "general",
       "name": "Science Net",
