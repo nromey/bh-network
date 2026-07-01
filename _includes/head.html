@@ -39,7 +39,7 @@
 {%- if page.ableplayer -%}
   <!-- Able Player assets (only when page.ableplayer: true). CDN-first with local fallback. -->
   <!-- CSS: CDN-first -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ableplayer/ableplayer@v4.7.0/build/ableplayer.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ableplayer/ableplayer@v5.0.0/build/ableplayer.min.css">
   <!-- Local CSS fallback (non-blocking) -->
   <link rel="stylesheet" href="{{ '/assets/vendor/ableplayer/ableplayer.min.css' | relative_url }}?v={{ bust }}" media="print" onload="this.media='all'">
 
@@ -47,7 +47,7 @@
   <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
           onerror="this.onerror=null; this.src='{{ '/assets/vendor/jquery/jquery-3.7.1.min.js' | relative_url }}?v={{ bust }}';"></script>
-  <script src="https://cdn.jsdelivr.net/gh/ableplayer/ableplayer@v4.7.0/build/ableplayer.min.js"
+  <script src="https://cdn.jsdelivr.net/gh/ableplayer/ableplayer@v5.0.0/build/ableplayer.min.js"
           onerror="this.onerror=null; this.src='{{ '/assets/vendor/ableplayer/ableplayer.min.js' | relative_url }}?v={{ bust }}';"></script>
 
   <!-- Defensive init + diagnostics -->
