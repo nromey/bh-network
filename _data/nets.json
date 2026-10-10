@@ -71,7 +71,7 @@
       "category": "bhn",
       "name": "The Sounds Good Net",
       "description": "For music fans and musicians, audio nerds and pros — anything to do with music and sound.",
-      "start_local": "20:00",
+      "start_local": "19:30",
       "duration_min": 90,
       "rrule": "FREQ=WEEKLY;BYDAY=MO",
       "location": "[Blind Hams Digital Network](https://www.blindhams.network/nets/blind-hams) or see the home page for connection details.",
